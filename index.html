@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shagun Saree Baran - Premium Indian Sarees</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="navbar-styles.css">
+    <link rel="stylesheet" href="product-modal.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <div class="logo-container">
+                    <div class="logo-icon">S</div>
+                    <span class="logo-text">Shagun Saree</span>
+                </div>
+            </div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link active">Home</a>
+                <a href="collections.html" class="nav-link">Silk Sarees</a>
+                <a href="collections.html?category=cotton" class="nav-link">Cotton Sarees</a>
+                <a href="collections.html?category=bridal" class="nav-link">Bridal Collection</a>
+                <a href="collections.html?category=designer" class="nav-link">Designer Sarees</a>
+            </div>
+            <div class="nav-actions">
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                </div>
+                <a href="cart.html" class="cart-container">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span class="cart-count" id="cartCount">0</span>
+                </a>
+                <div class="user-container">
+                    <i class="fas fa-user"></i>
+                </div>
+                <button class="sign-out-btn">Sign Out</button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    <span class="title-line">Elegance</span>
+                    <span class="title-line accent">Redefined</span>
+                </h1>
+                <p class="hero-subtitle">Discover the timeless beauty of traditional Indian sarees with contemporary styling.<br>Each piece tells a story of craftsmanship and heritage.</p>
+                <div class="hero-buttons">
+                    <a href="collections.html" class="btn-primary">Explore Collection</a>
+                    <a href="#categories" class="btn-secondary">Shop Now</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Categories Section -->
+        <section class="categories-section" id="categories">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Shop by Category</h2>
+                    <p class="section-subtitle">Explore our curated collections of authentic sarees, each crafted with love and attention to detail.</p>
+                </div>
+                <div class="categories-grid">
+                    <div class="category-card silk-card">
+                        <div class="card-content">
+                            <h3>Silk Sarees</h3>
+                            <p>Luxurious silk sarees for special occasions and celebrations</p>
+                            <a href="collections.html?category=silk" class="card-btn">View Collection</a>
+                        </div>
+                    </div>
+                    <div class="category-card cotton-card">
+                        <div class="card-content">
+                            <h3>Cotton Sarees</h3>
+                            <p>Comfortable cotton sarees perfect for everyday elegance</p>
+                            <a href="collections.html?category=cotton" class="card-btn">View Collection</a>
+                        </div>
+                    </div>
+                    <div class="category-card bridal-card">
+                        <div class="card-content">
+                            <h3>Bridal Collection</h3>
+                            <p>Exquisite bridal sarees for your special day</p>
+                            <a href="collections.html?category=bridal" class="card-btn">View Collection</a>
+                        </div>
+                    </div>
+                    <div class="category-card designer-card">
+                        <div class="card-content">
+                            <h3>Designer Sarees</h3>
+                            <p>Contemporary designer pieces with modern aesthetics</p>
+                            <a href="collections.html?category=designer" class="card-btn">View Collection</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="cta-section">
+            <div class="container">
+                <div class="cta-content">
+                    <h2 class="cta-title">Ready to Find Your Perfect Saree?</h2>
+                    <p class="cta-subtitle">Join thousands of satisfied customers who have found their dream sarees with us. Experience the elegance and quality that makes every occasion special.</p>
+                    <div class="cta-buttons">
+                        <a href="collections.html" class="btn-primary">Start Shopping</a>
+                        <a href="#contact" class="btn-secondary">Contact Us</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Shagun Saree Baran</h3>
+                    <p>Your trusted destination for premium Indian sarees. Quality, tradition, and elegance in every piece.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="collections.html">Collections</a></li>
+                        <li><a href="cart.html">Cart</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact Info</h4>
+                    <p>Email: shagunsaree60@gmail.com</p>
+                    <p>Phone: +91 9636788945</p>
+                    <p>Address: Krishna Colony, Baran, Rajasthan, India</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Follow Us</h4>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Shagun Saree Baran. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Product Modal -->
+    <div id="productModal" class="product-modal">
+        <div class="modal-overlay" onclick="closeProductModal()"></div>
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeProductModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <div class="product-detail">
+                <div class="product-images">
+                    <div class="main-image">
+                        <img id="mainProductImage" src="" alt="Product Image">
+                    </div>
+                </div>
+                
+                <div class="product-info">
+                    <h1 id="productTitle" class="product-title"></h1>
+                    <div class="product-rating">
+                        <div class="stars" id="productStars"></div>
+                        <span id="productReviews" class="reviews-count"></span>
+                    </div>
+                    
+                    <div class="product-price">
+                        <span id="productPrice" class="current-price"></span>
+                        <span id="productOriginalPrice" class="original-price"></span>
+                    </div>
+                    
+                    <div class="product-description">
+                        <h3>Description</h3>
+                        <p id="productDescription"></p>
+                    </div>
+                    
+                    <div class="product-details">
+                        <div class="detail-item">
+                            <span class="label">Fabric:</span>
+                            <span id="productFabric" class="value"></span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Category:</span>
+                            <span id="productCategory" class="value"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="product-colors" id="productColors">
+                        <h4>Available Colors:</h4>
+                        <div class="colors-list"></div>
+                    </div>
+                    
+                    <div class="quantity-selector">
+                        <label>Quantity:</label>
+                        <div class="quantity-controls">
+                            <button onclick="decreaseQuantity()">-</button>
+                            <input type="number" id="modalQuantity" value="1" min="1">
+                            <button onclick="increaseQuantity()">+</button>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn-add-cart" onclick="addToCartFromModal()">
+                            <i class="fas fa-shopping-cart"></i>
+                            Add to Cart
+                        </button>
+                        <button class="btn-buy-now" onclick="buyNowFromModal()">
+                            <i class="fas fa-bolt"></i>
+                            Buy Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>

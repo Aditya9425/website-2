@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collections - Shagun Saree Baran</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="navbar-styles.css">
+    <link rel="stylesheet" href="product-modal.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <div class="logo-container">
+                    <div class="logo-icon">S</div>
+                    <span class="logo-text">Shagun Saree</span>
+                </div>
+            </div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="collections.html" class="nav-link active">Silk Sarees</a>
+                <a href="collections.html?category=cotton" class="nav-link">Cotton Sarees</a>
+                <a href="collections.html?category=bridal" class="nav-link">Bridal Collection</a>
+                <a href="collections.html?category=designer" class="nav-link">Designer Sarees</a>
+            </div>
+            <div class="nav-actions">
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                </div>
+                <a href="cart.html" class="cart-container">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span class="cart-count" id="cartCount">0</span>
+                </a>
+                <div class="user-container">
+                    <i class="fas fa-user"></i>
+                </div>
+                <button class="sign-out-btn">Sign Out</button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="collections-main">
+        <div class="container">
+            <!-- Products Grid -->
+            <div class="products-grid" id="productsGrid">
+                <!-- Products will be loaded dynamically -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Product Modal -->
+    <div id="productModal" class="product-modal">
+        <div class="modal-overlay" onclick="closeProductModal()"></div>
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeProductModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <div class="product-detail">
+                <div class="product-images">
+                    <div class="main-image">
+                        <img id="mainProductImage" src="" alt="Product Image">
+                    </div>
+                </div>
+                
+                <div class="product-info">
+                    <h1 id="productTitle" class="product-title"></h1>
+                    <div class="product-rating">
+                        <div class="stars" id="productStars"></div>
+                        <span id="productReviews" class="reviews-count"></span>
+                    </div>
+                    
+                    <div class="product-price">
+                        <span id="productPrice" class="current-price"></span>
+                        <span id="productOriginalPrice" class="original-price"></span>
+                    </div>
+                    
+                    <div class="product-description">
+                        <h3>Description</h3>
+                        <p id="productDescription"></p>
+                    </div>
+                    
+                    <div class="product-details">
+                        <div class="detail-item">
+                            <span class="label">Fabric:</span>
+                            <span id="productFabric" class="value"></span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Category:</span>
+                            <span id="productCategory" class="value"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="product-colors" id="productColors">
+                        <h4>Available Colors:</h4>
+                        <div class="colors-list"></div>
+                    </div>
+                    
+                    <div class="quantity-selector">
+                        <label>Quantity:</label>
+                        <div class="quantity-controls">
+                            <button onclick="decreaseQuantity()">-</button>
+                            <input type="number" id="modalQuantity" value="1" min="1">
+                            <button onclick="increaseQuantity()">+</button>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn-add-cart" onclick="addToCartFromModal()">
+                            <i class="fas fa-shopping-cart"></i>
+                            Add to Cart
+                        </button>
+                        <button class="btn-buy-now" onclick="buyNowFromModal()">
+                            <i class="fas fa-bolt"></i>
+                            Buy Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>

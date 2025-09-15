@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details - Shagun Saree Baran</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <a href="index.html">
+                    <img src="https://via.placeholder.com/150x50/FF6B6B/FFFFFF?text=Shagun+Saree" alt="Shagun Saree Baran" class="logo">
+                </a>
+            </div>
+            <div class="nav-search">
+                <input type="text" placeholder="Search for sarees, fabrics, colors..." class="search-input">
+                <button class="search-btn"><i class="fas fa-search"></i></button>
+            </div>
+            <div class="nav-actions">
+                <a href="cart.html" class="cart-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-count" id="cartCount">0</span>
+                </a>
+                <button class="login-btn">Login</button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="product-main">
+        <div class="container">
+            <!-- Breadcrumb -->
+            <nav class="breadcrumb">
+                <a href="index.html">Home</a> / 
+                <a href="collections.html">Collections</a> / 
+                <span id="productName">Product</span>
+            </nav>
+
+            <!-- Product Details -->
+            <div class="product-details">
+                <!-- Product Images -->
+                <div class="product-images">
+                    <div class="main-image-container">
+                        <img src="" alt="" id="mainImage" class="main-image">
+                        <div class="image-zoom-overlay" id="zoomOverlay">
+                            <img src="" alt="" id="zoomedImage" class="zoomed-image">
+                        </div>
+                    </div>
+                    <div class="thumbnail-images" id="thumbnailImages">
+                        <!-- Thumbnails will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Product Info -->
+                <div class="product-info">
+                    <h1 id="productTitle">Product Title</h1>
+                    
+                    <div class="product-rating">
+                        <div class="stars">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </div>
+                        <span class="rating-text">4.5 out of 5</span>
+                        <span class="reviews-count">(128 reviews)</span>
+                    </div>
+
+                    <div class="product-price">
+                        <span class="current-price" id="currentPrice">₹0</span>
+                        <span class="original-price" id="originalPrice">₹0</span>
+                        <span class="discount" id="discount">0% OFF</span>
+                    </div>
+
+                    <div class="product-description" id="productDescription">
+                        Product description will be loaded here...
+                    </div>
+
+                    <!-- Color Variants -->
+                    <div class="color-variants" id="colorVariants" style="display: none;">
+                        <h4>Available Colors</h4>
+                        <div class="variant-swatches" id="variantSwatches">
+                            <!-- Color variant swatches will be loaded dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Color Selection -->
+                    <div class="product-options">
+                        <div class="option-group">
+                            <h4>Color</h4>
+                            <div class="color-options" id="colorOptions">
+                                <!-- Color options will be loaded dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Size Selection -->
+                        <div class="option-group">
+                            <h4>Size</h4>
+                            <div class="size-options" id="sizeOptions">
+                                <!-- Size options will be loaded dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Quantity Selection -->
+                        <div class="option-group">
+                            <h4>Quantity</h4>
+                            <div class="quantity-selector">
+                                <button class="qty-btn" id="decreaseQty">-</button>
+                                <input type="number" value="1" min="1" max="10" id="quantityInput" class="quantity-input">
+                                <button class="qty-btn" id="increaseQty">+</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="product-actions">
+                        <button class="add-to-cart-btn" id="addToCartBtn">
+                            <i class="fas fa-shopping-cart"></i>
+                            Add to Cart
+                        </button>
+                        <button class="buy-now-btn" id="buyNowBtn">
+                            <i class="fas fa-bolt"></i>
+                            Buy Now
+                        </button>
+                        <button class="wishlist-btn" id="wishlistBtn">
+                            <i class="far fa-heart"></i>
+                            Add to Wishlist
+                        </button>
+                    </div>
+
+                    <!-- Product Highlights -->
+                    <div class="product-highlights">
+                        <h4>Product Highlights</h4>
+                        <ul id="productHighlights">
+                            <!-- Highlights will be loaded dynamically -->
+                        </ul>
+                    </div>
+
+                    <!-- Delivery Info -->
+                    <div class="delivery-info">
+                        <div class="delivery-item">
+                            <i class="fas fa-truck"></i>
+                            <div>
+                                <strong>Free Delivery</strong>
+                                <p>On orders above ₹999</p>
+                            </div>
+                        </div>
+                        <div class="delivery-item">
+                            <i class="fas fa-undo"></i>
+                            <div>
+                                <strong>Easy Returns</strong>
+                                <p>7 days return policy</p>
+                            </div>
+                        </div>
+                        <div class="delivery-item">
+                            <i class="fas fa-shield-alt"></i>
+                            <div>
+                                <strong>Secure Payment</strong>
+                                <p>100% secure checkout</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Details Tabs -->
+            <div class="product-tabs">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" data-tab="description">Description</button>
+                    <button class="tab-btn" data-tab="specifications">Specifications</button>
+                    <button class="tab-btn" data-tab="reviews">Reviews</button>
+                    <button class="tab-btn" data-tab="shipping">Shipping & Returns</button>
+                </div>
+
+                <div class="tab-content">
+                    <div class="tab-pane active" id="description">
+                        <h3>Product Description</h3>
+                        <div id="detailedDescription">
+                            <!-- Detailed description will be loaded dynamically -->
+                        </div>
+                    </div>
+
+                    <div class="tab-pane" id="specifications">
+                        <h3>Product Specifications</h3>
+                        <div class="specs-table" id="specificationsTable">
+                            <!-- Specifications will be loaded dynamically -->
+                        </div>
+                    </div>
+
+                    <div class="tab-pane" id="reviews">
+                        <h3>Customer Reviews</h3>
+                        <div class="reviews-section" id="reviewsSection">
+                            <!-- Reviews will be loaded dynamically -->
+                        </div>
+                    </div>
+
+                    <div class="tab-pane" id="shipping">
+                        <h3>Shipping & Returns</h3>
+                        <div class="shipping-info">
+                            <h4>Shipping Information</h4>
+                            <ul>
+                                <li>Free delivery on orders above ₹999</li>
+                                <li>Standard delivery: 3-5 business days</li>
+                                <li>Express delivery: 1-2 business days (additional charges apply)</li>
+                                <li>Delivery available across India</li>
+                            </ul>
+                            
+                            <h4>Return Policy</h4>
+                            <ul>
+                                <li>7 days return policy from delivery date</li>
+                                <li>Product must be unused and in original packaging</li>
+                                <li>Return shipping charges borne by customer</li>
+                                <li>Refund processed within 5-7 business days</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Related Products -->
+            <section class="related-products">
+                <h2>You May Also Like</h2>
+                <div class="products-grid" id="relatedProducts">
+                    <!-- Related products will be loaded dynamically -->
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Shagun Saree Baran</h3>
+                    <p>Your trusted destination for premium Indian sarees. Quality, tradition, and elegance in every piece.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="collections.html">Collections</a></li>
+                        <li><a href="cart.html">Cart</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact Info</h4>
+                    <p>Email: shagunsaree60@gmail.com</p>
+                    <p>Phone: +91 9636788945</p>
+                    <p>Address: Krishna Colony, Baran, Rajasthan, India</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Follow Us</h4>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Shagun Saree Baran. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+    <script>
+        // Load product details when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = parseInt(urlParams.get('id'));
+            
+            if (productId) {
+                loadProductDetails(productId);
+            } else {
+                window.location.href = 'collections.html';
+            }
+        });
+        
+        function loadProductDetails(productId) {
+            // Wait for products to be loaded from main.js
+            const checkProducts = setInterval(() => {
+                if (window.products && window.products.length > 0) {
+                    clearInterval(checkProducts);
+                    
+                    const product = window.products.find(p => p.id === productId);
+                    if (product) {
+                        displayProductDetails(product);
+                    } else {
+                        alert('Product not found!');
+                        window.location.href = 'collections.html';
+                    }
+                }
+            }, 100);
+        }
+        
+        function displayProductDetails(product) {
+            document.getElementById('productName').textContent = product.name;
+            document.getElementById('productTitle').textContent = product.name;
+            document.getElementById('currentPrice').textContent = `₹${product.price.toLocaleString()}`;
+            document.getElementById('originalPrice').textContent = product.originalPrice ? `₹${product.originalPrice.toLocaleString()}` : '';
+            document.getElementById('productDescription').textContent = product.description || 'No description available.';
+            
+            // Load main image
+            const mainImage = document.getElementById('mainImage');
+            if (product.image) {
+                mainImage.src = product.image;
+                mainImage.alt = product.name;
+            }
+            
+            // Calculate discount
+            if (product.originalPrice && product.originalPrice > product.price) {
+                const discount = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
+                document.getElementById('discount').textContent = `${discount}% OFF`;
+            }
+            
+            // Update page title
+            document.title = `${product.name} - Shagun Saree Baran`;
+        }
+    </script>
+</body>
+</html>

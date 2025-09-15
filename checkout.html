@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Shagun Saree Baran</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <a href="index.html">
+                    <img src="https://via.placeholder.com/150x50/FF6B6B/FFFFFF?text=Shagun+Saree" alt="Shagun Saree Baran" class="logo">
+                </a>
+            </div>
+            <div class="nav-search">
+                <input type="text" placeholder="Search for sarees, fabrics, colors..." class="search-input">
+                <button class="search-btn"><i class="fas fa-search"></i></button>
+            </div>
+            <div class="nav-actions">
+                <a href="cart.html" class="cart-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-count" id="cartCount">0</span>
+                </a>
+                <button class="login-btn">Login</button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="checkout-main">
+        <div class="container">
+            <!-- Breadcrumb -->
+            <nav class="breadcrumb">
+                <a href="index.html">Home</a> / 
+                <a href="cart.html">Cart</a> / 
+                <a href="address.html">Address</a> / 
+                <span>Checkout</span>
+            </nav>
+
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1>Checkout</h1>
+                <p>Complete your purchase securely</p>
+            </div>
+
+            <div class="checkout-content">
+                <!-- Checkout Steps -->
+                <div class="checkout-steps">
+                    <div class="step active">
+                        <div class="step-number">1</div>
+                        <div class="step-info">
+                            <span class="step-title">Cart</span>
+                            <span class="step-desc">Review Items</span>
+                        </div>
+                    </div>
+                    <div class="step active">
+                        <div class="step-number">2</div>
+                        <div class="step-info">
+                            <span class="step-title">Address</span>
+                            <span class="step-desc">Delivery Details</span>
+                        </div>
+                    </div>
+                    <div class="step active">
+                        <div class="step-number">3</div>
+                        <div class="step-info">
+                            <span class="step-title">Payment</span>
+                            <span class="step-desc">Choose Method</span>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-info">
+                            <span class="step-title">Confirmation</span>
+                            <span class="step-desc">Order Complete</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Checkout Forms -->
+                <div class="checkout-forms">
+                    <!-- Payment Method Selection -->
+                    <section class="payment-method-section">
+                        <div class="form-card">
+                            <h2>Payment Method</h2>
+                            <div class="payment-methods">
+                                <label class="payment-method">
+                                    <input type="radio" name="paymentMethod" value="cod" checked>
+                                    <div class="payment-method-content">
+                                        <div class="payment-icon">
+                                            <i class="fas fa-money-bill-wave"></i>
+                                        </div>
+                                        <div class="payment-info">
+                                            <h4>Cash on Delivery (COD)</h4>
+                                            <p>Pay when you receive your order</p>
+                                        </div>
+                                    </div>
+                                </label>
+
+                                <label class="payment-method">
+                                    <input type="radio" name="paymentMethod" value="card">
+                                    <div class="payment-method-content">
+                                        <div class="payment-icon">
+                                            <i class="fas fa-credit-card"></i>
+                                        </div>
+                                        <div class="payment-info">
+                                            <h4>Credit/Debit Card</h4>
+                                            <p>Secure payment with your card</p>
+                                        </div>
+                                    </div>
+                                </label>
+
+                                <label class="payment-method">
+                                    <input type="radio" name="paymentMethod" value="upi">
+                                    <div class="payment-method-content">
+                                        <div class="payment-icon">
+                                            <i class="fas fa-mobile-alt"></i>
+                                        </div>
+                                        <div class="payment-info">
+                                            <h4>UPI Payment</h4>
+                                            <p>Pay using UPI apps</p>
+                                        </div>
+                                    </div>
+                                </label>
+
+                                <label class="payment-method">
+                                    <input type="radio" name="paymentMethod" value="netbanking">
+                                    <div class="payment-method-content">
+                                        <div class="payment-icon">
+                                            <i class="fas fa-university"></i>
+                                        </div>
+                                        <div class="payment-info">
+                                            <h4>Net Banking</h4>
+                                            <p>Pay using your bank account</p>
+                                        </div>
+                                    </div>
+                                </label>
+
+                                <label class="payment-method">
+                                    <input type="radio" name="paymentMethod" value="razorpay">
+                                    <div class="payment-method-content">
+                                        <div class="payment-icon">
+                                            <i class="fas fa-credit-card"></i>
+                                        </div>
+                                        <div class="payment-info">
+                                            <h4>Razorpay Gateway</h4>
+                                            <p>Secure online payment gateway</p>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <!-- Card Payment Form (Hidden by default) -->
+                            <div class="card-payment-form" id="cardPaymentForm" style="display: none;">
+                                <h3>Card Details</h3>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="cardNumber">Card Number</label>
+                                        <input type="text" id="cardNumber" name="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="cardName">Cardholder Name</label>
+                                        <input type="text" id="cardName" name="cardName" placeholder="Name on card">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="cardExpiry">Expiry Date</label>
+                                        <input type="text" id="cardExpiry" name="cardExpiry" placeholder="MM/YY" maxlength="5">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="cardCvv">CVV</label>
+                                        <input type="text" id="cardCvv" name="cardCvv" placeholder="123" maxlength="3">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- UPI Payment Form (Hidden by default) -->
+                            <div class="upi-payment-form" id="upiPaymentForm" style="display: none;">
+                                <h3>UPI Payment</h3>
+                                <div class="form-group">
+                                    <label for="upiId">UPI ID</label>
+                                    <input type="text" id="upiId" name="upiId" placeholder="username@upi">
+                                </div>
+                            </div>
+
+                            <!-- Net Banking Form (Hidden by default) -->
+                            <div class="netbanking-payment-form" id="netbankingPaymentForm" style="display: none;">
+                                <h3>Net Banking</h3>
+                                <div class="form-group">
+                                    <label for="bankSelect">Select Bank</label>
+                                    <select id="bankSelect" name="bankSelect">
+                                        <option value="">Choose your bank</option>
+                                        <option value="sbi">State Bank of India</option>
+                                        <option value="hdfc">HDFC Bank</option>
+                                        <option value="icici">ICICI Bank</option>
+                                        <option value="axis">Axis Bank</option>
+                                        <option value="pnb">Punjab National Bank</option>
+                                        <option value="bob">Bank of Baroda</option>
+                                        <option value="canara">Canara Bank</option>
+                                        <option value="union">Union Bank of India</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Delivery Address Display -->
+                    <section class="delivery-address-section">
+                        <div class="form-card">
+                            <h2>Delivery Address</h2>
+                            <div id="addressDisplay" class="address-display">
+                                <!-- Address will be loaded dynamically -->
+                                <p>Loading address...</p>
+                            </div>
+                            <div class="address-actions">
+                                <a href="address.html" class="btn-secondary">
+                                    <i class="fas fa-edit"></i>
+                                    Edit Address
+                                </a>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Order Review -->
+                    <section class="order-review-section">
+                        <div class="form-card">
+                            <h2>Order Review</h2>
+                            <div class="order-items" id="orderItems">
+                                <!-- Order items will be loaded dynamically -->
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Terms and Conditions -->
+                    <section class="terms-section">
+                        <div class="form-card">
+                            <div class="terms-content">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="agreeTerms" name="agreeTerms" required>
+                                    <span>I agree to the <a href="#" class="terms-link">Terms and Conditions</a> and <a href="#" class="terms-link">Privacy Policy</a></span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="agreeMarketing" name="agreeMarketing">
+                                    <span>I would like to receive updates about new products and offers</span>
+                                </label>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Order Summary Sidebar -->
+                <aside class="order-summary-sidebar">
+                    <div class="summary-card">
+                        <h3>Order Summary</h3>
+                        
+                        <div class="summary-row">
+                            <span>Subtotal</span>
+                            <span id="subtotal">₹0</span>
+                        </div>
+                        
+                        <div class="summary-row">
+                            <span>Delivery Charges</span>
+                            <span id="deliveryCharges">₹0</span>
+                        </div>
+                        
+                        <div class="summary-row discount-row">
+                            <span>Discount</span>
+                            <span id="discount">-₹0</span>
+                        </div>
+                        
+                        <div class="summary-row total-row">
+                            <span>Total</span>
+                            <span id="total">₹0</span>
+                        </div>
+
+                        <div class="delivery-info">
+                            <div class="delivery-item">
+                                <i class="fas fa-truck"></i>
+                                <div>
+                                    <strong>Estimated Delivery</strong>
+                                    <p>3-5 business days</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="place-order-btn" id="placeOrderBtn">
+                            <i class="fas fa-lock"></i>
+                            Place Order Securely
+                        </button>
+
+                        <div class="secure-checkout">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>100% Secure Checkout</span>
+                        </div>
+                    </div>
+
+                    <!-- Applied Coupon -->
+                    <div class="applied-coupon" id="appliedCoupon" style="display: none;">
+                        <h4>Applied Coupon</h4>
+                        <div class="coupon-info">
+                            <span class="coupon-code" id="couponCode">WELCOME10</span>
+                            <span class="coupon-discount" id="couponDiscount">-₹200</span>
+                        </div>
+                        <button class="remove-coupon-btn" id="removeCouponBtn">Remove</button>
+                    </div>
+                </aside>
+            </div>
+
+            <!-- Security Features -->
+            <section class="security-features">
+                <div class="security-grid">
+                    <div class="security-item">
+                        <i class="fas fa-shield-alt"></i>
+                        <h4>Secure Payment</h4>
+                        <p>256-bit SSL encryption</p>
+                    </div>
+                    <div class="security-item">
+                        <i class="fas fa-lock"></i>
+                        <h4>Data Protection</h4>
+                        <p>Your data is never shared</p>
+                    </div>
+                    <div class="security-item">
+                        <i class="fas fa-undo"></i>
+                        <h4>Easy Returns</h4>
+                        <p>7 days return policy</p>
+                    </div>
+                    <div class="security-item">
+                        <i class="fas fa-headset"></i>
+                        <h4>24/7 Support</h4>
+                        <p>Always here to help</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Shagun Saree Baran</h3>
+                    <p>Your trusted destination for premium Indian sarees. Quality, tradition, and elegance in every piece.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="collections.html">Collections</a></li>
+                        <li><a href="cart.html">Cart</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact Info</h4>
+                    <p>Email: shagunsaree60@gmail.com</p>
+                    <p>Phone: +91 9636788945</p>
+                    <p>Address: Krishna Colony, Baran, Rajasthan, India</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Follow Us</h4>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Shagun Saree Baran. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Order Confirmation Modal -->
+    <div class="modal-overlay" id="orderConfirmationModal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Order Confirmed!</h2>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h3>Thank you for your order!</h3>
+                <p>Your order has been successfully placed. You will receive a confirmation email shortly.</p>
+                <div class="order-details">
+                    <div class="order-number">
+                        <strong>Order Number:</strong>
+                        <span id="orderNumber">#SSB2024001</span>
+                    </div>
+                    <div class="order-total">
+                        <strong>Total Amount:</strong>
+                        <span id="orderTotal">₹0</span>
+                    </div>
+                </div>
+                <div class="next-steps">
+                    <h4>What's Next?</h4>
+                    <ul>
+                        <li>You'll receive an order confirmation email</li>
+                        <li>We'll notify you when your order ships</li>
+                        <li>Track your order in real-time</li>
+                        <li>Expected delivery: 3-5 business days</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="index.html" class="btn-primary">Continue Shopping</a>
+                <button class="btn-secondary" id="viewOrderBtn">View Order Details</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+    
+    <script>
+
+        
+        // Simple order placement function
+        function placeOrderNow() {
+            try {
+                const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+                const address = JSON.parse(localStorage.getItem('deliveryAddress') || '{}');
+                
+                if (cart.length === 0) {
+                    alert('Cart is empty!');
+                    return;
+                }
+                
+                if (!address.firstName) {
+                    alert('Address is missing!');
+                    return;
+                }
+                
+                const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) + 200;
+                const orderId = 'ORD' + Date.now();
+                
+                // Clear cart
+                localStorage.setItem('cart', '[]');
+                
+                alert(`Order placed successfully!\nOrder ID: ${orderId}\nTotal: ₹${total}`);
+                window.location.href = 'index.html';
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error: ' + error.message);
+            }
+        }
+        
+        // Modal functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('orderConfirmationModal');
+            const modalClose = document.getElementById('modalClose');
+            const viewOrderBtn = document.getElementById('viewOrderBtn');
+            const placeOrderBtn = document.getElementById('placeOrderBtn');
+            
+            // Override place order button
+            if (placeOrderBtn) {
+                placeOrderBtn.onclick = placeOrderNow;
+            }
+            
+            // Close modal
+            if (modalClose) {
+                modalClose.addEventListener('click', function() {
+                    modal.style.display = 'none';
+                });
+            }
+            
+            // Close modal when clicking outside
+            if (modal) {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        modal.style.display = 'none';
+                    }
+                });
+            }
+            
+            // View order details
+            if (viewOrderBtn) {
+                viewOrderBtn.addEventListener('click', function() {
+                    alert('Order details page would open here in production');
+                });
+            }
+        });
+        
+
+    </script>
+</body>
+</html>
