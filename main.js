@@ -154,30 +154,48 @@ async function fetchProducts() {
     loadProducts();
 }
 
+// Check user authentication status
+function checkUserAuth() {
+    const session = localStorage.getItem('userSession');
+    const loginLink = document.getElementById('loginLink');
+    const userMenu = document.getElementById('userMenu');
+    const userName = document.getElementById('userName');
+    
+    if (session && loginLink && userMenu) {
+        const user = JSON.parse(session);
+        loginLink.style.display = 'none';
+        userMenu.style.display = 'block';
+        if (userName) {
+            userName.textContent = `Welcome, ${user.email.split('@')[0]}!`;
+        }
+    }
+}
+
+// Logout function
+function logout() {
+    localStorage.removeItem('userSession');
+    window.location.reload();
+}
+
 // Initialize
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('DOM loaded, initializing...');
-    console.log('Current cart:', cart);
-    console.log('Cart length:', cart.length);
     
-    // Fetch products from Supabase first
+    // Check user authentication
+    checkUserAuth();
+    
     await fetchProducts();
-    
     updateCartCount();
     loadTrendingProducts();
+    loadFeaturedProducts();
     
-    // Setup page-specific functionality
     const currentPage = window.location.pathname.split('/').pop();
-    console.log('Current page:', currentPage);
     
     if (currentPage === 'cart.html' || currentPage === '') {
-        console.log('Setting up cart page...');
         setupCartPage();
     } else if (currentPage === 'address.html') {
-        console.log('Setting up address page...');
         setupAddressPage();
     } else if (currentPage === 'checkout.html') {
-        console.log('Setting up checkout page...');
         setupCheckoutPage();
     }
 });
@@ -214,7 +232,8 @@ function addToCart(button) {
 }
 
 function removeFromCart(productId) {
-    cart = cart.filter(item => item.id !== productId);
+    console.log('Removing from cart:', productId);
+    cart = cart.filter(item => item.id != productId);
     saveCart();
     updateCartCount();
     displayCartItems();
@@ -222,7 +241,8 @@ function removeFromCart(productId) {
 }
 
 function updateCartItemQuantity(productId, newQuantity) {
-    const item = cart.find(item => item.id === productId);
+    console.log('Updating quantity:', productId, newQuantity);
+    const item = cart.find(item => item.id == productId);
     if (item) {
         if (newQuantity <= 0) {
             removeFromCart(productId);
@@ -282,26 +302,15 @@ function loadProducts() {
         grid.innerHTML = products.map(product => {
             let imageUrl;
             if (product.image && product.image.startsWith('http')) {
-                // Already a full URL from admin panel
                 imageUrl = product.image;
             } else if (product.image) {
-                // Just filename, construct URL
                 imageUrl = `https://jstvadizuzvwhabtfhfs.supabase.co/storage/v1/object/public/Sarees/${product.image}`;
             } else {
-                // No image, use placeholder
                 imageUrl = `https://via.placeholder.com/300x400/FF6B6B/FFFFFF?text=${encodeURIComponent(product.name || 'Product')}`;
             }
-            console.log('🖼️ Product:', product.name, 'Image field:', product.image, 'Generated URL:', imageUrl);
             
-            // Test image accessibility
-            if (product.image) {
-                const testImg = new Image();
-                testImg.onload = () => console.log('✅ Image loaded successfully:', imageUrl);
-                testImg.onerror = () => console.error('❌ Image failed to load:', imageUrl);
-                testImg.src = imageUrl;
-            }
             return `
-            <div class="product-card" onclick="viewProduct(${product.id})">
+            <div class="product-card" data-product-id="${product.id}">
                 <img src="${imageUrl}" alt="${product.name}" class="product-image">
                 <div class="product-info">
                     <h3 class="product-name">${product.name}</h3>
@@ -319,6 +328,16 @@ function loadProducts() {
             </div>
             `;
         }).join('');
+        
+        // Add click listeners
+        document.querySelectorAll('.product-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                if (!e.target.closest('.add-to-cart-btn')) {
+                    const productId = card.dataset.productId;
+                    window.location.href = `product.html?id=${productId}`;
+                }
+            });
+        });
         attachAddToCartListeners();
     }
 }
@@ -330,26 +349,15 @@ function loadTrendingProducts() {
         grid.innerHTML = trending.map(product => {
             let imageUrl;
             if (product.image && product.image.startsWith('http')) {
-                // Already a full URL from admin panel
                 imageUrl = product.image;
             } else if (product.image) {
-                // Just filename, construct URL
                 imageUrl = `https://jstvadizuzvwhabtfhfs.supabase.co/storage/v1/object/public/Sarees/${product.image}`;
             } else {
-                // No image, use placeholder
                 imageUrl = `https://via.placeholder.com/300x400/FF6B6B/FFFFFF?text=${encodeURIComponent(product.name || 'Product')}`;
             }
-            console.log('🖼️ Trending Product:', product.name, 'Image field:', product.image, 'Generated URL:', imageUrl);
             
-            // Test image accessibility
-            if (product.image) {
-                const testImg = new Image();
-                testImg.onload = () => console.log('✅ Trending image loaded successfully:', imageUrl);
-                testImg.onerror = () => console.error('❌ Trending image failed to load:', imageUrl);
-                testImg.src = imageUrl;
-            }
             return `
-            <div class="product-card" onclick="viewProduct(${product.id})">
+            <div class="product-card" data-product-id="${product.id}">
                 <img src="${imageUrl}" alt="${product.name}" class="product-image">
                 <div class="product-info">
                     <h3 class="product-name">${product.name}</h3>
@@ -367,6 +375,16 @@ function loadTrendingProducts() {
             </div>
             `;
         }).join('');
+        
+        // Add click listeners
+        document.querySelectorAll('#trendingProducts .product-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                if (!e.target.closest('.add-to-cart-btn')) {
+                    const productId = card.dataset.productId;
+                    window.location.href = `product.html?id=${productId}`;
+                }
+            });
+        });
         attachAddToCartListeners();
     }
 }
@@ -420,11 +438,11 @@ function displayCartItems() {
                 <div class="cart-item-price">₹${item.price.toLocaleString()}</div>
                 <div class="cart-item-actions">
                     <div class="quantity-controls">
-                        <button onclick="updateCartItemQuantity(${item.id}, ${item.quantity - 1})">-</button>
-                        <span>${item.quantity}</span>
-                        <button onclick="updateCartItemQuantity(${item.id}, ${item.quantity + 1})">+</button>
+                        <button class="qty-decrease" data-id="${item.id}">-</button>
+                        <span class="quantity-display">${item.quantity}</span>
+                        <button class="qty-increase" data-id="${item.id}">+</button>
                     </div>
-                    <button class="remove-item-btn" onclick="removeFromCart(${item.id})">Remove</button>
+                    <button class="remove-item-btn" data-id="${item.id}">Remove</button>
                 </div>
             </div>
             <div class="cart-item-total">
@@ -432,6 +450,34 @@ function displayCartItems() {
             </div>
         </div>
     `).join('');
+    
+    // Add event listeners to the buttons
+    document.querySelectorAll('.qty-decrease').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const productId = e.target.getAttribute('data-id');
+            const item = cart.find(item => item.id == productId);
+            if (item) {
+                updateCartItemQuantity(productId, item.quantity - 1);
+            }
+        });
+    });
+    
+    document.querySelectorAll('.qty-increase').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const productId = e.target.getAttribute('data-id');
+            const item = cart.find(item => item.id == productId);
+            if (item) {
+                updateCartItemQuantity(productId, item.quantity + 1);
+            }
+        });
+    });
+    
+    document.querySelectorAll('.remove-item-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const productId = e.target.getAttribute('data-id');
+            removeFromCart(productId);
+        });
+    });
     
     updateOrderSummary();
 }
@@ -1216,7 +1262,7 @@ function buyNow(productId) {
     saveCart();
     updateCartCount();
     
-    // Go directly to checkout
+    // Go directly to address page first, then checkout
     window.location.href = 'address.html';
 }
 
@@ -1232,6 +1278,43 @@ function updateCartCount() {
     });
 }
 
+function loadFeaturedProducts() {
+    const grid = document.getElementById('featuredProducts');
+    if (grid) {
+        const featured = products.slice(0, 3);
+        grid.innerHTML = featured.map(product => {
+            let imageUrl;
+            if (product.image && product.image.startsWith('http')) {
+                imageUrl = product.image;
+            } else if (product.image) {
+                imageUrl = `https://jstvadizuzvwhabtfhfs.supabase.co/storage/v1/object/public/Sarees/${product.image}`;
+            } else {
+                imageUrl = `https://via.placeholder.com/300x400/FF6B6B/FFFFFF?text=${encodeURIComponent(product.name || 'Product')}`;
+            }
+            
+            return `
+            <div class="featured-card" data-product-id="${product.id}">
+                <div class="featured-image" onclick="window.location.href='product.html?id=${product.id}'">
+                    <img src="${imageUrl}" alt="${product.name}" loading="lazy">
+                </div>
+                <div class="featured-info">
+                    <h3 class="featured-title">${product.name}</h3>
+                    <div class="featured-price">₹${product.price.toLocaleString()}</div>
+                    <div class="featured-buttons">
+                        <button class="add-to-cart-btn" data-id="${product.id}" onclick="event.stopPropagation(); addToCart(this)">
+                            Add to Cart
+                        </button>
+                        <button class="buy-now-btn" onclick="event.stopPropagation(); buyNow('${product.id}')">
+                            Buy Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+            `;
+        }).join('');
+    }
+}
+
 // Make functions globally available
 window.openProductDetail = openProductDetail;
 window.closeProductModal = closeProductModal;
@@ -1240,4 +1323,14 @@ window.decreaseQuantity = decreaseQuantity;
 window.addToCartFromModal = addToCartFromModal;
 window.buyNowFromModal = buyNowFromModal;
 window.buyNow = buyNow;
+window.removeFromCart = removeFromCart;
+window.updateCartItemQuantity = updateCartItemQuantity;
+window.clearCart = clearCart;
+
+// Debug function
+window.testModal = function() {
+    console.log('Testing modal...');
+    openProductDetail(1);
+};
+window.logout = logout;
 

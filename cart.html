@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shopping Cart - Shagun Saree Baran</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="navbar-styles.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
@@ -13,8 +14,9 @@
     <header class="header">
         <nav class="navbar">
             <div class="nav-brand">
-                <a href="index.html">
-                    <img src="https://via.placeholder.com/150x50/FF6B6B/FFFFFF?text=Shagun+Saree" alt="Shagun Saree Baran" class="logo">
+                <a href="index.html" class="logo-container">
+                    <div class="logo-icon">S</div>
+                    <span class="logo-text">Shagun Saree</span>
                 </a>
             </div>
             <div class="nav-search">
@@ -50,7 +52,10 @@
                 <section class="cart-items">
                     <div class="cart-header">
                         <h2>Cart Items (<span id="cartItemCount">0</span>)</h2>
-                        <button class="clear-cart-btn" id="clearCartBtn">Clear Cart</button>
+                        <button class="clear-cart-btn" id="clearCartBtn">
+                            <i class="fas fa-trash"></i>
+                            Clear Cart
+                        </button>
                     </div>
 
                     <div class="cart-items-list" id="cartItemsList">
@@ -104,6 +109,7 @@
                         </div>
 
                         <button class="checkout-btn" id="checkoutBtn" disabled>
+                            <i class="fas fa-credit-card"></i>
                             Proceed to Checkout
                         </button>
 
@@ -118,7 +124,10 @@
                         <h4>Apply Coupon</h4>
                         <div class="coupon-input">
                             <input type="text" placeholder="Enter coupon code" id="couponInput">
-                            <button class="apply-coupon-btn" id="applyCouponBtn">Apply</button>
+                            <button class="apply-coupon-btn" id="applyCouponBtn">
+                                <i class="fas fa-tag"></i>
+                                Apply
+                            </button>
                         </div>
                         <div class="available-coupons">
                             <p>Available Coupons:</p>
@@ -157,38 +166,41 @@
     </main>
 
     <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>Shagun Saree Baran</h3>
-                    <p>Your trusted destination for premium Indian sarees. Quality, tradition, and elegance in every piece.</p>
+    <footer style="background: #2c3e50; color: white; padding: 40px 0 20px;">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 30px;">
+                <div>
+                    <h3 style="color: #FF6B6B; margin-bottom: 15px; font-size: 1.5rem;">Shagun Saree Baran</h3>
+                    <p style="color: #ecf0f1; line-height: 1.6; margin: 0;">Your trusted destination for premium Indian sarees. Quality, tradition, and elegance in every piece.</p>
                 </div>
-                <div class="footer-section">
-                    <h4>Quick Links</h4>
-                    <ul>
-                        <li><a href="index.html">Home</a></li>
-                        <li><a href="collections.html">Collections</a></li>
-                        <li><a href="cart.html">Cart</a></li>
-                    </ul>
+                <div>
+                    <h4 style="color: white; margin-bottom: 15px; font-size: 1.2rem;">Quick Links</h4>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <a href="index.html" style="color: #ecf0f1; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='#FF6B6B'" onmouseout="this.style.color='#ecf0f1'">Home</a>
+                        <a href="collections.html" style="color: #ecf0f1; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='#FF6B6B'" onmouseout="this.style.color='#ecf0f1'">Collections</a>
+                        <a href="cart.html" style="color: #ecf0f1; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='#FF6B6B'" onmouseout="this.style.color='#ecf0f1'">Cart</a>
+                        <a href="contact.html" style="color: #ecf0f1; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='#FF6B6B'" onmouseout="this.style.color='#ecf0f1'">Contact Us</a>
+                    </div>
                 </div>
-                <div class="footer-section">
-                    <h4>Contact Info</h4>
-                    <p>Email: shagunsaree60@gmail.com</p>
-                    <p>Phone: +91 9636788945</p>
-                    <p>Address: Krishna Colony, Baran, Rajasthan, India</p>
+                <div>
+                    <h4 style="color: white; margin-bottom: 15px; font-size: 1.2rem;">Contact Info</h4>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="color: #ecf0f1;"><i class="fas fa-envelope" style="color: #FF6B6B; margin-right: 8px;"></i>shagunsaree60@gmail.com</div>
+                        <div style="color: #ecf0f1;"><i class="fas fa-phone" style="color: #FF6B6B; margin-right: 8px;"></i>+91 9636788945</div>
+                        <div style="color: #ecf0f1;"><i class="fas fa-map-marker-alt" style="color: #FF6B6B; margin-right: 8px;"></i>Krishna Colony, Baran, Rajasthan</div>
+                    </div>
                 </div>
-                <div class="footer-section">
-                    <h4>Follow Us</h4>
-                    <div class="social-links">
-                        <a href="#"><i class="fab fa-facebook"></i></a>
-                        <a href="#"><i class="fab fa-instagram"></i></a>
-                        <a href="#"><i class="fab fa-twitter"></i></a>
+                <div>
+                    <h4 style="color: white; margin-bottom: 15px; font-size: 1.2rem;">Follow Us</h4>
+                    <div style="display: flex; gap: 15px;">
+                        <a href="#" style="color: #ecf0f1; font-size: 1.5rem; transition: color 0.3s;" onmouseover="this.style.color='#3b5998'" onmouseout="this.style.color='#ecf0f1'"><i class="fab fa-facebook"></i></a>
+                        <a href="https://instagram.com/shagunsareebaran" style="color: #ecf0f1; font-size: 1.5rem; transition: color 0.3s;" onmouseover="this.style.color='#e4405f'" onmouseout="this.style.color='#ecf0f1'"><i class="fab fa-instagram"></i></a>
+                        <a href="#" style="color: #ecf0f1; font-size: 1.5rem; transition: color 0.3s;" onmouseover="this.style.color='#1da1f2'" onmouseout="this.style.color='#ecf0f1'"><i class="fab fa-twitter"></i></a>
                     </div>
                 </div>
             </div>
-            <div class="footer-bottom">
-                <p>&copy; 2025 Shagun Saree Baran. All rights reserved.</p>
+            <div style="border-top: 1px solid #34495e; padding-top: 20px; text-align: center;">
+                <p style="color: #bdc3c7; margin: 0;">&copy; 2025 Shagun Saree Baran. All rights reserved.</p>
             </div>
         </div>
     </footer>

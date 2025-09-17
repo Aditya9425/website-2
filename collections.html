@@ -15,10 +15,10 @@
     <header class="header">
         <nav class="navbar">
             <div class="nav-brand">
-                <div class="logo-container">
+                <a href="index.html" class="logo-container">
                     <div class="logo-icon">S</div>
                     <span class="logo-text">Shagun Saree</span>
-                </div>
+                </a>
             </div>
             <div class="nav-links">
                 <a href="index.html" class="nav-link">Home</a>
@@ -111,11 +111,11 @@
                     </div>
                     
                     <div class="action-buttons">
-                        <button class="btn-add-cart" onclick="addToCartFromModal()">
+                        <button class="btn-add-cart add-to-cart-btn" onclick="addToCartFromModal()">
                             <i class="fas fa-shopping-cart"></i>
                             Add to Cart
                         </button>
-                        <button class="btn-buy-now" onclick="buyNowFromModal()">
+                        <button class="btn-buy-now buy-now-btn" onclick="buyNowFromModal()">
                             <i class="fas fa-bolt"></i>
                             Buy Now
                         </button>
@@ -124,6 +124,46 @@
             </div>
         </div>
     </div>
+
+    <!-- Footer -->
+    <footer style="background: #2c3e50; color: white; padding: 40px 0 20px;">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 30px;">
+                <div>
+                    <h3 style="color: #FF6B6B; margin-bottom: 15px; font-size: 1.5rem;">Shagun Saree Baran</h3>
+                    <p style="color: #ecf0f1; line-height: 1.6; margin: 0;">Your trusted destination for premium Indian sarees. Quality, tradition, and elegance in every piece.</p>
+                </div>
+                <div>
+                    <h4 style="color: white; margin-bottom: 15px; font-size: 1.2rem;">Quick Links</h4>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <a href="index.html" style="color: #ecf0f1; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='#FF6B6B'" onmouseout="this.style.color='#ecf0f1'">Home</a>
+                        <a href="collections.html" style="color: #ecf0f1; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='#FF6B6B'" onmouseout="this.style.color='#ecf0f1'">Collections</a>
+                        <a href="cart.html" style="color: #ecf0f1; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='#FF6B6B'" onmouseout="this.style.color='#ecf0f1'">Cart</a>
+                        <a href="contact.html" style="color: #ecf0f1; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='#FF6B6B'" onmouseout="this.style.color='#ecf0f1'">Contact Us</a>
+                    </div>
+                </div>
+                <div>
+                    <h4 style="color: white; margin-bottom: 15px; font-size: 1.2rem;">Contact Info</h4>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="color: #ecf0f1;"><i class="fas fa-envelope" style="color: #FF6B6B; margin-right: 8px;"></i>shagunsaree60@gmail.com</div>
+                        <div style="color: #ecf0f1;"><i class="fas fa-phone" style="color: #FF6B6B; margin-right: 8px;"></i>+91 9636788945</div>
+                        <div style="color: #ecf0f1;"><i class="fas fa-map-marker-alt" style="color: #FF6B6B; margin-right: 8px;"></i>Krishna Colony, Baran, Rajasthan</div>
+                    </div>
+                </div>
+                <div>
+                    <h4 style="color: white; margin-bottom: 15px; font-size: 1.2rem;">Follow Us</h4>
+                    <div style="display: flex; gap: 15px;">
+                        <a href="#" style="color: #ecf0f1; font-size: 1.5rem; transition: color 0.3s;" onmouseover="this.style.color='#3b5998'" onmouseout="this.style.color='#ecf0f1'"><i class="fab fa-facebook"></i></a>
+                        <a href="https://instagram.com/shagunsareebaran" style="color: #ecf0f1; font-size: 1.5rem; transition: color 0.3s;" onmouseover="this.style.color='#e4405f'" onmouseout="this.style.color='#ecf0f1'"><i class="fab fa-instagram"></i></a>
+                        <a href="#" style="color: #ecf0f1; font-size: 1.5rem; transition: color 0.3s;" onmouseover="this.style.color='#1da1f2'" onmouseout="this.style.color='#ecf0f1'"><i class="fab fa-twitter"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div style="border-top: 1px solid #34495e; padding-top: 20px; text-align: center;">
+                <p style="color: #bdc3c7; margin: 0;">&copy; 2025 Shagun Saree Baran. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
 
     <script src="main.js"></script>
 </body>

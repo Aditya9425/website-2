@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="navbar-styles.css">
     <link rel="stylesheet" href="product-modal.css">
+    <link rel="stylesheet" href="featured-styles.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
@@ -15,10 +16,10 @@
     <header class="header">
         <nav class="navbar">
             <div class="nav-brand">
-                <div class="logo-container">
+                <a href="index.html" class="logo-container">
                     <div class="logo-icon">S</div>
                     <span class="logo-text">Shagun Saree</span>
-                </div>
+                </a>
             </div>
             <div class="nav-links">
                 <a href="index.html" class="nav-link active">Home</a>
@@ -35,10 +36,16 @@
                     <i class="fas fa-shopping-bag"></i>
                     <span class="cart-count" id="cartCount">0</span>
                 </a>
-                <div class="user-container">
-                    <i class="fas fa-user"></i>
+                <div class="user-container" id="userContainer">
+                    <a href="auth.html" id="loginLink">
+                        <i class="fas fa-user"></i>
+                        <span>Login</span>
+                    </a>
+                    <div id="userMenu" style="display: none;">
+                        <span id="userName">Welcome!</span>
+                        <button class="sign-out-btn" onclick="logout()">Sign Out</button>
+                    </div>
                 </div>
-                <button class="sign-out-btn">Sign Out</button>
             </div>
         </nav>
     </header>
@@ -52,7 +59,7 @@
                     <span class="title-line">Elegance</span>
                     <span class="title-line accent">Redefined</span>
                 </h1>
-                <p class="hero-subtitle">Discover the timeless beauty of traditional Indian sarees with contemporary styling.<br>Each piece tells a story of craftsmanship and heritage.</p>
+                <p class="hero-subtitle">Discover the timeless beauty of traditional Indian sarees with contemporary styling. Each piece tells a story of craftsmanship and heritage that spans generations.</p>
                 <div class="hero-buttons">
                     <a href="collections.html" class="btn-primary">Explore Collection</a>
                     <a href="#categories" class="btn-secondary">Shop Now</a>
@@ -60,42 +67,15 @@
             </div>
         </section>
 
-        <!-- Categories Section -->
-        <section class="categories-section" id="categories">
+        <!-- Featured Sarees Section -->
+        <section class="featured-sarees" id="categories">
             <div class="container">
                 <div class="section-header">
-                    <h2 class="section-title">Shop by Category</h2>
-                    <p class="section-subtitle">Explore our curated collections of authentic sarees, each crafted with love and attention to detail.</p>
+                    <h2 class="section-title">Our Featured Sarees</h2>
+                    <p class="section-subtitle">Handpicked beauties from our collection ✨</p>
                 </div>
-                <div class="categories-grid">
-                    <div class="category-card silk-card">
-                        <div class="card-content">
-                            <h3>Silk Sarees</h3>
-                            <p>Luxurious silk sarees for special occasions and celebrations</p>
-                            <a href="collections.html?category=silk" class="card-btn">View Collection</a>
-                        </div>
-                    </div>
-                    <div class="category-card cotton-card">
-                        <div class="card-content">
-                            <h3>Cotton Sarees</h3>
-                            <p>Comfortable cotton sarees perfect for everyday elegance</p>
-                            <a href="collections.html?category=cotton" class="card-btn">View Collection</a>
-                        </div>
-                    </div>
-                    <div class="category-card bridal-card">
-                        <div class="card-content">
-                            <h3>Bridal Collection</h3>
-                            <p>Exquisite bridal sarees for your special day</p>
-                            <a href="collections.html?category=bridal" class="card-btn">View Collection</a>
-                        </div>
-                    </div>
-                    <div class="category-card designer-card">
-                        <div class="card-content">
-                            <h3>Designer Sarees</h3>
-                            <p>Contemporary designer pieces with modern aesthetics</p>
-                            <a href="collections.html?category=designer" class="card-btn">View Collection</a>
-                        </div>
-                    </div>
+                <div class="featured-grid" id="featuredProducts">
+                    <!-- Featured products will be loaded here -->
                 </div>
             </div>
         </section>
@@ -108,7 +88,7 @@
                     <p class="cta-subtitle">Join thousands of satisfied customers who have found their dream sarees with us. Experience the elegance and quality that makes every occasion special.</p>
                     <div class="cta-buttons">
                         <a href="collections.html" class="btn-primary">Start Shopping</a>
-                        <a href="#contact" class="btn-secondary">Contact Us</a>
+                        <a href="contact.html" class="btn-secondary">Contact Us</a>
                     </div>
                 </div>
             </div>
@@ -116,38 +96,41 @@
     </main>
 
     <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>Shagun Saree Baran</h3>
-                    <p>Your trusted destination for premium Indian sarees. Quality, tradition, and elegance in every piece.</p>
+    <footer style="background: #2c3e50; color: white; padding: 40px 0 20px;">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 30px;">
+                <div>
+                    <h3 style="color: #FF6B6B; margin-bottom: 15px; font-size: 1.5rem;">Shagun Saree Baran</h3>
+                    <p style="color: #ecf0f1; line-height: 1.6; margin: 0;">Your trusted destination for premium Indian sarees. Quality, tradition, and elegance in every piece.</p>
                 </div>
-                <div class="footer-section">
-                    <h4>Quick Links</h4>
-                    <ul>
-                        <li><a href="index.html">Home</a></li>
-                        <li><a href="collections.html">Collections</a></li>
-                        <li><a href="cart.html">Cart</a></li>
-                    </ul>
+                <div>
+                    <h4 style="color: white; margin-bottom: 15px; font-size: 1.2rem;">Quick Links</h4>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <a href="index.html" style="color: #ecf0f1; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='#FF6B6B'" onmouseout="this.style.color='#ecf0f1'">Home</a>
+                        <a href="collections.html" style="color: #ecf0f1; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='#FF6B6B'" onmouseout="this.style.color='#ecf0f1'">Collections</a>
+                        <a href="cart.html" style="color: #ecf0f1; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='#FF6B6B'" onmouseout="this.style.color='#ecf0f1'">Cart</a>
+                        <a href="contact.html" style="color: #ecf0f1; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='#FF6B6B'" onmouseout="this.style.color='#ecf0f1'">Contact Us</a>
+                    </div>
                 </div>
-                <div class="footer-section">
-                    <h4>Contact Info</h4>
-                    <p>Email: shagunsaree60@gmail.com</p>
-                    <p>Phone: +91 9636788945</p>
-                    <p>Address: Krishna Colony, Baran, Rajasthan, India</p>
+                <div>
+                    <h4 style="color: white; margin-bottom: 15px; font-size: 1.2rem;">Contact Info</h4>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="color: #ecf0f1;"><i class="fas fa-envelope" style="color: #FF6B6B; margin-right: 8px;"></i>shagunsaree60@gmail.com</div>
+                        <div style="color: #ecf0f1;"><i class="fas fa-phone" style="color: #FF6B6B; margin-right: 8px;"></i>+91 9636788945</div>
+                        <div style="color: #ecf0f1;"><i class="fas fa-map-marker-alt" style="color: #FF6B6B; margin-right: 8px;"></i>Krishna Colony, Baran, Rajasthan</div>
+                    </div>
                 </div>
-                <div class="footer-section">
-                    <h4>Follow Us</h4>
-                    <div class="social-links">
-                        <a href="#"><i class="fab fa-facebook"></i></a>
-                        <a href="#"><i class="fab fa-instagram"></i></a>
-                        <a href="#"><i class="fab fa-twitter"></i></a>
+                <div>
+                    <h4 style="color: white; margin-bottom: 15px; font-size: 1.2rem;">Follow Us</h4>
+                    <div style="display: flex; gap: 15px;">
+                        <a href="#" style="color: #ecf0f1; font-size: 1.5rem; transition: color 0.3s;" onmouseover="this.style.color='#3b5998'" onmouseout="this.style.color='#ecf0f1'"><i class="fab fa-facebook"></i></a>
+                        <a href="https://instagram.com/shagunsareebaran" style="color: #ecf0f1; font-size: 1.5rem; transition: color 0.3s;" onmouseover="this.style.color='#e4405f'" onmouseout="this.style.color='#ecf0f1'"><i class="fab fa-instagram"></i></a>
+                        <a href="#" style="color: #ecf0f1; font-size: 1.5rem; transition: color 0.3s;" onmouseover="this.style.color='#1da1f2'" onmouseout="this.style.color='#ecf0f1'"><i class="fab fa-twitter"></i></a>
                     </div>
                 </div>
             </div>
-            <div class="footer-bottom">
-                <p>&copy; 2025 Shagun Saree Baran. All rights reserved.</p>
+            <div style="border-top: 1px solid #34495e; padding-top: 20px; text-align: center;">
+                <p style="color: #bdc3c7; margin: 0;">&copy; 2025 Shagun Saree Baran. All rights reserved.</p>
             </div>
         </div>
     </footer>

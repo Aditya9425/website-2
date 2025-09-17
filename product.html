@@ -273,32 +273,115 @@
     <script src="main.js"></script>
     <script>
         // Load product details when page loads
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             const urlParams = new URLSearchParams(window.location.search);
-            const productId = parseInt(urlParams.get('id'));
+            const productId = urlParams.get('id');
             
             if (productId) {
-                loadProductDetails(productId);
+                // Initialize Supabase
+                const SUPABASE_URL = 'https://jstvadizuzvwhabtfhfs.supabase.co';
+                const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzdHZhZGl6dXp2d2hhYnRmaGZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NjI3NjAsImV4cCI6MjA3MjIzODc2MH0.6btNpJfUh6Fd5PfoivIvu-f31Fj5IXl1vxBLsHz5ISw';
+                window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                
+                await loadProductDetails(productId);
             } else {
                 window.location.href = 'collections.html';
             }
         });
         
-        function loadProductDetails(productId) {
-            // Wait for products to be loaded from main.js
-            const checkProducts = setInterval(() => {
-                if (window.products && window.products.length > 0) {
-                    clearInterval(checkProducts);
+        async function loadProductDetails(productId) {
+            try {
+                console.log('Loading product with ID:', productId);
+                
+                // Try Supabase first
+                const { data, error } = await supabase
+                    .from('products')
+                    .select('*')
+                    .eq('id', productId)
+                    .single();
+                
+                if (error || !data) {
+                    console.log('Supabase error or no data, using fallback:', error);
+                    // Use fallback products
+                    const fallbackProducts = [
+                        {
+                            id: '1',
+                            name: "Silk Banarasi Saree",
+                            price: 15000,
+                            originalPrice: 18000,
+                            image: "https://via.placeholder.com/500x600/FF6B6B/FFFFFF?text=Silk+Banarasi",
+                            category: "silk",
+                            rating: 4.8,
+                            description: "Exquisite Banarasi silk saree with intricate zari work. Perfect for weddings and special occasions.",
+                            colors: ["Red", "Green", "Blue"],
+                            sizes: ["Free Size"],
+                            fabric: "Silk",
+                            reviews: 156
+                        },
+                        {
+                            id: '2',
+                            name: "Cotton Handloom Saree",
+                            price: 2500,
+                            originalPrice: 3000,
+                            image: "https://via.placeholder.com/500x600/4ECDC4/FFFFFF?text=Cotton+Handloom",
+                            category: "cotton",
+                            rating: 4.5,
+                            description: "Comfortable cotton handloom saree for daily wear. Breathable and elegant.",
+                            colors: ["White", "Beige", "Pink"],
+                            sizes: ["Free Size"],
+                            fabric: "Cotton",
+                            reviews: 89
+                        },
+                        {
+                            id: '3',
+                            name: "Designer Georgette Saree",
+                            price: 8000,
+                            originalPrice: 10000,
+                            image: "https://via.placeholder.com/500x600/45B7D1/FFFFFF?text=Designer+Georgette",
+                            category: "designer",
+                            rating: 4.7,
+                            description: "Elegant designer georgette saree with modern aesthetics and traditional charm.",
+                            colors: ["Purple", "Teal", "Maroon"],
+                            sizes: ["Free Size"],
+                            fabric: "Georgette",
+                            reviews: 203
+                        }
+                    ];
                     
-                    const product = window.products.find(p => p.id === productId);
-                    if (product) {
-                        displayProductDetails(product);
-                    } else {
+                    const product = fallbackProducts.find(p => p.id === productId);
+                    if (!product) {
                         alert('Product not found!');
                         window.location.href = 'collections.html';
+                        return;
                     }
+                    
+                    displayProductDetails(product);
+                    setupProductActions(product);
+                    return;
                 }
-            }, 100);
+                
+                const product = {
+                    id: data.id,
+                    name: data.name,
+                    price: data.price,
+                    originalPrice: data.originalPrice || data.original_price,
+                    image: data.images && data.images.length > 0 ? data.images[0] : null,
+                    category: data.category,
+                    rating: data.rating || 4.5,
+                    description: data.description,
+                    colors: data.colors || ['Red', 'Blue', 'Green'],
+                    sizes: data.sizes || ['Free Size'],
+                    fabric: data.fabric,
+                    reviews: data.reviews || 50
+                };
+                
+                displayProductDetails(product);
+                setupProductActions(product);
+            } catch (error) {
+                console.error('Error loading product:', error);
+                alert('Error loading product!');
+                window.location.href = 'collections.html';
+            }
         }
         
         function displayProductDetails(product) {
@@ -310,10 +393,16 @@
             
             // Load main image
             const mainImage = document.getElementById('mainImage');
-            if (product.image) {
-                mainImage.src = product.image;
-                mainImage.alt = product.name;
+            let imageUrl;
+            if (product.image && product.image.startsWith('http')) {
+                imageUrl = product.image;
+            } else if (product.image) {
+                imageUrl = `https://jstvadizuzvwhabtfhfs.supabase.co/storage/v1/object/public/Sarees/${product.image}`;
+            } else {
+                imageUrl = `https://via.placeholder.com/500x600/FF6B6B/FFFFFF?text=${encodeURIComponent(product.name)}`;
             }
+            mainImage.src = imageUrl;
+            mainImage.alt = product.name;
             
             // Calculate discount
             if (product.originalPrice && product.originalPrice > product.price) {
@@ -321,8 +410,72 @@
                 document.getElementById('discount').textContent = `${discount}% OFF`;
             }
             
+            // Load colors
+            const colorOptions = document.getElementById('colorOptions');
+            if (product.colors && product.colors.length > 0) {
+                colorOptions.innerHTML = product.colors.map(color => 
+                    `<div class="color-option" data-color="${color}">${color}</div>`
+                ).join('');
+            }
+            
+            // Load sizes
+            const sizeOptions = document.getElementById('sizeOptions');
+            if (product.sizes && product.sizes.length > 0) {
+                sizeOptions.innerHTML = product.sizes.map(size => 
+                    `<div class="size-option" data-size="${size}">${size}</div>`
+                ).join('');
+            }
+            
             // Update page title
             document.title = `${product.name} - Shagun Saree Baran`;
+        }
+        
+        function setupProductActions(product) {
+            // Add to Cart button
+            document.getElementById('addToCartBtn').addEventListener('click', function() {
+                const quantity = parseInt(document.getElementById('quantityInput').value);
+                addProductToCart(product, quantity);
+            });
+            
+            // Buy Now button
+            document.getElementById('buyNowBtn').addEventListener('click', function() {
+                const quantity = parseInt(document.getElementById('quantityInput').value);
+                addProductToCart(product, quantity);
+                window.location.href = 'address.html';
+            });
+            
+            // Quantity controls
+            document.getElementById('increaseQty').addEventListener('click', function() {
+                const input = document.getElementById('quantityInput');
+                input.value = parseInt(input.value) + 1;
+            });
+            
+            document.getElementById('decreaseQty').addEventListener('click', function() {
+                const input = document.getElementById('quantityInput');
+                if (parseInt(input.value) > 1) {
+                    input.value = parseInt(input.value) - 1;
+                }
+            });
+        }
+        
+        function addProductToCart(product, quantity) {
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const existingItem = cart.find(item => item.id === product.id);
+            
+            if (existingItem) {
+                existingItem.quantity += quantity;
+            } else {
+                cart.push({ ...product, quantity });
+            }
+            
+            localStorage.setItem('cart', JSON.stringify(cart));
+            
+            // Update cart count
+            const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+            document.getElementById('cartCount').textContent = count;
+            
+            // Show notification
+            alert(`Added ${quantity} item(s) to cart!`);
         }
     </script>
 </body>

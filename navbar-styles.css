@@ -26,6 +26,13 @@
     align-items: center;
     gap: 12px;
     animation: fadeInLeft 0.8s ease-out;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+}
+
+.logo-container:hover {
+    transform: scale(1.05);
 }
 
 .logo-icon {
