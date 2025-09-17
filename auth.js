@@ -70,13 +70,13 @@ async function handleSignup(event) {
     
     try {
         // Check if user already exists
-        const { data: existingUser } = await supabase
+        const { data: existingUsers } = await supabase
             .from('users')
             .select('email, mobile')
-            .or(`email.eq.${email},mobile.eq.${mobile}`)
-            .single();
+            .or(`email.eq.${email},mobile.eq.${mobile}`);
             
-        if (existingUser) {
+        if (existingUsers && existingUsers.length > 0) {
+            const existingUser = existingUsers[0];
             if (existingUser.email === email) {
                 showError('signupError', 'Email already registered. Please login or use a different email.');
             } else {
@@ -88,16 +88,17 @@ async function handleSignup(event) {
         // Insert new user
         const { data, error } = await supabase
             .from('users')
-            .insert([{
+            .insert({
                 email: email,
                 mobile: mobile,
-                password: password, // In production, hash this password
-                created_at: new Date().toISOString()
-            }])
+                password: password
+            })
             .select();
             
         if (error) {
-            throw error;
+            console.error('Database error:', error);
+            showError('signupError', `Database error: ${error.message}`);
+            return;
         }
         
         showSuccess('signupSuccess', 'Account created successfully! You can now login.');

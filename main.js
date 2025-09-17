@@ -154,7 +154,52 @@ async function fetchProducts() {
     loadProducts();
 }
 
-// Check user authentication status
+// Authentication functions
+async function loginUser(email, password) {
+    try {
+        const { data, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('email', email)
+            .eq('password', password)
+            .single();
+        
+        if (error || !data) {
+            throw new Error('Invalid email or password');
+        }
+        
+        const userSession = {
+            id: data.id,
+            email: data.email,
+            mobile: data.mobile,
+            loginTime: new Date().toISOString()
+        };
+        
+        localStorage.setItem('userSession', JSON.stringify(userSession));
+        return { success: true, user: userSession };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+async function signupUser(email, mobile, password) {
+    try {
+        const { data, error } = await supabase
+            .from('users')
+            .insert([{ email, mobile, password }])
+            .select()
+            .single();
+        
+        if (error) {
+            throw new Error(error.message);
+        }
+        
+        return { success: true, user: data };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
 function checkUserAuth() {
     const session = localStorage.getItem('userSession');
     const loginLink = document.getElementById('loginLink');
@@ -171,7 +216,6 @@ function checkUserAuth() {
     }
 }
 
-// Logout function
 function logout() {
     localStorage.removeItem('userSession');
     window.location.reload();
