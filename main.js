@@ -191,7 +191,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     const currentPage = window.location.pathname.split('/').pop();
     
-    if (currentPage === 'cart.html' || currentPage === '') {
+    if (currentPage === 'collections.html') {
+        setupCategoryFilters();
+    } else if (currentPage === 'cart.html' || currentPage === '') {
         setupCartPage();
     } else if (currentPage === 'address.html') {
         setupAddressPage();
@@ -1334,3 +1336,83 @@ window.testModal = function() {
 };
 window.logout = logout;
 
+// Category filter functionality
+function setupCategoryFilters() {
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const productsGrid = document.getElementById('productsGrid');
+    
+    if (!filterBtns.length || !productsGrid) return;
+    
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Remove active class from all buttons
+            filterBtns.forEach(b => b.classList.remove('active'));
+            // Add active class to clicked button
+            btn.classList.add('active');
+            
+            const category = btn.dataset.category;
+            filterProducts(category);
+        });
+    });
+}
+
+function filterProducts(category) {
+    let filteredProducts;
+    if (category === 'all') {
+        filteredProducts = products;
+    } else {
+        filteredProducts = products.filter(p => {
+            const productCategory = p.category ? p.category.toLowerCase() : '';
+            const filterCategory = category.toLowerCase();
+            return productCategory === filterCategory || productCategory.includes(filterCategory);
+        });
+    }
+    
+    console.log('Filtering by category:', category);
+    console.log('All products:', products);
+    console.log('Filtered products:', filteredProducts);
+    
+    const grid = document.getElementById('productsGrid');
+    if (grid) {
+        grid.innerHTML = filteredProducts.map(product => {
+            let imageUrl;
+            if (product.image && product.image.startsWith('http')) {
+                imageUrl = product.image;
+            } else if (product.image) {
+                imageUrl = `https://jstvadizuzvwhabtfhfs.supabase.co/storage/v1/object/public/Sarees/${product.image}`;
+            } else {
+                imageUrl = `https://via.placeholder.com/300x400/FF6B6B/FFFFFF?text=${encodeURIComponent(product.name || 'Product')}`;
+            }
+            
+            return `
+            <div class="product-card" data-product-id="${product.id}">
+                <img src="${imageUrl}" alt="${product.name}" class="product-image">
+                <div class="product-info">
+                    <h3 class="product-name">${product.name}</h3>
+                    <div class="product-price">₹${product.price.toLocaleString()}</div>
+                    <div class="product-rating">
+                        <div class="stars">
+                            ${generateStars(product.rating)}
+                        </div>
+                        <span>${product.rating} (${product.reviews})</span>
+                    </div>
+                    <button class="add-to-cart add-to-cart-btn" data-id="${product.id}" onclick="event.stopPropagation()">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+            `;
+        }).join('');
+        
+        // Re-attach event listeners
+        document.querySelectorAll('.product-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                if (!e.target.closest('.add-to-cart-btn')) {
+                    const productId = card.dataset.productId;
+                    window.location.href = `product.html?id=${productId}`;
+                }
+            });
+        });
+        attachAddToCartListeners();
+    }
+}
