@@ -125,6 +125,11 @@ class AdminPanel {
         document.getElementById('cancelProductBtn').addEventListener('click', () => {
             this.closeProductModal();
         });
+
+        // Color variant management
+        document.getElementById('addColorVariant').addEventListener('click', () => {
+            this.addColorVariant();
+        });
     }
 
     async checkAuthState() {
@@ -523,8 +528,10 @@ class AdminPanel {
         document.getElementById('productPrice').value = product.price || '';
         document.getElementById('productStock').value = product.stock || 0;
         document.getElementById('productDescription').value = product.description || '';
-        document.getElementById('productColors').value = (product.colors || []).join(', ');
         // Note: File input cannot be pre-populated for security reasons
+        
+        // Populate color variants
+        this.populateColorVariants(product.color_variants || []);
         
         // Populate linked variants
         const linkedVariantsSelect = document.getElementById('linkedVariants');
@@ -533,6 +540,63 @@ class AdminPanel {
                 option.selected = product.linked_variants.includes(option.value);
             });
         }
+    }
+
+    addColorVariant() {
+        const container = document.getElementById('colorVariants');
+        const variantItem = document.createElement('div');
+        variantItem.className = 'color-variant-item';
+        variantItem.innerHTML = `
+            <div class="variant-field">
+                <label class="field-label">Color Name</label>
+                <input type="text" placeholder="e.g., Red, Blue, Green" class="color-name" name="colorNames[]">
+            </div>
+            <div class="variant-field">
+                <label class="field-label">Color</label>
+                <input type="color" class="color-picker" name="colorCodes[]" value="#FF0000" title="Choose exact color">
+            </div>
+            <div class="variant-field">
+                <label class="field-label">Images for this color</label>
+                <input type="file" accept="image/*" multiple class="color-images" name="colorImages[]">
+            </div>
+            <div class="variant-actions">
+                <button type="button" class="remove-color-btn" onclick="removeColorVariant(this)">
+                    <i class="fas fa-trash"></i> Remove
+                </button>
+            </div>
+        `;
+        container.appendChild(variantItem);
+        this.updateRemoveButtons();
+    }
+
+    updateRemoveButtons() {
+        const items = document.querySelectorAll('.color-variant-item');
+        items.forEach((item, index) => {
+            const removeBtn = item.querySelector('.remove-color-btn');
+            removeBtn.style.display = items.length > 1 ? 'inline-block' : 'none';
+        });
+    }
+
+    populateColorVariants(colorVariants) {
+        const container = document.getElementById('colorVariants');
+        container.innerHTML = '';
+        
+        if (colorVariants.length === 0) {
+            colorVariants = [{ color: '', images: [] }];
+        }
+        
+        colorVariants.forEach(variant => {
+            const variantItem = document.createElement('div');
+            variantItem.className = 'color-variant-item';
+            variantItem.innerHTML = `
+                <input type="text" placeholder="Color name" class="color-name" name="colorNames[]" value="${variant.color || ''}">
+                <input type="file" accept="image/*" multiple class="color-images" name="colorImages[]">
+                <button type="button" class="remove-color-btn" onclick="removeColorVariant(this)">Remove</button>
+            `;
+            container.appendChild(variantItem);
+        });
+        
+        this.updateRemoveButtons();
     }
 
     populateLinkedVariantsDropdown(excludeProductId = null) {
@@ -591,6 +655,9 @@ class AdminPanel {
             const linkedVariantsSelect = document.getElementById('linkedVariants');
             const linkedVariants = Array.from(linkedVariantsSelect.selectedOptions).map(option => option.value);
             
+            // Process color variants
+            const colorVariants = await this.processColorVariants(productName);
+            
             const productData = {
                 name: formData.get('name'),
                 price: parseFloat(formData.get('price')),
@@ -600,9 +667,14 @@ class AdminPanel {
                 images: imageUrls,
                 image: imageUrls[0] || null,
                 fabric: formData.get('fabric') || 'Cotton',
-                colors: formData.get('colors') ? formData.get('colors').split(',').map(c => c.trim()) : [],
+                colors: colorVariants.map(v => v.color).filter(c => c),
                 linked_variants: linkedVariants.length > 0 ? linkedVariants : null
             };
+            
+            // Only add color_variants if there are any
+            if (colorVariants.length > 0) {
+                productData.color_variants = colorVariants;
+            }
 
             // Try Flask backend first, fallback to direct Supabase
             const isEdit = !!productId;
@@ -648,6 +720,34 @@ class AdminPanel {
             console.error('Error saving product:', error);
             this.showMessage(`Error: ${error.message}`, 'error');
         }
+    }
+
+    async processColorVariants(productName) {
+        const colorVariants = [];
+        const colorItems = document.querySelectorAll('.color-variant-item');
+        
+        for (const item of colorItems) {
+            const colorName = item.querySelector('.color-name').value.trim();
+            const colorFiles = item.querySelector('.color-images').files;
+            
+            if (colorName && colorFiles.length > 0) {
+                try {
+                    const uploadPromises = Array.from(colorFiles).map(file => 
+                        uploadImageToSupabase(file, `${productName}_${colorName}`)
+                    );
+                    const colorImageUrls = await Promise.all(uploadPromises);
+                    
+                    colorVariants.push({
+                        color: colorName,
+                        images: colorImageUrls
+                    });
+                } catch (error) {
+                    console.error(`Failed to upload images for color ${colorName}:`, error);
+                }
+            }
+        }
+        
+        return colorVariants;
     }
 
     showMessage(message, type = 'info') {
@@ -878,6 +978,17 @@ class AdminPanel {
         } catch (error) {
             inventoryStatus.innerHTML = '<p>Error loading inventory status</p>';
         }
+    }
+}
+
+// Global function for removing color variants
+function removeColorVariant(button) {
+    const item = button.closest('.color-variant-item');
+    const container = document.getElementById('colorVariants');
+    
+    if (container.children.length > 1) {
+        item.remove();
+        window.adminPanel.updateRemoveButtons();
     }
 }
 

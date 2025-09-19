@@ -36,16 +36,15 @@
                     <i class="fas fa-shopping-bag"></i>
                     <span class="cart-count" id="cartCount">0</span>
                 </a>
-                <div class="user-container" id="userContainer">
-                    <a href="auth.html" id="loginLink">
-                        <i class="fas fa-user"></i>
-                        <span>Login</span>
-                    </a>
-                    <div id="userMenu" style="display: none;">
-                        <span id="userName">Welcome!</span>
-                        <button class="sign-out-btn" onclick="logout()">Sign Out</button>
-                    </div>
-                </div>
+                <a href="auth.html" id="loginLink">
+                    <i class="fas fa-user"></i>
+                    <span>My Account</span>
+                </a>
+                <a href="profile.html" class="profile-link" id="profileLink" style="display: none;">
+                    <i class="fas fa-user-circle"></i>
+                    <span id="userName">Profile</span>
+                </a>
+                <button class="sign-out-btn" id="signOutBtn" onclick="logout()" style="display: none;">Sign Out</button>
             </div>
         </nav>
     </header>
@@ -134,6 +133,8 @@
             </div>
         </div>
     </footer>
+
+    <script src="main.js"></script>
 
     <!-- Product Modal -->
     <div id="productModal" class="product-modal">

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Shagun Saree Baran</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="navbar-styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <a href="index.html" class="logo-container">
+                    <div class="logo-icon">S</div>
+                    <span class="logo-text">Shagun Saree</span>
+                </a>
+            </div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="collections.html" class="nav-link">Silk Sarees</a>
+                <a href="collections.html?category=cotton" class="nav-link">Cotton Sarees</a>
+                <a href="collections.html?category=bridal" class="nav-link">Bridal Collection</a>
+                <a href="collections.html?category=designer" class="nav-link">Designer Sarees</a>
+            </div>
+            <div class="nav-actions">
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                </div>
+                <a href="cart.html" class="cart-container">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span class="cart-count" id="cartCount">0</span>
+                </a>
+                <div class="user-container" id="userContainer">
+                    <a href="profile.html" id="profileLink">
+                        <i class="fas fa-user"></i>
+                        <span>Profile</span>
+                    </a>
+                    <button class="sign-out-btn" onclick="logout()">Sign Out</button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="profile-main">
+        <div class="container">
+            <div class="profile-content">
+                <!-- Sidebar -->
+                <aside class="profile-sidebar">
+                    <div class="profile-header">
+                        <div class="profile-avatar">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <h3 id="profileName"></h3>
+                        <p id="profileEmail"></p>
+                    </div>
+                    
+                    <nav class="profile-nav">
+                        <a href="#" class="profile-nav-link active" data-section="orders">
+                            <i class="fas fa-shopping-bag"></i>
+                            <span>My Orders</span>
+                        </a>
+                    </nav>
+                </aside>
+
+                <!-- Main Profile Content -->
+                <div class="profile-main-content">
+                    <!-- Orders Section -->
+                    <section id="ordersSection" class="profile-section active">
+                        <div class="section-header">
+                            <h2>My Orders</h2>
+                        </div>
+                        
+                        <div class="orders-container" id="ordersContainer">
+                            <!-- Orders will be loaded here -->
+                        </div>
+                    </section>
+
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="razorpay-frontend.js"></script>
+    <script src="main.js"></script>
+    <script src="profile.js"></script>
+</body>
+</html>

@@ -255,12 +255,13 @@
         </div>
     </div>
 
+    <script src="razorpay-frontend.js"></script>
     <script src="main.js"></script>
     
     <script>
 
         
-        // Razorpay payment integration
+        // Secure Razorpay payment integration
         function initRazorpayPayment() {
             const cart = JSON.parse(localStorage.getItem('cart') || '[]');
             const address = JSON.parse(localStorage.getItem('deliveryAddress') || '{}');
@@ -280,58 +281,14 @@
             const deliveryCharges = subtotal > 999 ? 0 : 200;
             const total = subtotal + deliveryCharges;
             
-            const options = {
-                key: 'rzp_test_RIN7aBpkOEEET7', // Replace with your actual Razorpay Key ID
-                amount: total * 100, // Amount in paise
-                currency: 'INR',
-                name: 'Shagun Saree Baran',
-                description: 'Saree Purchase',
-                image: 'https://via.placeholder.com/150x50/FF6B6B/FFFFFF?text=Shagun+Saree',
-                order_id: '', // Generate from backend in production
-                handler: function(response) {
-                    // Payment successful
-                    const orderId = 'ORD' + Date.now();
-                    
-                    // Save order
-                    const order = {
-                        id: orderId,
-                        paymentId: response.razorpay_payment_id,
-                        items: cart,
-                        total: total,
-                        address: address,
-                        status: 'paid',
-                        createdAt: new Date().toISOString()
-                    };
-                    
-                    const orders = JSON.parse(localStorage.getItem('orders') || '[]');
-                    orders.push(order);
-                    localStorage.setItem('orders', JSON.stringify(orders));
-                    
-                    // Clear cart
-                    localStorage.setItem('cart', '[]');
-                    
-                    // Show success modal
-                    document.getElementById('orderNumber').textContent = orderId;
-                    document.getElementById('orderTotal').textContent = `₹${total.toLocaleString()}`;
-                    document.getElementById('orderConfirmationModal').style.display = 'block';
-                },
-                prefill: {
-                    name: `${address.firstName} ${address.lastName}`,
-                    email: address.email,
-                    contact: address.mobile
-                },
-                theme: {
-                    color: '#FF6B6B'
-                },
-                modal: {
-                    ondismiss: function() {
-                        console.log('Payment cancelled by user');
-                    }
-                }
+            const customerDetails = {
+                name: `${address.firstName} ${address.lastName}`,
+                email: address.email,
+                mobile: address.mobile
             };
             
-            const rzp = new Razorpay(options);
-            rzp.open();
+            // Use secure Razorpay integration
+            initializeRazorpayCheckout(total, customerDetails);
         }
         
         // Modal functionality
@@ -346,6 +303,9 @@
             if (payNowBtn) {
                 payNowBtn.onclick = initRazorpayPayment;
             }
+            
+            // Load checkout data
+            loadCheckoutData();
             
             // Close modal
             if (modalClose) {

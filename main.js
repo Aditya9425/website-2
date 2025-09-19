@@ -72,6 +72,7 @@ async function fetchProductsFromSupabase() {
             rating: row.rating || 4.5,
             description: row.description,
             colors: row.colors || ['Red', 'Blue', 'Green'],
+            color_variants: row.color_variants || [],
             sizes: row.sizes || ['Free Size'],
             fabric: row.fabric,
             reviews: row.reviews || 50
@@ -116,6 +117,7 @@ async function fetchProducts() {
                 reviews: 156,
                 description: "Exquisite Banarasi silk saree with intricate zari work",
                 colors: ["Red", "Green", "Blue"],
+                color_variants: [],
                 sizes: ["Free Size"],
                 fabric: "Silk"
             },
@@ -130,6 +132,7 @@ async function fetchProducts() {
                 reviews: 89,
                 description: "Comfortable cotton handloom saree for daily wear",
                 colors: ["White", "Beige", "Pink"],
+                color_variants: [],
                 sizes: ["Free Size"],
                 fabric: "Cotton"
             },
@@ -144,6 +147,7 @@ async function fetchProducts() {
                 reviews: 203,
                 description: "Elegant designer georgette saree with modern aesthetics",
                 colors: ["Purple", "Teal", "Maroon"],
+                color_variants: [],
                 sizes: ["Free Size"],
                 fabric: "Georgette"
             }
@@ -203,22 +207,31 @@ async function signupUser(email, mobile, password) {
 function checkUserAuth() {
     const session = localStorage.getItem('userSession');
     const loginLink = document.getElementById('loginLink');
-    const userMenu = document.getElementById('userMenu');
+    const profileLink = document.getElementById('profileLink');
+    const signOutBtn = document.getElementById('signOutBtn');
     const userName = document.getElementById('userName');
     
-    if (session && loginLink && userMenu) {
+    if (session) {
         const user = JSON.parse(session);
-        loginLink.style.display = 'none';
-        userMenu.style.display = 'block';
-        if (userName) {
-            userName.textContent = `Welcome, ${user.email.split('@')[0]}!`;
-        }
+        // Hide login link, show profile and sign out buttons
+        if (loginLink) loginLink.style.display = 'none';
+        if (profileLink) profileLink.style.display = 'flex';
+        if (signOutBtn) signOutBtn.style.display = 'block';
+        if (userName) userName.textContent = user.email.split('@')[0];
+    } else {
+        // Show login link, hide profile and sign out buttons
+        if (loginLink) loginLink.style.display = 'flex';
+        if (profileLink) profileLink.style.display = 'none';
+        if (signOutBtn) signOutBtn.style.display = 'none';
     }
 }
 
 function logout() {
     localStorage.removeItem('userSession');
-    window.location.reload();
+    showNotification('Logged out successfully!');
+    setTimeout(() => {
+        window.location.href = 'index.html';
+    }, 1000);
 }
 
 // Initialize
@@ -355,6 +368,8 @@ function loadProducts() {
                 imageUrl = `https://via.placeholder.com/300x400/FF6B6B/FFFFFF?text=${encodeURIComponent(product.name || 'Product')}`;
             }
             
+            const colorPalette = generateColorPalette(product);
+            
             return `
             <div class="product-card" data-product-id="${product.id}">
                 <img src="${imageUrl}" alt="${product.name}" class="product-image">
@@ -367,6 +382,7 @@ function loadProducts() {
                         </div>
                         <span>${product.rating} (${product.reviews})</span>
                     </div>
+                    ${colorPalette}
                     <button class="add-to-cart add-to-cart-btn" data-id="${product.id}" onclick="event.stopPropagation()">
                         Add to Cart
                     </button>
@@ -378,7 +394,7 @@ function loadProducts() {
         // Add click listeners
         document.querySelectorAll('.product-card').forEach(card => {
             card.addEventListener('click', (e) => {
-                if (!e.target.closest('.add-to-cart-btn')) {
+                if (!e.target.closest('.add-to-cart-btn') && !e.target.closest('.color-dot')) {
                     const productId = card.dataset.productId;
                     window.location.href = `product.html?id=${productId}`;
                 }
@@ -402,6 +418,8 @@ function loadTrendingProducts() {
                 imageUrl = `https://via.placeholder.com/300x400/FF6B6B/FFFFFF?text=${encodeURIComponent(product.name || 'Product')}`;
             }
             
+            const colorPalette = generateColorPalette(product);
+            
             return `
             <div class="product-card" data-product-id="${product.id}">
                 <img src="${imageUrl}" alt="${product.name}" class="product-image">
@@ -414,6 +432,7 @@ function loadTrendingProducts() {
                         </div>
                         <span>${product.rating} (${product.reviews})</span>
                     </div>
+                    ${colorPalette}
                     <button class="add-to-cart add-to-cart-btn" data-id="${product.id}" onclick="event.stopPropagation()">
                         Add to Cart
                     </button>
@@ -425,7 +444,7 @@ function loadTrendingProducts() {
         // Add click listeners
         document.querySelectorAll('#trendingProducts .product-card').forEach(card => {
             card.addEventListener('click', (e) => {
-                if (!e.target.closest('.add-to-cart-btn')) {
+                if (!e.target.closest('.add-to-cart-btn') && !e.target.closest('.color-dot')) {
                     const productId = card.dataset.productId;
                     window.location.href = `product.html?id=${productId}`;
                 }
@@ -899,44 +918,20 @@ function showOrderConfirmation(order) {
     }
 }
 
-// Mock Razorpay integration for testing
+// Secure Razorpay integration
 function initializeRazorpay(orderAmount) {
     console.log('Initializing Razorpay with amount:', orderAmount);
     
-    // For testing purposes, create a mock payment flow
-    const options = {
-        key: 'rzp_test_MOCK_KEY', // Mock key for testing
-        amount: orderAmount * 100, // Razorpay expects amount in paise
-        currency: 'INR',
-        name: 'Shagun Saree Baran',
-        description: 'Saree Purchase',
-        image: 'https://via.placeholder.com/150x50/667eea/FFFFFF?text=Shagun+Saree',
-        handler: function(response) {
-            console.log('Payment successful:', response);
-            alert('Payment successful! Payment ID: ' + response.razorpay_payment_id);
-            // Proceed with order placement
-            processOrder(orderAmount, 'razorpay');
-        },
-        prefill: {
-            name: 'Test Customer',
-            email: 'test@example.com',
-            contact: '9999999999'
-        },
-        theme: {
-            color: '#667eea'
-        }
+    // Get customer details from address data
+    const addressData = JSON.parse(localStorage.getItem('deliveryAddress') || '{}');
+    const customerDetails = {
+        name: `${addressData.firstName || ''} ${addressData.lastName || ''}`.trim(),
+        email: addressData.email || '',
+        mobile: addressData.mobile || ''
     };
     
-    // For testing, simulate payment success after 2 seconds
-    setTimeout(() => {
-        console.log('Simulating successful payment for testing');
-        alert('Payment simulation successful! Proceeding with order...');
-        processOrder(orderAmount, 'razorpay');
-    }, 2000);
-    
-    // In real implementation, you would call:
-    // const rzp = new Razorpay(options);
-    // rzp.open();
+    // Use secure Razorpay integration
+    initializeRazorpayCheckout(orderAmount, customerDetails);
 }
 // Enhanced place order with payment integration
 function handlePlaceOrderWithPayment() {
@@ -1338,6 +1333,8 @@ function loadFeaturedProducts() {
                 imageUrl = `https://via.placeholder.com/300x400/FF6B6B/FFFFFF?text=${encodeURIComponent(product.name || 'Product')}`;
             }
             
+            const colorPalette = generateColorPalette(product);
+            
             return `
             <div class="featured-card" data-product-id="${product.id}">
                 <div class="featured-image" onclick="window.location.href='product.html?id=${product.id}'">
@@ -1346,6 +1343,7 @@ function loadFeaturedProducts() {
                 <div class="featured-info">
                     <h3 class="featured-title">${product.name}</h3>
                     <div class="featured-price">₹${product.price.toLocaleString()}</div>
+                    ${colorPalette}
                     <div class="featured-buttons">
                         <button class="add-to-cart-btn" data-id="${product.id}" onclick="event.stopPropagation(); addToCart(this)">
                             Add to Cart
@@ -1378,7 +1376,112 @@ window.testModal = function() {
     console.log('Testing modal...');
     openProductDetail(1);
 };
+// Generate color palette for products
+function generateColorPalette(product) {
+    if (!product.color_variants || product.color_variants.length === 0) {
+        return '';
+    }
+    
+    const colorDots = product.color_variants.map(variant => {
+        const colorName = variant.color.toLowerCase();
+        const colorCode = getColorCode(colorName);
+        const variantImage = variant.images && variant.images.length > 0 ? variant.images[0] : null;
+        
+        return `
+            <div class="color-dot" 
+                 style="background-color: ${colorCode}" 
+                 title="${variant.color}"
+                 onclick="event.stopPropagation(); openColorVariant('${product.id}', '${variant.color}')">
+            </div>
+        `;
+    }).join('');
+    
+    return `
+        <div class="color-palette">
+            <span class="color-label">Colors:</span>
+            <div class="color-dots">
+                ${colorDots}
+            </div>
+        </div>
+    `;
+}
+
+// Get color code from color name
+function getColorCode(colorName) {
+    const colorMap = {
+        'red': '#FF0000',
+        'blue': '#0000FF',
+        'green': '#008000',
+        'yellow': '#FFFF00',
+        'orange': '#FFA500',
+        'purple': '#800080',
+        'pink': '#FFC0CB',
+        'black': '#000000',
+        'white': '#FFFFFF',
+        'gray': '#808080',
+        'grey': '#808080',
+        'brown': '#A52A2A',
+        'maroon': '#800000',
+        'navy': '#000080',
+        'teal': '#008080',
+        'olive': '#808000',
+        'lime': '#00FF00',
+        'aqua': '#00FFFF',
+        'silver': '#C0C0C0',
+        'gold': '#FFD700',
+        'beige': '#F5F5DC',
+        'cream': '#FFFDD0',
+        'ivory': '#FFFFF0'
+    };
+    
+    return colorMap[colorName] || '#CCCCCC';
+}
+
+// Open color variant
+function openColorVariant(productId, color, variantImage) {
+    console.log('Opening color variant:', productId, color, variantImage);
+    
+    // Navigate to product page with color parameter
+    window.location.href = `product.html?id=${productId}&color=${encodeURIComponent(color)}`;
+}
+
+// Open product detail for color variant
+function openProductDetailVariant(variantProduct) {
+    currentProduct = variantProduct;
+    
+    // Populate modal with variant data
+    document.getElementById('productTitle').textContent = variantProduct.name;
+    document.getElementById('productPrice').textContent = `₹${variantProduct.price.toLocaleString()}`;
+    document.getElementById('productOriginalPrice').textContent = variantProduct.originalPrice ? `₹${variantProduct.originalPrice.toLocaleString()}` : '';
+    document.getElementById('productDescription').textContent = variantProduct.description || 'No description available';
+    document.getElementById('productFabric').textContent = variantProduct.fabric || 'Not specified';
+    document.getElementById('productCategory').textContent = variantProduct.category || 'General';
+    document.getElementById('productStars').innerHTML = generateStars(variantProduct.rating);
+    document.getElementById('productReviews').textContent = `${variantProduct.rating} (${variantProduct.reviews} reviews)`;
+    
+    // Set variant image
+    let imageUrl;
+    if (variantProduct.image && variantProduct.image.startsWith('http')) {
+        imageUrl = variantProduct.image;
+    } else if (variantProduct.image) {
+        imageUrl = `https://jstvadizuzvwhabtfhfs.supabase.co/storage/v1/object/public/Sarees/${variantProduct.image}`;
+    } else {
+        imageUrl = `https://via.placeholder.com/400x500/FF6B6B/FFFFFF?text=${encodeURIComponent(variantProduct.name)}`;
+    }
+    document.getElementById('mainProductImage').src = imageUrl;
+    
+    // Show selected color
+    const colorsContainer = document.querySelector('#productColors .colors-list');
+    colorsContainer.innerHTML = `<span class="selected-color">${variantProduct.selectedColor}</span>`;
+    document.getElementById('productColors').style.display = 'block';
+    
+    // Show modal
+    document.getElementById('productModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
 window.logout = logout;
+window.openColorVariant = openColorVariant;
 
 // Category filter functionality
 function setupCategoryFilters() {
@@ -1428,6 +1531,8 @@ function filterProducts(category) {
                 imageUrl = `https://via.placeholder.com/300x400/FF6B6B/FFFFFF?text=${encodeURIComponent(product.name || 'Product')}`;
             }
             
+            const colorPalette = generateColorPalette(product);
+            
             return `
             <div class="product-card" data-product-id="${product.id}">
                 <img src="${imageUrl}" alt="${product.name}" class="product-image">
@@ -1440,6 +1545,7 @@ function filterProducts(category) {
                         </div>
                         <span>${product.rating} (${product.reviews})</span>
                     </div>
+                    ${colorPalette}
                     <button class="add-to-cart add-to-cart-btn" data-id="${product.id}" onclick="event.stopPropagation()">
                         Add to Cart
                     </button>
@@ -1451,7 +1557,7 @@ function filterProducts(category) {
         // Re-attach event listeners
         document.querySelectorAll('.product-card').forEach(card => {
             card.addEventListener('click', (e) => {
-                if (!e.target.closest('.add-to-cart-btn')) {
+                if (!e.target.closest('.add-to-cart-btn') && !e.target.closest('.color-dot')) {
                     const productId = card.dataset.productId;
                     window.location.href = `product.html?id=${productId}`;
                 }

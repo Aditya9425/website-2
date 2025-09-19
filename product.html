@@ -13,8 +13,11 @@
     <header class="header">
         <nav class="navbar">
             <div class="nav-brand">
-                <a href="index.html">
-                    <img src="https://via.placeholder.com/150x50/FF6B6B/FFFFFF?text=Shagun+Saree" alt="Shagun Saree Baran" class="logo">
+                <a href="index.html" class="logo-link">
+                    <div class="logo-container">
+                        <span class="logo-icon">S</span>
+                        <span class="logo-text">Shagun Saree</span>
+                    </div>
                 </a>
             </div>
             <div class="nav-search">
@@ -38,7 +41,7 @@
             <nav class="breadcrumb">
                 <a href="index.html">Home</a> / 
                 <a href="collections.html">Collections</a> / 
-                <span id="productName">Product</span>
+                <span>Product Details</span>
             </nav>
 
             <!-- Product Details -->
@@ -276,6 +279,7 @@
         document.addEventListener('DOMContentLoaded', async function() {
             const urlParams = new URLSearchParams(window.location.search);
             const productId = urlParams.get('id');
+            const selectedColor = urlParams.get('color');
             
             if (productId) {
                 // Initialize Supabase
@@ -283,13 +287,13 @@
                 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzdHZhZGl6dXp2d2hhYnRmaGZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NjI3NjAsImV4cCI6MjA3MjIzODc2MH0.6btNpJfUh6Fd5PfoivIvu-f31Fj5IXl1vxBLsHz5ISw';
                 window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 
-                await loadProductDetails(productId);
+                await loadProductDetails(productId, selectedColor);
             } else {
                 window.location.href = 'collections.html';
             }
         });
         
-        async function loadProductDetails(productId) {
+        async function loadProductDetails(productId, selectedColor) {
             try {
                 console.log('Loading product with ID:', productId);
                 
@@ -355,7 +359,7 @@
                         return;
                     }
                     
-                    displayProductDetails(product);
+                    displayProductDetails(product, selectedColor);
                     setupProductActions(product);
                     return;
                 }
@@ -370,12 +374,13 @@
                     rating: data.rating || 4.5,
                     description: data.description,
                     colors: data.colors || ['Red', 'Blue', 'Green'],
+                    color_variants: data.color_variants || [],
                     sizes: data.sizes || ['Free Size'],
                     fabric: data.fabric,
                     reviews: data.reviews || 50
                 };
                 
-                displayProductDetails(product);
+                displayProductDetails(product, selectedColor);
                 setupProductActions(product);
             } catch (error) {
                 console.error('Error loading product:', error);
@@ -384,23 +389,42 @@
             }
         }
         
-        function displayProductDetails(product) {
-            document.getElementById('productName').textContent = product.name;
+        function displayProductDetails(product, selectedColor) {
             document.getElementById('productTitle').textContent = product.name;
             document.getElementById('currentPrice').textContent = `₹${product.price.toLocaleString()}`;
             document.getElementById('originalPrice').textContent = product.originalPrice ? `₹${product.originalPrice.toLocaleString()}` : '';
             document.getElementById('productDescription').textContent = product.description || 'No description available.';
             
-            // Load main image
+            // Load main image (check for color variant first)
             const mainImage = document.getElementById('mainImage');
             let imageUrl;
-            if (product.image && product.image.startsWith('http')) {
-                imageUrl = product.image;
-            } else if (product.image) {
-                imageUrl = `https://jstvadizuzvwhabtfhfs.supabase.co/storage/v1/object/public/Sarees/${product.image}`;
-            } else {
-                imageUrl = `https://via.placeholder.com/500x600/FF6B6B/FFFFFF?text=${encodeURIComponent(product.name)}`;
+            
+            // If a color is selected and color variants exist, use variant image
+            if (selectedColor && product.color_variants && product.color_variants.length > 0) {
+                const colorVariant = product.color_variants.find(v => v.color === selectedColor);
+                if (colorVariant && colorVariant.images && colorVariant.images.length > 0) {
+                    const variantImage = colorVariant.images[0];
+                    if (variantImage.startsWith('http')) {
+                        imageUrl = variantImage;
+                    } else {
+                        imageUrl = `https://jstvadizuzvwhabtfhfs.supabase.co/storage/v1/object/public/Sarees/${variantImage}`;
+                    }
+                    // Update product name to include color
+                    document.getElementById('productTitle').textContent = `${product.name} - ${selectedColor}`;
+                }
             }
+            
+            // Fallback to main product image if no variant image found
+            if (!imageUrl) {
+                if (product.image && product.image.startsWith('http')) {
+                    imageUrl = product.image;
+                } else if (product.image) {
+                    imageUrl = `https://jstvadizuzvwhabtfhfs.supabase.co/storage/v1/object/public/Sarees/${product.image}`;
+                } else {
+                    imageUrl = `https://via.placeholder.com/500x600/FF6B6B/FFFFFF?text=${encodeURIComponent(product.name)}`;
+                }
+            }
+            
             mainImage.src = imageUrl;
             mainImage.alt = product.name;
             
@@ -410,12 +434,24 @@
                 document.getElementById('discount').textContent = `${discount}% OFF`;
             }
             
-            // Load colors
+            // Load colors (prioritize color variants if available)
             const colorOptions = document.getElementById('colorOptions');
-            if (product.colors && product.colors.length > 0) {
-                colorOptions.innerHTML = product.colors.map(color => 
-                    `<div class="color-option" data-color="${color}">${color}</div>`
-                ).join('');
+            let availableColors = [];
+            
+            if (product.color_variants && product.color_variants.length > 0) {
+                availableColors = product.color_variants.map(v => v.color);
+            } else if (product.colors && product.colors.length > 0) {
+                availableColors = product.colors;
+            }
+            
+            if (availableColors.length > 0) {
+                colorOptions.innerHTML = availableColors.map(color => {
+                    const isSelected = color === selectedColor ? 'selected' : '';
+                    const variant = product.color_variants ? product.color_variants.find(v => v.color === color) : null;
+                    const colorCode = variant ? variant.colorCode : null;
+                    const style = colorCode ? `style="background-color: ${colorCode}; color: ${getContrastColor(colorCode)};"` : '';
+                    return `<div class="color-option ${isSelected}" data-color="${color}" ${style} onclick="selectColor('${color}')">${color}</div>`;
+                }).join('');
             }
             
             // Load sizes
@@ -476,6 +512,27 @@
             
             // Show notification
             alert(`Added ${quantity} item(s) to cart!`);
+        }
+        
+        function selectColor(color) {
+            // Update URL with selected color
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = urlParams.get('id');
+            window.location.href = `product.html?id=${productId}&color=${encodeURIComponent(color)}`;
+        }
+        
+        function getContrastColor(hexColor) {
+            if (!hexColor || hexColor.length < 7) return '#000000';
+            // Convert hex to RGB
+            const r = parseInt(hexColor.substr(1, 2), 16);
+            const g = parseInt(hexColor.substr(3, 2), 16);
+            const b = parseInt(hexColor.substr(5, 2), 16);
+            
+            // Calculate luminance
+            const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+            
+            // Return black or white based on luminance
+            return luminance > 0.5 ? '#000000' : '#FFFFFF';
         }
     </script>
 </body>
