@@ -98,21 +98,49 @@ class RazorpayPayment {
 
     onPaymentSuccess(data) {
         console.log('Payment successful:', data);
-        alert('Payment successful! Order placed.');
-        // Process successful order here
+        
+        // Get order context to determine flow type
+        const orderContext = JSON.parse(localStorage.getItem('orderContext') || '{}');
+        const isBuyNow = orderContext.isBuyNow || false;
+        const orderItems = orderContext.items || null;
+        const orderAmount = orderContext.amount || 0;
+        
+        console.log('Processing order with context:', orderContext);
+        
+        // Process successful order
         if (typeof processOrder === 'function') {
-            processOrder(data.payment_id, 'razorpay');
+            const result = processOrder(orderAmount, 'razorpay', orderItems, isBuyNow);
+            if (result) {
+                // Clean up order context
+                localStorage.removeItem('orderContext');
+            }
+        } else {
+            alert('Payment successful! Order placed.');
         }
     }
 
     onPaymentFailure(data) {
         console.error('Payment failed:', data);
         alert('Payment failed: ' + (data.message || 'Unknown error'));
+        
+        // Re-enable payment button
+        const activeBtn = document.getElementById('payNowBtn') || document.getElementById('placeOrderBtn');
+        if (activeBtn) {
+            activeBtn.disabled = false;
+            activeBtn.innerHTML = '<i class="fas fa-credit-card"></i> Pay Now with Razorpay';
+        }
     }
 
     onPaymentCancel() {
         console.log('Payment cancelled by user');
         alert('Payment cancelled');
+        
+        // Re-enable payment button
+        const activeBtn = document.getElementById('payNowBtn') || document.getElementById('placeOrderBtn');
+        if (activeBtn) {
+            activeBtn.disabled = false;
+            activeBtn.innerHTML = '<i class="fas fa-credit-card"></i> Pay Now with Razorpay';
+        }
     }
 }
 

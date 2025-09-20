@@ -68,6 +68,7 @@ async function fetchProductsFromSupabase() {
             price: row.price,
             originalPrice: row.originalPrice || row.original_price,
             image: row.images && row.images.length > 0 ? row.images[0] : null,
+            images: row.images || [],
             category: row.category,
             rating: row.rating || 4.5,
             description: row.description,
@@ -112,6 +113,11 @@ async function fetchProducts() {
                 price: 15000,
                 originalPrice: 18000,
                 image: "https://via.placeholder.com/300x400/FF6B6B/FFFFFF?text=Silk+Banarasi",
+                images: [
+                    "https://via.placeholder.com/500x600/FF6B6B/FFFFFF?text=Silk+Banarasi+1",
+                    "https://via.placeholder.com/500x600/FF4444/FFFFFF?text=Silk+Banarasi+2",
+                    "https://via.placeholder.com/500x600/FF8888/FFFFFF?text=Silk+Banarasi+3"
+                ],
                 category: "silk",
                 rating: 4.8,
                 reviews: 156,
@@ -127,6 +133,10 @@ async function fetchProducts() {
                 price: 2500,
                 originalPrice: 3000,
                 image: "https://via.placeholder.com/300x400/4ECDC4/FFFFFF?text=Cotton+Handloom",
+                images: [
+                    "https://via.placeholder.com/500x600/4ECDC4/FFFFFF?text=Cotton+Handloom+1",
+                    "https://via.placeholder.com/500x600/44AAA4/FFFFFF?text=Cotton+Handloom+2"
+                ],
                 category: "cotton",
                 rating: 4.5,
                 reviews: 89,
@@ -142,6 +152,12 @@ async function fetchProducts() {
                 price: 8000,
                 originalPrice: 10000,
                 image: "https://via.placeholder.com/300x400/45B7D1/FFFFFF?text=Designer+Georgette",
+                images: [
+                    "https://via.placeholder.com/500x600/45B7D1/FFFFFF?text=Designer+Georgette+1",
+                    "https://via.placeholder.com/500x600/3399BB/FFFFFF?text=Designer+Georgette+2",
+                    "https://via.placeholder.com/500x600/5577CC/FFFFFF?text=Designer+Georgette+3",
+                    "https://via.placeholder.com/500x600/6688DD/FFFFFF?text=Designer+Georgette+4"
+                ],
                 category: "designer",
                 rating: 4.7,
                 reviews: 203,
@@ -639,25 +655,30 @@ function setupCartPage() {
 function setupCheckoutPage() {
     console.log('Setting up checkout page...');
     
+    // Check if this is a buy now flow
+    const urlParams = new URLSearchParams(window.location.search);
+    const isBuyNow = urlParams.get('buyNow') === 'true';
+    
     const placeOrderBtn = document.getElementById('placeOrderBtn');
+    const payNowBtn = document.getElementById('payNowBtn');
     const paymentMethods = document.querySelectorAll('input[name="paymentMethod"]');
     
-    if (placeOrderBtn) {
-        console.log('Place order button found, setting up...');
+    // Setup the appropriate button based on checkout type
+    const activeBtn = payNowBtn || placeOrderBtn;
+    if (activeBtn) {
+        console.log('Payment button found, setting up...');
         
-        // Enable place order button if cart has items
-        updatePlaceOrderButtonState();
+        // Enable button if items exist
+        updatePlaceOrderButtonState(isBuyNow);
         
         // Add click event listener
-        placeOrderBtn.addEventListener('click', handlePlaceOrderWithPayment);
+        activeBtn.addEventListener('click', () => handlePlaceOrderWithPayment(isBuyNow));
         
         // Add terms checkbox change listener
         const agreeTerms = document.getElementById('agreeTerms');
         if (agreeTerms) {
-            agreeTerms.addEventListener('change', updatePlaceOrderButtonState);
+            agreeTerms.addEventListener('change', () => updatePlaceOrderButtonState(isBuyNow));
         }
-    } else {
-        console.log('Place order button not found');
     }
     
     // Setup payment method change handlers
@@ -665,35 +686,41 @@ function setupCheckoutPage() {
         method.addEventListener('change', (e) => {
             const selectedMethod = e.target.value;
             console.log('Payment method changed to:', selectedMethod);
-            // Show/hide payment forms based on selection
             togglePaymentForms(selectedMethod);
-            // Update button state when payment method changes
-            updatePlaceOrderButtonState();
+            updatePlaceOrderButtonState(isBuyNow);
         });
     });
     
     // Load order summary, address, and items
     loadCheckoutData();
-    displayOrderItems();
+    displayOrderItems(isBuyNow);
     
     console.log('Checkout page setup complete');
 }
 
 // Update place order button state based on validation
-function updatePlaceOrderButtonState() {
+function updatePlaceOrderButtonState(isBuyNow = false) {
     const placeOrderBtn = document.getElementById('placeOrderBtn');
-    if (!placeOrderBtn) return;
+    const payNowBtn = document.getElementById('payNowBtn');
+    const activeBtn = payNowBtn || placeOrderBtn;
     
-    // Check if cart has items
-    const hasItems = cart.length > 0;
+    if (!activeBtn) return;
+    
+    // Check if items exist based on flow type
+    let hasItems = false;
+    if (isBuyNow) {
+        const buyNowItem = JSON.parse(localStorage.getItem('buyNowItem') || 'null');
+        hasItems = !!buyNowItem;
+    } else {
+        hasItems = cart.length > 0;
+    }
     
     // Check if address is provided
     const addressData = JSON.parse(localStorage.getItem('deliveryAddress') || '{}');
     const hasAddress = !!addressData.firstName;
     
-    // Check if payment method is selected
-    const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value;
-    const hasPaymentMethod = !!paymentMethod;
+    // For Razorpay checkout, payment method is always available
+    const hasPaymentMethod = true;
     
     // Check if terms are agreed
     const agreeTerms = document.getElementById('agreeTerms');
@@ -707,18 +734,19 @@ function updatePlaceOrderButtonState() {
         hasAddress,
         hasPaymentMethod,
         hasAgreedTerms,
-        shouldEnable
+        shouldEnable,
+        isBuyNow
     });
     
     // Update button state
-    placeOrderBtn.disabled = !shouldEnable;
+    activeBtn.disabled = !shouldEnable;
     
     if (shouldEnable) {
-        placeOrderBtn.classList.remove('disabled');
-        placeOrderBtn.innerHTML = '<i class="fas fa-lock"></i> Place Order Securely';
+        activeBtn.classList.remove('disabled');
+        activeBtn.innerHTML = '<i class="fas fa-credit-card"></i> Pay Now with Razorpay';
     } else {
-        placeOrderBtn.classList.add('disabled');
-        placeOrderBtn.innerHTML = '<i class="fas fa-lock"></i> Complete All Steps to Place Order';
+        activeBtn.classList.add('disabled');
+        activeBtn.innerHTML = '<i class="fas fa-credit-card"></i> Complete All Steps to Pay';
     }
 }
 
@@ -760,8 +788,28 @@ function togglePaymentForms(selectedMethod) {
 function setupAddressPage() {
     console.log('Setting up address page...');
     
-    // Refresh cart from localStorage to ensure we have latest data
-    refreshCart();
+    // Check if this is a buy now flow
+    const urlParams = new URLSearchParams(window.location.search);
+    const isBuyNow = urlParams.get('buyNow') === 'true';
+    
+    if (isBuyNow) {
+        console.log('Buy Now flow detected');
+        // For buy now, we don't need cart data
+        const buyNowItem = JSON.parse(localStorage.getItem('buyNowItem') || 'null');
+        if (!buyNowItem) {
+            console.log('No buy now item found, redirecting to collections');
+            window.location.href = 'collections.html';
+            return;
+        }
+    } else {
+        // Regular cart flow
+        refreshCart();
+        if (cart.length === 0) {
+            console.log('Cart is empty, redirecting to collections');
+            window.location.href = 'collections.html';
+            return;
+        }
+    }
     
     const addressForm = document.getElementById('addressForm');
     const proceedToCheckoutBtn = document.getElementById('proceedToCheckoutBtn');
@@ -770,60 +818,31 @@ function setupAddressPage() {
         console.log('Address form found, setting up submit handler');
         addressForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            handleAddressSubmit();
+            handleAddressSubmit(isBuyNow);
         });
-    } else {
-        console.log('Address form not found');
     }
     
     if (proceedToCheckoutBtn) {
         console.log('Proceed to checkout button found, setting up click handler');
         proceedToCheckoutBtn.addEventListener('click', () => {
-            console.log('Proceed to checkout clicked, cart length:', cart.length);
-            if (cart.length > 0) {
-                // Save address to localStorage
-                const formData = new FormData(addressForm);
-                const addressData = {
-                    firstName: formData.get('firstName'),
-                    lastName: formData.get('lastName'),
-                    email: formData.get('email'),
-                    mobile: formData.get('mobile'),
-                    addressLine1: formData.get('addressLine1'),
-                    addressLine2: formData.get('addressLine2'),
-                    city: formData.get('city'),
-                    state: formData.get('state'),
-                    pincode: formData.get('pincode')
-                };
-                localStorage.setItem('deliveryAddress', JSON.stringify(addressData));
-                
-                console.log('Address saved, navigating to checkout...');
-                // Navigate to checkout
-                window.location.href = 'checkout.html';
-            } else {
-                console.log('Cart is empty, showing alert');
-                alert('Your cart is empty! Please add items before checkout.');
-            }
+            handleProceedToCheckout(isBuyNow);
         });
-    } else {
-        console.log('Proceed to checkout button not found');
     }
     
-    // Load order summary
-    console.log('Loading order summary on address page...');
-    updateOrderSummary();
-    
-    // Also display cart items if the container exists
-    const cartItemsContainer = document.getElementById('cartItemsList');
-    if (cartItemsContainer) {
-        console.log('Cart items container found, displaying items...');
-        displayCartItems();
+    // Load order summary based on flow type
+    if (isBuyNow) {
+        updateBuyNowOrderSummary();
     } else {
-        console.log('Cart items container not found on address page');
+        updateOrderSummary();
+        const cartItemsContainer = document.getElementById('cartItemsList');
+        if (cartItemsContainer) {
+            displayCartItems();
+        }
     }
 }
 
 // Handle address form submission
-function handleAddressSubmit() {
+function handleAddressSubmit(isBuyNow = false) {
     const formData = new FormData(document.getElementById('addressForm'));
     const addressData = {
         firstName: formData.get('firstName'),
@@ -840,16 +859,74 @@ function handleAddressSubmit() {
     // Save to localStorage
     localStorage.setItem('deliveryAddress', JSON.stringify(addressData));
     
+    // Navigate to checkout with appropriate flag
+    const checkoutUrl = isBuyNow ? 'checkout.html?buyNow=true' : 'checkout.html';
+    window.location.href = checkoutUrl;
+}
+
+// Handle proceed to checkout
+function handleProceedToCheckout(isBuyNow = false) {
+    const addressForm = document.getElementById('addressForm');
+    
+    if (isBuyNow) {
+        const buyNowItem = JSON.parse(localStorage.getItem('buyNowItem') || 'null');
+        if (!buyNowItem) {
+            alert('No item selected for purchase!');
+            window.location.href = 'collections.html';
+            return;
+        }
+    } else {
+        if (cart.length === 0) {
+            alert('Your cart is empty! Please add items before checkout.');
+            return;
+        }
+    }
+    
+    // Save address
+    const formData = new FormData(addressForm);
+    const addressData = {
+        firstName: formData.get('firstName'),
+        lastName: formData.get('lastName'),
+        email: formData.get('email'),
+        mobile: formData.get('mobile'),
+        addressLine1: formData.get('addressLine1'),
+        addressLine2: formData.get('addressLine2'),
+        city: formData.get('city'),
+        state: formData.get('state'),
+        pincode: formData.get('pincode')
+    };
+    localStorage.setItem('deliveryAddress', JSON.stringify(addressData));
+    
     // Navigate to checkout
-    window.location.href = 'checkout.html';
+    const checkoutUrl = isBuyNow ? 'checkout.html?buyNow=true' : 'checkout.html';
+    window.location.href = checkoutUrl;
 }
 
 // Load checkout data
 function loadCheckoutData() {
     console.log('Loading checkout data...');
     
-    // Refresh cart from localStorage to ensure we have latest data
-    refreshCart();
+    // Check if this is a buy now flow
+    const urlParams = new URLSearchParams(window.location.search);
+    const isBuyNow = urlParams.get('buyNow') === 'true';
+    
+    if (isBuyNow) {
+        console.log('Buy Now checkout flow');
+        const buyNowItem = JSON.parse(localStorage.getItem('buyNowItem') || 'null');
+        if (!buyNowItem) {
+            console.log('No buy now item found, redirecting');
+            window.location.href = 'collections.html';
+            return;
+        }
+    } else {
+        // Regular cart flow
+        refreshCart();
+        if (cart.length === 0) {
+            console.log('Cart is empty, redirecting');
+            window.location.href = 'cart.html';
+            return;
+        }
+    }
     
     // Load address from localStorage
     const addressData = JSON.parse(localStorage.getItem('deliveryAddress') || '{}');
@@ -869,8 +946,12 @@ function loadCheckoutData() {
         }
     }
     
-    // Load order summary
-    updateOrderSummary();
+    // Load order summary based on flow type
+    if (isBuyNow) {
+        updateBuyNowOrderSummary();
+    } else {
+        updateOrderSummary();
+    }
 }
 
 // Legacy handlePlaceOrder function for backward compatibility
@@ -919,8 +1000,8 @@ function showOrderConfirmation(order) {
 }
 
 // Secure Razorpay integration
-function initializeRazorpay(orderAmount) {
-    console.log('Initializing Razorpay with amount:', orderAmount);
+function initializeRazorpay(orderAmount, orderItems = null, isBuyNow = false) {
+    console.log('Initializing Razorpay with amount:', orderAmount, 'isBuyNow:', isBuyNow);
     
     // Get customer details from address data
     const addressData = JSON.parse(localStorage.getItem('deliveryAddress') || '{}');
@@ -930,22 +1011,50 @@ function initializeRazorpay(orderAmount) {
         mobile: addressData.mobile || ''
     };
     
+    // Store order context for payment success callback
+    const orderContext = {
+        amount: orderAmount,
+        items: orderItems,
+        isBuyNow: isBuyNow
+    };
+    localStorage.setItem('orderContext', JSON.stringify(orderContext));
+    
     // Use secure Razorpay integration
     initializeRazorpayCheckout(orderAmount, customerDetails);
 }
 // Enhanced place order with payment integration
-function handlePlaceOrderWithPayment() {
-    console.log('Handling place order with payment...');
+function handlePlaceOrderWithPayment(isBuyNow = false) {
+    console.log('Handling place order with payment...', isBuyNow ? 'Buy Now flow' : 'Cart flow');
     
-    // Refresh cart from localStorage to ensure we have latest data
-    refreshCart();
+    let orderItems = [];
+    let total = 0;
     
-    // Validate cart
-    if (!cart || cart.length === 0) {
-        console.error('Cart validation failed - cart is empty');
-        alert('Your cart is empty! Please add items before placing an order.');
-        window.location.href = 'collections.html';
-        return false;
+    if (isBuyNow) {
+        // Buy Now flow - use buy now item
+        const buyNowItem = JSON.parse(localStorage.getItem('buyNowItem') || 'null');
+        if (!buyNowItem) {
+            console.error('Buy now item validation failed');
+            alert('No item selected for purchase!');
+            window.location.href = 'collections.html';
+            return false;
+        }
+        orderItems = [buyNowItem];
+        const subtotal = buyNowItem.price * buyNowItem.quantity;
+        const deliveryCharges = subtotal > 999 ? 0 : 200;
+        total = subtotal + deliveryCharges;
+    } else {
+        // Regular cart flow
+        refreshCart();
+        if (!cart || cart.length === 0) {
+            console.error('Cart validation failed - cart is empty');
+            alert('Your cart is empty! Please add items before placing an order.');
+            window.location.href = 'collections.html';
+            return false;
+        }
+        orderItems = [...cart];
+        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const deliveryCharges = subtotal > 999 ? 0 : 200;
+        total = subtotal + deliveryCharges;
     }
     
     // Validate address
@@ -953,107 +1062,96 @@ function handlePlaceOrderWithPayment() {
     if (!addressData.firstName) {
         console.error('Address validation failed - no address found');
         alert('Please provide delivery address first!');
-        window.location.href = 'address.html';
+        const addressUrl = isBuyNow ? 'address.html?buyNow=true' : 'address.html';
+        window.location.href = addressUrl;
         return false;
     }
     
-    // Validate payment method
-    const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value;
-    if (!paymentMethod) {
-        console.error('Payment method validation failed - no method selected');
-        alert('Please select a payment method!');
-        return false;
-    }
-    
-    // Validate terms and conditions
-    const agreeTerms = document.getElementById('agreeTerms');
-    if (agreeTerms && !agreeTerms.checked) {
-        console.error('Terms validation failed - terms not agreed');
-        alert('Please agree to the Terms and Conditions to continue.');
-        return false;
-    }
-    
-    // Calculate order total
-    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const deliveryCharges = subtotal > 999 ? 0 : 200;
-    const total = subtotal + deliveryCharges;
+    // For simplified checkout (Razorpay only), skip payment method validation
+    const paymentMethod = 'razorpay';
     
     console.log('Order validation passed. Total:', total);
-    console.log('Payment method:', paymentMethod);
-    console.log('Cart items:', cart.length);
+    console.log('Order items:', orderItems.length);
     
     // Disable the button to prevent double clicks
-    const placeOrderBtn = document.getElementById('placeOrderBtn');
-    if (placeOrderBtn) {
-        placeOrderBtn.disabled = true;
-        placeOrderBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing Order...';
+    const activeBtn = document.getElementById('payNowBtn') || document.getElementById('placeOrderBtn');
+    if (activeBtn) {
+        activeBtn.disabled = true;
+        activeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing Order...';
     }
     
     try {
-        // Initialize payment based on method
-        if (paymentMethod === 'razorpay') {
-            initializeRazorpay(total);
-        } else {
-            // For other payment methods, proceed directly
-            const result = processOrder(total, paymentMethod);
-            if (!result) {
-                // Re-enable button if order failed
-                if (placeOrderBtn) {
-                    placeOrderBtn.disabled = false;
-                    placeOrderBtn.innerHTML = '<i class="fas fa-lock"></i> Place Order Securely';
-                }
-            }
-            return result;
-        }
+        // Initialize Razorpay payment
+        initializeRazorpay(total, orderItems, isBuyNow);
     } catch (error) {
         console.error('Error in handlePlaceOrderWithPayment:', error);
         alert('There was an error processing your order. Please try again.');
         
         // Re-enable button
-        if (placeOrderBtn) {
-            placeOrderBtn.disabled = false;
-            placeOrderBtn.innerHTML = '<i class="fas fa-lock"></i> Place Order Securely';
+        if (activeBtn) {
+            activeBtn.disabled = false;
+            activeBtn.innerHTML = '<i class="fas fa-credit-card"></i> Pay Now with Razorpay';
         }
         return false;
     }
 }
 
 // Process order after payment (or for COD)
-function processOrder(total, paymentMethod) {
+function processOrder(total, paymentMethod, orderItems = null, isBuyNow = false) {
     console.log('=== PROCESSING ORDER ===');
     console.log('Total:', total);
     console.log('Payment method:', paymentMethod);
-    console.log('Cart items:', cart);
-    console.log('Cart length:', cart.length);
+    console.log('Is Buy Now:', isBuyNow);
     
-    // Validate cart is not empty
-    if (!cart || cart.length === 0) {
-        console.error('Cart is empty, cannot process order');
-        alert('Your cart is empty. Please add items before placing an order.');
-        return false;
+    // Determine order items based on flow
+    let items = [];
+    if (isBuyNow) {
+        const buyNowItem = orderItems || JSON.parse(localStorage.getItem('buyNowItem') || 'null');
+        if (!buyNowItem) {
+            console.error('Buy now item is missing');
+            alert('No item selected for purchase.');
+            return false;
+        }
+        items = Array.isArray(buyNowItem) ? buyNowItem : [buyNowItem];
+    } else {
+        // Regular cart flow
+        if (!cart || cart.length === 0) {
+            console.error('Cart is empty, cannot process order');
+            alert('Your cart is empty. Please add items before placing an order.');
+            return false;
+        }
+        items = [...cart];
     }
     
+    console.log('Order items:', items);
+    
     const addressData = JSON.parse(localStorage.getItem('deliveryAddress') || '{}');
-    console.log('Address data:', addressData);
     
     // Validate address data
     if (!addressData.firstName) {
         console.error('Address data is missing');
         alert('Delivery address is required. Please provide your address.');
-        window.location.href = 'address.html';
+        const addressUrl = isBuyNow ? 'address.html?buyNow=true' : 'address.html';
+        window.location.href = addressUrl;
         return false;
     }
+    
+    // Calculate totals
+    const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const deliveryCharges = subtotal > 999 ? 0 : 200;
+    const calculatedTotal = subtotal + deliveryCharges;
     
     // Create order object
     const order = {
         id: 'ORD' + Date.now(),
-        items: [...cart], // Create a copy of cart items
-        subtotal: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
-        deliveryCharges: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) > 999 ? 0 : 200,
-        total: total,
-        address: { ...addressData }, // Create a copy of address data
+        items: [...items],
+        subtotal: subtotal,
+        deliveryCharges: deliveryCharges,
+        total: calculatedTotal,
+        address: { ...addressData },
         paymentMethod: paymentMethod,
         status: paymentMethod === 'cod' ? 'pending' : 'confirmed',
+        isBuyNow: isBuyNow,
         createdAt: new Date().toISOString()
     };
     
@@ -1065,17 +1163,22 @@ function processOrder(total, paymentMethod) {
             throw new Error('Invalid order data');
         }
         
-        // Save order to localStorage (in real app, this would go to backend)
+        // Save order to localStorage
         const orders = JSON.parse(localStorage.getItem('orders') || '[]');
         orders.push(order);
         localStorage.setItem('orders', JSON.stringify(orders));
         console.log('Order saved to localStorage');
         
-        // Clear cart after successful order
-        cart = [];
-        localStorage.setItem('cart', JSON.stringify(cart));
-        updateCartCount();
-        console.log('Cart cleared');
+        // Clear appropriate storage after successful order
+        if (isBuyNow) {
+            localStorage.removeItem('buyNowItem');
+            console.log('Buy now item cleared');
+        } else {
+            cart = [];
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartCount();
+            console.log('Cart cleared');
+        }
         
         // Show order confirmation
         showOrderConfirmation(order);
@@ -1090,8 +1193,8 @@ function processOrder(total, paymentMethod) {
 }
 
 // Display order items in the order review section
-function displayOrderItems() {
-    console.log('Displaying order items...');
+function displayOrderItems(isBuyNow = false) {
+    console.log('Displaying order items...', isBuyNow ? 'Buy Now flow' : 'Cart flow');
     
     const orderItemsContainer = document.getElementById('orderItems');
     if (!orderItemsContainer) {
@@ -1099,12 +1202,22 @@ function displayOrderItems() {
         return;
     }
     
-    if (cart.length === 0) {
-        orderItemsContainer.innerHTML = '<p class="no-items">No items in cart</p>';
+    let items = [];
+    if (isBuyNow) {
+        const buyNowItem = JSON.parse(localStorage.getItem('buyNowItem') || 'null');
+        if (buyNowItem) {
+            items = [buyNowItem];
+        }
+    } else {
+        items = cart;
+    }
+    
+    if (items.length === 0) {
+        orderItemsContainer.innerHTML = '<p class="no-items">No items selected</p>';
         return;
     }
     
-    const itemsHTML = cart.map(item => `
+    const itemsHTML = items.map(item => `
         <div class="order-item">
             <div class="item-image">
                 <img src="${item.image}" alt="${item.name}">
@@ -1123,7 +1236,7 @@ function displayOrderItems() {
     `).join('');
     
     orderItemsContainer.innerHTML = itemsHTML;
-    console.log('Order items displayed:', cart.length, 'items');
+    console.log('Order items displayed:', items.length, 'items');
 }
 
 // Test function to debug order placement
@@ -1218,16 +1331,20 @@ function openProductDetail(productId) {
     document.getElementById('productStars').innerHTML = generateStars(product.rating);
     document.getElementById('productReviews').textContent = `${product.rating} (${product.reviews} reviews)`;
     
-    // Set image
-    let imageUrl;
-    if (product.image && product.image.startsWith('http')) {
-        imageUrl = product.image;
+    // Set up image gallery
+    let imagesToShow = [];
+    if (product.images && product.images.length > 0) {
+        imagesToShow = product.images.map(img => {
+            return img.startsWith('http') ? img : `https://jstvadizuzvwhabtfhfs.supabase.co/storage/v1/object/public/Sarees/${img}`;
+        });
     } else if (product.image) {
-        imageUrl = `https://jstvadizuzvwhabtfhfs.supabase.co/storage/v1/object/public/Sarees/${product.image}`;
+        const imageUrl = product.image.startsWith('http') ? product.image : `https://jstvadizuzvwhabtfhfs.supabase.co/storage/v1/object/public/Sarees/${product.image}`;
+        imagesToShow = [imageUrl];
     } else {
-        imageUrl = `https://via.placeholder.com/400x500/FF6B6B/FFFFFF?text=${encodeURIComponent(product.name)}`;
+        imagesToShow = [`https://via.placeholder.com/400x500/FF6B6B/FFFFFF?text=${encodeURIComponent(product.name)}`];
     }
-    document.getElementById('mainProductImage').src = imageUrl;
+    
+    displayModalImageGallery(imagesToShow, product.name);
     
     // Show colors
     const colorsContainer = document.querySelector('#productColors .colors-list');
@@ -1284,27 +1401,25 @@ function addToCartFromModal() {
 function buyNowFromModal() {
     if (!currentProduct) return;
     
-    addToCartFromModal();
-    window.location.href = 'address.html';
+    const quantity = parseInt(document.getElementById('modalQuantity').value);
+    // Store buy now item separately (don't add to cart)
+    const buyNowItem = { ...currentProduct, quantity };
+    localStorage.setItem('buyNowItem', JSON.stringify(buyNowItem));
+    
+    closeProductModal();
+    window.location.href = 'address.html?buyNow=true';
 }
 
 function buyNow(productId) {
     const product = products.find(p => p.id == productId);
     if (!product) return;
     
-    // Add to cart
-    const existingItem = cart.find(item => item.id == productId);
-    if (existingItem) {
-        existingItem.quantity += 1;
-    } else {
-        cart.push({ ...product, quantity: 1 });
-    }
+    // Store buy now item separately (don't add to cart)
+    const buyNowItem = { ...product, quantity: 1 };
+    localStorage.setItem('buyNowItem', JSON.stringify(buyNowItem));
     
-    saveCart();
-    updateCartCount();
-    
-    // Go directly to address page first, then checkout
-    window.location.href = 'address.html';
+    // Go directly to address page with buy now flag
+    window.location.href = 'address.html?buyNow=true';
 }
 
 // Enhanced cart count animation
@@ -1372,6 +1487,40 @@ window.updateCartItemQuantity = updateCartItemQuantity;
 window.clearCart = clearCart;
 
 // Debug function
+function displayModalImageGallery(images, productName) {
+    const mainImage = document.getElementById('mainProductImage');
+    const thumbnailContainer = document.getElementById('modalThumbnails');
+    
+    // Set main image
+    mainImage.src = images[0];
+    mainImage.alt = productName;
+    
+    // Create thumbnails if more than one image
+    if (images.length > 1) {
+        thumbnailContainer.innerHTML = images.map((img, index) => `
+            <img src="${img}" alt="${productName} ${index + 1}" class="thumbnail ${index === 0 ? 'active' : ''}" onclick="changeModalMainImage('${img}')">
+        `).join('');
+        thumbnailContainer.style.display = 'flex';
+    } else {
+        thumbnailContainer.style.display = 'none';
+    }
+}
+
+function changeModalMainImage(imageUrl) {
+    const mainImage = document.getElementById('mainProductImage');
+    mainImage.src = imageUrl;
+    
+    // Update active thumbnail
+    document.querySelectorAll('#modalThumbnails .thumbnail').forEach(thumb => {
+        thumb.classList.remove('active');
+        if (thumb.src === imageUrl) {
+            thumb.classList.add('active');
+        }
+    });
+}
+
+window.changeModalMainImage = changeModalMainImage;
+
 window.testModal = function() {
     console.log('Testing modal...');
     openProductDetail(1);
@@ -1383,9 +1532,7 @@ function generateColorPalette(product) {
     }
     
     const colorDots = product.color_variants.map(variant => {
-        const colorName = variant.color.toLowerCase();
-        const colorCode = getColorCode(colorName);
-        const variantImage = variant.images && variant.images.length > 0 ? variant.images[0] : null;
+        const colorCode = variant.colorCode || getColorCode(variant.color.toLowerCase());
         
         return `
             <div class="color-dot" 
@@ -1480,6 +1627,46 @@ function openProductDetailVariant(variantProduct) {
     document.body.style.overflow = 'hidden';
 }
 
+// Update order summary for Buy Now flow
+function updateBuyNowOrderSummary() {
+    console.log('updateBuyNowOrderSummary called');
+    
+    const buyNowItem = JSON.parse(localStorage.getItem('buyNowItem') || 'null');
+    if (!buyNowItem) {
+        console.log('No buy now item found');
+        return;
+    }
+    
+    const subtotal = buyNowItem.price * buyNowItem.quantity;
+    const deliveryCharges = subtotal > 999 ? 0 : 200;
+    const total = subtotal + deliveryCharges;
+    
+    console.log('Buy Now calculated values - Subtotal:', subtotal, 'Delivery:', deliveryCharges, 'Total:', total);
+    
+    const summaryElements = document.querySelectorAll('#subtotal, #deliveryCharges, #total');
+    console.log('Found summary elements:', summaryElements.length);
+    
+    if (summaryElements[0]) {
+        summaryElements[0].textContent = `₹${subtotal.toLocaleString()}`;
+        console.log('Updated subtotal element');
+    }
+    if (summaryElements[1]) {
+        summaryElements[1].textContent = `₹${deliveryCharges.toLocaleString()}`;
+        console.log('Updated delivery charges element');
+    }
+    if (summaryElements[2]) {
+        summaryElements[2].textContent = `₹${total.toLocaleString()}`;
+        console.log('Updated total element');
+    }
+    
+    // Update item count
+    const cartItemCount = document.getElementById('cartItemCount');
+    if (cartItemCount) {
+        cartItemCount.textContent = buyNowItem.quantity;
+        console.log('Updated item count:', buyNowItem.quantity);
+    }
+}
+
 window.logout = logout;
 window.openColorVariant = openColorVariant;
 
@@ -1511,6 +1698,12 @@ function filterProducts(category) {
         filteredProducts = products.filter(p => {
             const productCategory = p.category ? p.category.toLowerCase() : '';
             const filterCategory = category.toLowerCase();
+            
+            // Handle specific category mappings
+            if (filterCategory === 'bridal' || filterCategory === 'wedding') {
+                return productCategory === 'bridal' || productCategory === 'wedding';
+            }
+            
             return productCategory === filterCategory || productCategory.includes(filterCategory);
         });
     }

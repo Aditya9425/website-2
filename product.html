@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product Details - Shagun Saree Baran</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="gallery-styles.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
@@ -20,10 +21,7 @@
                     </div>
                 </a>
             </div>
-            <div class="nav-search">
-                <input type="text" placeholder="Search for sarees, fabrics, colors..." class="search-input">
-                <button class="search-btn"><i class="fas fa-search"></i></button>
-            </div>
+
             <div class="nav-actions">
                 <a href="cart.html" class="cart-icon">
                     <i class="fas fa-shopping-cart"></i>
@@ -50,9 +48,6 @@
                 <div class="product-images">
                     <div class="main-image-container">
                         <img src="" alt="" id="mainImage" class="main-image">
-                        <div class="image-zoom-overlay" id="zoomOverlay">
-                            <img src="" alt="" id="zoomedImage" class="zoomed-image">
-                        </div>
                     </div>
                     <div class="thumbnail-images" id="thumbnailImages">
                         <!-- Thumbnails will be loaded dynamically -->
@@ -102,14 +97,6 @@
                             </div>
                         </div>
 
-                        <!-- Size Selection -->
-                        <div class="option-group">
-                            <h4>Size</h4>
-                            <div class="size-options" id="sizeOptions">
-                                <!-- Size options will be loaded dynamically -->
-                            </div>
-                        </div>
-
                         <!-- Quantity Selection -->
                         <div class="option-group">
                             <h4>Quantity</h4>
@@ -131,10 +118,6 @@
                             <i class="fas fa-bolt"></i>
                             Buy Now
                         </button>
-                        <button class="wishlist-btn" id="wishlistBtn">
-                            <i class="far fa-heart"></i>
-                            Add to Wishlist
-                        </button>
                     </div>
 
                     <!-- Product Highlights -->
@@ -154,13 +137,7 @@
                                 <p>On orders above ₹999</p>
                             </div>
                         </div>
-                        <div class="delivery-item">
-                            <i class="fas fa-undo"></i>
-                            <div>
-                                <strong>Easy Returns</strong>
-                                <p>7 days return policy</p>
-                            </div>
-                        </div>
+
                         <div class="delivery-item">
                             <i class="fas fa-shield-alt"></i>
                             <div>
@@ -172,103 +149,44 @@
                 </div>
             </div>
 
-            <!-- Product Details Tabs -->
-            <div class="product-tabs">
-                <div class="tab-buttons">
-                    <button class="tab-btn active" data-tab="description">Description</button>
-                    <button class="tab-btn" data-tab="specifications">Specifications</button>
-                    <button class="tab-btn" data-tab="reviews">Reviews</button>
-                    <button class="tab-btn" data-tab="shipping">Shipping & Returns</button>
-                </div>
 
-                <div class="tab-content">
-                    <div class="tab-pane active" id="description">
-                        <h3>Product Description</h3>
-                        <div id="detailedDescription">
-                            <!-- Detailed description will be loaded dynamically -->
-                        </div>
-                    </div>
-
-                    <div class="tab-pane" id="specifications">
-                        <h3>Product Specifications</h3>
-                        <div class="specs-table" id="specificationsTable">
-                            <!-- Specifications will be loaded dynamically -->
-                        </div>
-                    </div>
-
-                    <div class="tab-pane" id="reviews">
-                        <h3>Customer Reviews</h3>
-                        <div class="reviews-section" id="reviewsSection">
-                            <!-- Reviews will be loaded dynamically -->
-                        </div>
-                    </div>
-
-                    <div class="tab-pane" id="shipping">
-                        <h3>Shipping & Returns</h3>
-                        <div class="shipping-info">
-                            <h4>Shipping Information</h4>
-                            <ul>
-                                <li>Free delivery on orders above ₹999</li>
-                                <li>Standard delivery: 3-5 business days</li>
-                                <li>Express delivery: 1-2 business days (additional charges apply)</li>
-                                <li>Delivery available across India</li>
-                            </ul>
-                            
-                            <h4>Return Policy</h4>
-                            <ul>
-                                <li>7 days return policy from delivery date</li>
-                                <li>Product must be unused and in original packaging</li>
-                                <li>Return shipping charges borne by customer</li>
-                                <li>Refund processed within 5-7 business days</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Related Products -->
-            <section class="related-products">
-                <h2>You May Also Like</h2>
-                <div class="products-grid" id="relatedProducts">
-                    <!-- Related products will be loaded dynamically -->
-                </div>
-            </section>
         </div>
     </main>
 
     <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>Shagun Saree Baran</h3>
-                    <p>Your trusted destination for premium Indian sarees. Quality, tradition, and elegance in every piece.</p>
+    <footer style="background: #2c3e50; color: white; padding: 40px 0 20px;">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 30px;">
+                <div>
+                    <h3 style="color: #FF6B6B; margin-bottom: 15px; font-size: 1.5rem;">Shagun Saree Baran</h3>
+                    <p style="color: #ecf0f1; line-height: 1.6; margin: 0;">Your trusted destination for premium Indian sarees. Quality, tradition, and elegance in every piece.</p>
                 </div>
-                <div class="footer-section">
-                    <h4>Quick Links</h4>
-                    <ul>
-                        <li><a href="index.html">Home</a></li>
-                        <li><a href="collections.html">Collections</a></li>
-                        <li><a href="cart.html">Cart</a></li>
-                    </ul>
+                <div>
+                    <h4 style="color: white; margin-bottom: 15px; font-size: 1.2rem;">Quick Links</h4>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <a href="index.html" style="color: #ecf0f1; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='#FF6B6B'" onmouseout="this.style.color='#ecf0f1'">Home</a>
+                        <a href="collections.html" style="color: #ecf0f1; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='#FF6B6B'" onmouseout="this.style.color='#ecf0f1'">Collections</a>
+                        <a href="cart.html" style="color: #ecf0f1; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='#FF6B6B'" onmouseout="this.style.color='#ecf0f1'">Cart</a>
+                        <a href="contact.html" style="color: #ecf0f1; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='#FF6B6B'" onmouseout="this.style.color='#ecf0f1'">Contact Us</a>
+                    </div>
                 </div>
-                <div class="footer-section">
-                    <h4>Contact Info</h4>
-                    <p>Email: shagunsaree60@gmail.com</p>
-                    <p>Phone: +91 9636788945</p>
-                    <p>Address: Krishna Colony, Baran, Rajasthan, India</p>
+                <div>
+                    <h4 style="color: white; margin-bottom: 15px; font-size: 1.2rem;">Contact Info</h4>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="color: #ecf0f1;"><i class="fas fa-envelope" style="color: #FF6B6B; margin-right: 8px;"></i>shagunsaree60@gmail.com</div>
+                        <div style="color: #ecf0f1;"><i class="fas fa-phone" style="color: #FF6B6B; margin-right: 8px;"></i>+91 9636788945</div>
+                        <div style="color: #ecf0f1;"><i class="fas fa-map-marker-alt" style="color: #FF6B6B; margin-right: 8px;"></i>Krishna Colony, Baran, Rajasthan</div>
+                    </div>
                 </div>
-                <div class="footer-section">
-                    <h4>Follow Us</h4>
-                    <div class="social-links">
-                        <a href="#"><i class="fab fa-facebook"></i></a>
-                        <a href="#"><i class="fab fa-instagram"></i></a>
-                        <a href="#"><i class="fab fa-twitter"></i></a>
+                <div>
+                    <h4 style="color: white; margin-bottom: 15px; font-size: 1.2rem;">Follow Us</h4>
+                    <div style="display: flex; gap: 15px;">
+                        <a href="https://www.instagram.com/shagun_sareebaran?igsh=cjJoZXozejhhZ2Nh" target="_blank" style="color: #ecf0f1; font-size: 1.5rem; transition: color 0.3s;" onmouseover="this.style.color='#e4405f'" onmouseout="this.style.color='#ecf0f1'"><i class="fab fa-instagram"></i></a>
                     </div>
                 </div>
             </div>
-            <div class="footer-bottom">
-                <p>&copy; 2025 Shagun Saree Baran. All rights reserved.</p>
+            <div style="border-top: 1px solid #34495e; padding-top: 20px; text-align: center;">
+                <p style="color: #bdc3c7; margin: 0;">&copy; 2025 Shagun Saree Baran. All rights reserved.</p>
             </div>
         </div>
     </footer>
@@ -314,6 +232,11 @@
                             price: 15000,
                             originalPrice: 18000,
                             image: "https://via.placeholder.com/500x600/FF6B6B/FFFFFF?text=Silk+Banarasi",
+                            images: [
+                                "https://via.placeholder.com/500x600/FF6B6B/FFFFFF?text=Silk+Banarasi+1",
+                                "https://via.placeholder.com/500x600/FF4444/FFFFFF?text=Silk+Banarasi+2",
+                                "https://via.placeholder.com/500x600/FF8888/FFFFFF?text=Silk+Banarasi+3"
+                            ],
                             category: "silk",
                             rating: 4.8,
                             description: "Exquisite Banarasi silk saree with intricate zari work. Perfect for weddings and special occasions.",
@@ -370,6 +293,7 @@
                     price: data.price,
                     originalPrice: data.originalPrice || data.original_price,
                     image: data.images && data.images.length > 0 ? data.images[0] : null,
+                    images: data.images || [],
                     category: data.category,
                     rating: data.rating || 4.5,
                     description: data.description,
@@ -395,38 +319,40 @@
             document.getElementById('originalPrice').textContent = product.originalPrice ? `₹${product.originalPrice.toLocaleString()}` : '';
             document.getElementById('productDescription').textContent = product.description || 'No description available.';
             
-            // Load main image (check for color variant first)
-            const mainImage = document.getElementById('mainImage');
-            let imageUrl;
+            // Load image gallery
+            let imagesToShow = [];
             
-            // If a color is selected and color variants exist, use variant image
+            // If a color is selected and color variants exist, use variant images
             if (selectedColor && product.color_variants && product.color_variants.length > 0) {
                 const colorVariant = product.color_variants.find(v => v.color === selectedColor);
                 if (colorVariant && colorVariant.images && colorVariant.images.length > 0) {
-                    const variantImage = colorVariant.images[0];
-                    if (variantImage.startsWith('http')) {
-                        imageUrl = variantImage;
-                    } else {
-                        imageUrl = `https://jstvadizuzvwhabtfhfs.supabase.co/storage/v1/object/public/Sarees/${variantImage}`;
-                    }
+                    imagesToShow = colorVariant.images.map(img => {
+                        return img.startsWith('http') ? img : `https://jstvadizuzvwhabtfhfs.supabase.co/storage/v1/object/public/Sarees/${img}`;
+                    });
                     // Update product name to include color
                     document.getElementById('productTitle').textContent = `${product.name} - ${selectedColor}`;
                 }
             }
             
-            // Fallback to main product image if no variant image found
-            if (!imageUrl) {
-                if (product.image && product.image.startsWith('http')) {
-                    imageUrl = product.image;
+            // Fallback to main product images if no variant images found
+            if (imagesToShow.length === 0) {
+                console.log('Product images array:', product.images);
+                if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+                    imagesToShow = product.images.map(img => {
+                        if (!img) return null;
+                        return img.startsWith('http') ? img : `https://jstvadizuzvwhabtfhfs.supabase.co/storage/v1/object/public/Sarees/${img}`;
+                    }).filter(img => img !== null);
+                    console.log('Processed images:', imagesToShow);
                 } else if (product.image) {
-                    imageUrl = `https://jstvadizuzvwhabtfhfs.supabase.co/storage/v1/object/public/Sarees/${product.image}`;
+                    const imageUrl = product.image.startsWith('http') ? product.image : `https://jstvadizuzvwhabtfhfs.supabase.co/storage/v1/object/public/Sarees/${product.image}`;
+                    imagesToShow = [imageUrl];
                 } else {
-                    imageUrl = `https://via.placeholder.com/500x600/FF6B6B/FFFFFF?text=${encodeURIComponent(product.name)}`;
+                    imagesToShow = [`https://via.placeholder.com/500x600/FF6B6B/FFFFFF?text=${encodeURIComponent(product.name)}`];
                 }
             }
             
-            mainImage.src = imageUrl;
-            mainImage.alt = product.name;
+            // Display image gallery
+            displayImageGallery(imagesToShow, product.name);
             
             // Calculate discount
             if (product.originalPrice && product.originalPrice > product.price) {
@@ -448,22 +374,48 @@
                 colorOptions.innerHTML = availableColors.map(color => {
                     const isSelected = color === selectedColor ? 'selected' : '';
                     const variant = product.color_variants ? product.color_variants.find(v => v.color === color) : null;
-                    const colorCode = variant ? variant.colorCode : null;
+                    const colorCode = variant ? variant.colorCode : getColorCodeFromName(color);
                     const style = colorCode ? `style="background-color: ${colorCode}; color: ${getContrastColor(colorCode)};"` : '';
                     return `<div class="color-option ${isSelected}" data-color="${color}" ${style} onclick="selectColor('${color}')">${color}</div>`;
                 }).join('');
             }
             
-            // Load sizes
-            const sizeOptions = document.getElementById('sizeOptions');
-            if (product.sizes && product.sizes.length > 0) {
-                sizeOptions.innerHTML = product.sizes.map(size => 
-                    `<div class="size-option" data-size="${size}">${size}</div>`
-                ).join('');
-            }
+
             
             // Update page title
             document.title = `${product.name} - Shagun Saree Baran`;
+        }
+        
+        function displayImageGallery(images, productName) {
+            const mainImage = document.getElementById('mainImage');
+            const thumbnailContainer = document.getElementById('thumbnailImages');
+            
+            // Set main image
+            mainImage.src = images[0];
+            mainImage.alt = productName;
+            
+            // Create thumbnails if more than one image
+            if (images.length > 1) {
+                thumbnailContainer.innerHTML = images.map((img, index) => `
+                    <img src="${img}" alt="${productName} ${index + 1}" class="thumbnail" onclick="changeMainImage('${img}')">
+                `).join('');
+                thumbnailContainer.style.display = 'flex';
+            } else {
+                thumbnailContainer.style.display = 'none';
+            }
+        }
+        
+        function changeMainImage(imageUrl) {
+            const mainImage = document.getElementById('mainImage');
+            mainImage.src = imageUrl;
+            
+            // Update active thumbnail
+            document.querySelectorAll('.thumbnail').forEach(thumb => {
+                thumb.classList.remove('active');
+                if (thumb.src === imageUrl) {
+                    thumb.classList.add('active');
+                }
+            });
         }
         
         function setupProductActions(product) {
@@ -476,8 +428,7 @@
             // Buy Now button
             document.getElementById('buyNowBtn').addEventListener('click', function() {
                 const quantity = parseInt(document.getElementById('quantityInput').value);
-                addProductToCart(product, quantity);
-                window.location.href = 'address.html';
+                buyNowProduct(product, quantity);
             });
             
             // Quantity controls
@@ -514,11 +465,32 @@
             alert(`Added ${quantity} item(s) to cart!`);
         }
         
+        function buyNowProduct(product, quantity) {
+            // Store buy now item separately (don't add to cart)
+            const buyNowItem = { ...product, quantity };
+            localStorage.setItem('buyNowItem', JSON.stringify(buyNowItem));
+            
+            // Go directly to address page with buy now flag
+            window.location.href = 'address.html?buyNow=true';
+        }
+        
         function selectColor(color) {
             // Update URL with selected color
             const urlParams = new URLSearchParams(window.location.search);
             const productId = urlParams.get('id');
             window.location.href = `product.html?id=${productId}&color=${encodeURIComponent(color)}`;
+        }
+        
+        function getColorCodeFromName(colorName) {
+            const colorMap = {
+                'red': '#FF0000', 'blue': '#0000FF', 'green': '#008000', 'yellow': '#FFFF00',
+                'orange': '#FFA500', 'purple': '#800080', 'pink': '#FFC0CB', 'black': '#000000',
+                'white': '#FFFFFF', 'gray': '#808080', 'grey': '#808080', 'brown': '#A52A2A',
+                'maroon': '#800000', 'navy': '#000080', 'teal': '#008080', 'olive': '#808000',
+                'lime': '#00FF00', 'aqua': '#00FFFF', 'silver': '#C0C0C0', 'gold': '#FFD700',
+                'beige': '#F5F5DC', 'cream': '#FFFDD0', 'ivory': '#FFFFF0'
+            };
+            return colorMap[colorName.toLowerCase()] || '#CCCCCC';
         }
         
         function getContrastColor(hexColor) {
@@ -534,6 +506,9 @@
             // Return black or white based on luminance
             return luminance > 0.5 ? '#000000' : '#FFFFFF';
         }
+        
+        // Make changeMainImage globally available
+        window.changeMainImage = changeMainImage;
     </script>
 </body>
 </html>

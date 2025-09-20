@@ -19,10 +19,7 @@
                     <span class="logo-text">Shagun Saree</span>
                 </a>
             </div>
-            <div class="nav-search">
-                <input type="text" placeholder="Search for sarees, fabrics, colors..." class="search-input">
-                <button class="search-btn"><i class="fas fa-search"></i></button>
-            </div>
+
             <div class="nav-actions">
                 <a href="cart.html" class="cart-icon">
                     <i class="fas fa-shopping-cart"></i>
@@ -37,7 +34,7 @@
     <main class="address-main">
         <div class="container">
             <!-- Breadcrumb -->
-            <nav class="breadcrumb">
+            <nav class="breadcrumb" id="breadcrumb">
                 <a href="index.html">Home</a> / 
                 <a href="cart.html">Cart</a> / 
                 <span>Delivery Address</span>
@@ -169,9 +166,9 @@
 
                             <!-- Form Actions -->
                             <div class="form-actions">
-                                <button type="button" class="btn-secondary" onclick="history.back()">
+                                <button type="button" class="btn-secondary" id="backBtn">
                                     <i class="fas fa-arrow-left"></i>
-                                    Back to Cart
+                                    <span id="backBtnText">Back to Cart</span>
                                 </button>
                                 <button type="submit" class="btn-primary">
                                     <i class="fas fa-arrow-right"></i>
@@ -273,9 +270,7 @@
                 <div>
                     <h4 style="color: white; margin-bottom: 15px; font-size: 1.2rem;">Follow Us</h4>
                     <div style="display: flex; gap: 15px;">
-                        <a href="#" style="color: #ecf0f1; font-size: 1.5rem; transition: color 0.3s;" onmouseover="this.style.color='#3b5998'" onmouseout="this.style.color='#ecf0f1'"><i class="fab fa-facebook"></i></a>
-                        <a href="https://instagram.com/shagunsareebaran" style="color: #ecf0f1; font-size: 1.5rem; transition: color 0.3s;" onmouseover="this.style.color='#e4405f'" onmouseout="this.style.color='#ecf0f1'"><i class="fab fa-instagram"></i></a>
-                        <a href="#" style="color: #ecf0f1; font-size: 1.5rem; transition: color 0.3s;" onmouseover="this.style.color='#1da1f2'" onmouseout="this.style.color='#ecf0f1'"><i class="fab fa-twitter"></i></a>
+                        <a href="https://www.instagram.com/shagun_sareebaran?igsh=cjJoZXozejhhZ2Nh" target="_blank" style="color: #ecf0f1; font-size: 1.5rem; transition: color 0.3s;" onmouseover="this.style.color='#e4405f'" onmouseout="this.style.color='#ecf0f1'"><i class="fab fa-instagram"></i></a>
                     </div>
                 </div>
             </div>
@@ -286,5 +281,41 @@
     </footer>
 
     <script src="main.js"></script>
+    <script>
+        // Handle buy now flow on address page
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const isBuyNow = urlParams.get('buyNow') === 'true';
+            
+            if (isBuyNow) {
+                // Update page elements for buy now flow
+                document.title = 'Delivery Address - Buy Now - Shagun Saree Baran';
+                
+                // Update breadcrumb
+                const breadcrumb = document.getElementById('breadcrumb');
+                if (breadcrumb) {
+                    breadcrumb.innerHTML = `
+                        <a href="index.html">Home</a> / 
+                        <a href="collections.html">Collections</a> / 
+                        <span>Delivery Address</span>
+                    `;
+                }
+                
+                // Update back button
+                const backBtn = document.getElementById('backBtn');
+                const backBtnText = document.getElementById('backBtnText');
+                if (backBtn && backBtnText) {
+                    backBtnText.textContent = 'Back to Product';
+                    backBtn.onclick = () => history.back();
+                }
+            } else {
+                // Regular cart flow
+                const backBtn = document.getElementById('backBtn');
+                if (backBtn) {
+                    backBtn.onclick = () => window.location.href = 'cart.html';
+                }
+            }
+        });
+    </script>
 </body>
 </html>

@@ -20,10 +20,7 @@
                     <span class="logo-text">Shagun Saree</span>
                 </a>
             </div>
-            <div class="nav-search">
-                <input type="text" placeholder="Search for sarees, fabrics, colors..." class="search-input">
-                <button class="search-btn"><i class="fas fa-search"></i></button>
-            </div>
+
             <div class="nav-actions">
                 <a href="cart.html" class="cart-icon">
                     <i class="fas fa-shopping-cart"></i>
@@ -127,6 +124,30 @@
                         </div>
                     </section>
 
+                    <!-- Order Summary Section -->
+                    <section class="order-summary-section">
+                        <div class="form-card">
+                            <h2>Order Summary</h2>
+                            <div id="orderItems" class="order-items">
+                                <!-- Order items will be loaded dynamically -->
+                            </div>
+                            <div class="order-totals">
+                                <div class="total-row">
+                                    <span>Subtotal:</span>
+                                    <span id="subtotal">₹0</span>
+                                </div>
+                                <div class="total-row">
+                                    <span>Delivery Charges:</span>
+                                    <span id="deliveryCharges">₹0</span>
+                                </div>
+                                <div class="total-row total-final">
+                                    <span>Total:</span>
+                                    <span id="total">₹0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
                     <!-- Pay Now Section -->
                     <section class="pay-now-section">
                         <div class="form-card">
@@ -197,9 +218,7 @@
                 <div>
                     <h4 style="color: white; margin-bottom: 15px; font-size: 1.2rem;">Follow Us</h4>
                     <div style="display: flex; gap: 15px;">
-                        <a href="#" style="color: #ecf0f1; font-size: 1.5rem; transition: color 0.3s;" onmouseover="this.style.color='#3b5998'" onmouseout="this.style.color='#ecf0f1'"><i class="fab fa-facebook"></i></a>
-                        <a href="https://instagram.com/shagunsareebaran" style="color: #ecf0f1; font-size: 1.5rem; transition: color 0.3s;" onmouseover="this.style.color='#e4405f'" onmouseout="this.style.color='#ecf0f1'"><i class="fab fa-instagram"></i></a>
-                        <a href="#" style="color: #ecf0f1; font-size: 1.5rem; transition: color 0.3s;" onmouseover="this.style.color='#1da1f2'" onmouseout="this.style.color='#ecf0f1'"><i class="fab fa-twitter"></i></a>
+                        <a href="https://www.instagram.com/shagun_sareebaran?igsh=cjJoZXozejhhZ2Nh" target="_blank" style="color: #ecf0f1; font-size: 1.5rem; transition: color 0.3s;" onmouseover="this.style.color='#e4405f'" onmouseout="this.style.color='#ecf0f1'"><i class="fab fa-instagram"></i></a>
                     </div>
                 </div>
             </div>
@@ -263,29 +282,58 @@
         
         // Secure Razorpay payment integration
         function initRazorpayPayment() {
-            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-            const address = JSON.parse(localStorage.getItem('deliveryAddress') || '{}');
+            // Check if this is a buy now flow
+            const urlParams = new URLSearchParams(window.location.search);
+            const isBuyNow = urlParams.get('buyNow') === 'true';
             
-            if (cart.length === 0) {
-                alert('Cart is empty!');
-                return;
-            }
+            const address = JSON.parse(localStorage.getItem('deliveryAddress') || '{}');
             
             if (!address.firstName) {
                 alert('Please add delivery address!');
-                window.location.href = 'address.html';
+                const addressUrl = isBuyNow ? 'address.html?buyNow=true' : 'address.html';
+                window.location.href = addressUrl;
                 return;
             }
             
-            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            const deliveryCharges = subtotal > 999 ? 0 : 200;
-            const total = subtotal + deliveryCharges;
+            let total = 0;
+            let orderItems = [];
+            
+            if (isBuyNow) {
+                const buyNowItem = JSON.parse(localStorage.getItem('buyNowItem') || 'null');
+                if (!buyNowItem) {
+                    alert('No item selected for purchase!');
+                    window.location.href = 'collections.html';
+                    return;
+                }
+                orderItems = [buyNowItem];
+                const subtotal = buyNowItem.price * buyNowItem.quantity;
+                const deliveryCharges = subtotal > 999 ? 0 : 200;
+                total = subtotal + deliveryCharges;
+            } else {
+                const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+                if (cart.length === 0) {
+                    alert('Cart is empty!');
+                    return;
+                }
+                orderItems = cart;
+                const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                const deliveryCharges = subtotal > 999 ? 0 : 200;
+                total = subtotal + deliveryCharges;
+            }
             
             const customerDetails = {
                 name: `${address.firstName} ${address.lastName}`,
                 email: address.email,
                 mobile: address.mobile
             };
+            
+            // Store order context for payment callback
+            const orderContext = {
+                amount: total,
+                items: orderItems,
+                isBuyNow: isBuyNow
+            };
+            localStorage.setItem('orderContext', JSON.stringify(orderContext));
             
             // Use secure Razorpay integration
             initializeRazorpayCheckout(total, customerDetails);
@@ -302,6 +350,19 @@
             const payNowBtn = document.getElementById('payNowBtn');
             if (payNowBtn) {
                 payNowBtn.onclick = initRazorpayPayment;
+            }
+            
+            // Check if this is a buy now flow and update page accordingly
+            const urlParams = new URLSearchParams(window.location.search);
+            const isBuyNow = urlParams.get('buyNow') === 'true';
+            
+            if (isBuyNow) {
+                // Update page title for buy now
+                document.title = 'Buy Now - Shagun Saree Baran';
+                const pageHeader = document.querySelector('.page-header h1');
+                if (pageHeader) {
+                    pageHeader.textContent = 'Buy Now';
+                }
             }
             
             // Load checkout data

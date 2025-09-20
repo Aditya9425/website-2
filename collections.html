@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="navbar-styles.css">
     <link rel="stylesheet" href="product-modal.css">
+    <link rel="stylesheet" href="gallery-styles.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
@@ -22,15 +23,13 @@
             </div>
             <div class="nav-links">
                 <a href="index.html" class="nav-link">Home</a>
-                <a href="collections.html" class="nav-link active">Silk Sarees</a>
+                <a href="collections.html?category=silk" class="nav-link">Silk Sarees</a>
                 <a href="collections.html?category=cotton" class="nav-link">Cotton Sarees</a>
-                <a href="collections.html?category=bridal" class="nav-link">Bridal Collection</a>
+                <a href="collections.html?category=bridal" class="nav-link">Wedding Sarees</a>
                 <a href="collections.html?category=designer" class="nav-link">Designer Sarees</a>
             </div>
             <div class="nav-actions">
-                <div class="search-container">
-                    <i class="fas fa-search search-icon"></i>
-                </div>
+
                 <a href="cart.html" class="cart-container">
                     <i class="fas fa-shopping-bag"></i>
                     <span class="cart-count" id="cartCount">0</span>
@@ -56,8 +55,8 @@
                 <button class="filter-btn active" data-category="all">All</button>
                 <button class="filter-btn" data-category="silk">Silk Sarees</button>
                 <button class="filter-btn" data-category="cotton">Cotton Sarees</button>
+                <button class="filter-btn" data-category="bridal">Wedding Sarees</button>
                 <button class="filter-btn" data-category="designer">Designer Sarees</button>
-                <button class="filter-btn" data-category="wedding">Wedding Sarees</button>
             </div>
             
             <!-- Products Grid -->
@@ -77,8 +76,11 @@
             
             <div class="product-detail">
                 <div class="product-images">
-                    <div class="main-image">
-                        <img id="mainProductImage" src="" alt="Product Image">
+                    <div class="main-image-container">
+                        <img id="mainProductImage" src="" alt="Product Image" class="main-image">
+                    </div>
+                    <div class="thumbnail-images" id="modalThumbnails">
+                        <!-- Modal thumbnails will be loaded here -->
                     </div>
                 </div>
                 
@@ -167,9 +169,7 @@
                 <div>
                     <h4 style="color: white; margin-bottom: 15px; font-size: 1.2rem;">Follow Us</h4>
                     <div style="display: flex; gap: 15px;">
-                        <a href="#" style="color: #ecf0f1; font-size: 1.5rem; transition: color 0.3s;" onmouseover="this.style.color='#3b5998'" onmouseout="this.style.color='#ecf0f1'"><i class="fab fa-facebook"></i></a>
-                        <a href="https://instagram.com/shagunsareebaran" style="color: #ecf0f1; font-size: 1.5rem; transition: color 0.3s;" onmouseover="this.style.color='#e4405f'" onmouseout="this.style.color='#ecf0f1'"><i class="fab fa-instagram"></i></a>
-                        <a href="#" style="color: #ecf0f1; font-size: 1.5rem; transition: color 0.3s;" onmouseover="this.style.color='#1da1f2'" onmouseout="this.style.color='#ecf0f1'"><i class="fab fa-twitter"></i></a>
+                        <a href="https://www.instagram.com/shagun_sareebaran?igsh=cjJoZXozejhhZ2Nh" target="_blank" style="color: #ecf0f1; font-size: 1.5rem; transition: color 0.3s;" onmouseover="this.style.color='#e4405f'" onmouseout="this.style.color='#ecf0f1'"><i class="fab fa-instagram"></i></a>
                     </div>
                 </div>
             </div>
@@ -180,5 +180,45 @@
     </footer>
 
     <script src="main.js"></script>
+    <script>
+        // Auto-filter based on URL parameter
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const category = urlParams.get('category');
+            
+            if (category) {
+                // Update page title
+                const categoryNames = {
+                    'silk': 'Silk Sarees',
+                    'cotton': 'Cotton Sarees', 
+                    'bridal': 'Wedding Sarees',
+                    'designer': 'Designer Sarees'
+                };
+                
+                const pageHeader = document.querySelector('.page-header h1');
+                if (pageHeader && categoryNames[category]) {
+                    pageHeader.textContent = categoryNames[category];
+                }
+                
+                // Wait for products to load, then filter
+                const checkAndFilter = () => {
+                    if (typeof filterProducts === 'function' && products && products.length > 0) {
+                        filterProducts(category);
+                        
+                        // Update active filter button
+                        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+                        const filterBtn = document.querySelector(`[data-category="${category}"]`);
+                        if (filterBtn) {
+                            filterBtn.classList.add('active');
+                        }
+                    } else {
+                        setTimeout(checkAndFilter, 100);
+                    }
+                };
+                
+                checkAndFilter();
+            }
+        });
+    </script>
 </body>
 </html>

@@ -106,6 +106,42 @@
         .product-queries { color: #4ECDC4; }
         .visit-us { color: #FFD700; }
         .timings { color: #9B59B6; }
+        .response-message {
+            background: linear-gradient(135deg, #4ECDC4, #44A08D);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            margin: 30px 0;
+            box-shadow: 0 5px 20px rgba(68, 160, 141, 0.3);
+        }
+        .whatsapp-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #25D366;
+            padding: 12px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 500;
+            margin-top: 10px;
+            transition: color 0.3s ease;
+        }
+        .whatsapp-btn:hover {
+            color: #128C7E;
+        }
+        .whatsapp-btn i {
+            color: #25D366;
+        }
+        .whatsapp-btn:hover i {
+            color: #128C7E;
+        }
+        .whatsapp-note {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -120,15 +156,13 @@
             </div>
             <div class="nav-links">
                 <a href="index.html" class="nav-link">Home</a>
-                <a href="collections.html" class="nav-link">Silk Sarees</a>
+                <a href="collections.html?category=silk" class="nav-link">Silk Sarees</a>
                 <a href="collections.html?category=cotton" class="nav-link">Cotton Sarees</a>
-                <a href="collections.html?category=bridal" class="nav-link">Bridal Collection</a>
+                <a href="collections.html?category=bridal" class="nav-link">Wedding Sarees</a>
                 <a href="collections.html?category=designer" class="nav-link">Designer Sarees</a>
             </div>
             <div class="nav-actions">
-                <div class="search-container">
-                    <i class="fas fa-search search-icon"></i>
-                </div>
+
                 <a href="cart.html" class="cart-container">
                     <i class="fas fa-shopping-bag"></i>
                     <span class="cart-count" id="cartCount">0</span>
@@ -156,22 +190,15 @@
                     </div>
                     <h3>📦 Order-related queries</h3>
                     <div class="contact-info">
-                        <p><i class="fas fa-envelope"></i> <a href="mailto:orders@shagunsaree.com">orders@shagunsaree.com</a></p>
-                        <p><i class="fas fa-phone"></i> <a href="tel:+919636788945">+91-9636788945</a></p>
+                        <p><i class="fas fa-envelope"></i> <a href="shagunsaree60@gmail.com">shagunsaree60@gmail.com</a></p>
+                        <a href="https://wa.me/919636788945" target="_blank" class="whatsapp-btn">
+                            <i class="fab fa-whatsapp"></i>
+                            Message us on WhatsApp
+                        </a>
+                        <p class="whatsapp-note">(WhatsApp only, no calls)</p>
                     </div>
                 </div>
 
-                <!-- Product Queries -->
-                <div class="contact-card">
-                    <div class="icon product-queries">
-                        <i class="fas fa-shopping-bag"></i>
-                    </div>
-                    <h3>🛍️ Product-related queries</h3>
-                    <div class="contact-info">
-                        <p><i class="fas fa-envelope"></i> <a href="mailto:support@shagunsaree.com">support@shagunsaree.com</a></p>
-                        <p><i class="fas fa-phone"></i> <a href="tel:+919636788946">+91-9636788946</a></p>
-                    </div>
-                </div>
 
                 <!-- Visit Us -->
                 <div class="contact-card">
@@ -193,32 +220,24 @@
                     </div>
                     <h3>🕒 Timings</h3>
                     <div class="contact-info">
-                        <p><strong>Mon–Sat:</strong> 10am–8pm</p>
-                        <p><strong>Sunday:</strong> 10am–5pm</p>
+                        <p><strong>Mon–Sat:</strong> 9:00am–8:00pm</p>
+                        <p><strong>Sunday:</strong> 9:00am–7:30pm</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Map Section -->
-            <div class="map-section">
-                <h3>📍 Find Us on Map</h3>
-                <div class="map-container">
-                    <iframe 
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3654.123456789!2d76.51234567890123!3d25.10123456789012!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sBaran%2C%20Rajasthan!5e0!3m2!1sen!2sin!4v1234567890123!5m2!1sen!2sin"
-                        width="100%" 
-                        height="300" 
-                        style="border:0;" 
-                        allowfullscreen="" 
-                        loading="lazy" 
-                        referrerpolicy="no-referrer-when-downgrade">
-                    </iframe>
-                </div>
+            <!-- Response Message -->
+            <div class="response-message">
+                <p>We'll get back to your query within the next 24 hours. Thank you for reaching out!</p>
+            </div>
+
+        
             </div>
 
             <!-- Social Section -->
             <div class="social-section">
                 <h3>📷 Follow us</h3>
-                <a href="https://instagram.com/shagunsareebaran" target="_blank" class="social-link">
+                <a href="https://www.instagram.com/shagun_sareebaran?igsh=cjJoZXozejhhZ2Nh" target="_blank" class="social-link">
                     <i class="fab fa-instagram"></i>
                     @shagunsareebaran
                 </a>

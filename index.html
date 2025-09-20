@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="navbar-styles.css">
     <link rel="stylesheet" href="product-modal.css">
     <link rel="stylesheet" href="featured-styles.css">
+    <link rel="stylesheet" href="gallery-styles.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
@@ -23,15 +24,13 @@
             </div>
             <div class="nav-links">
                 <a href="index.html" class="nav-link active">Home</a>
-                <a href="collections.html" class="nav-link">Silk Sarees</a>
+                <a href="collections.html?category=silk" class="nav-link">Silk Sarees</a>
                 <a href="collections.html?category=cotton" class="nav-link">Cotton Sarees</a>
-                <a href="collections.html?category=bridal" class="nav-link">Bridal Collection</a>
+                <a href="collections.html?category=bridal" class="nav-link">Wedding Sarees</a>
                 <a href="collections.html?category=designer" class="nav-link">Designer Sarees</a>
             </div>
             <div class="nav-actions">
-                <div class="search-container">
-                    <i class="fas fa-search search-icon"></i>
-                </div>
+
                 <a href="cart.html" class="cart-container">
                     <i class="fas fa-shopping-bag"></i>
                     <span class="cart-count" id="cartCount">0</span>
@@ -122,9 +121,7 @@
                 <div>
                     <h4 style="color: white; margin-bottom: 15px; font-size: 1.2rem;">Follow Us</h4>
                     <div style="display: flex; gap: 15px;">
-                        <a href="#" style="color: #ecf0f1; font-size: 1.5rem; transition: color 0.3s;" onmouseover="this.style.color='#3b5998'" onmouseout="this.style.color='#ecf0f1'"><i class="fab fa-facebook"></i></a>
-                        <a href="https://instagram.com/shagunsareebaran" style="color: #ecf0f1; font-size: 1.5rem; transition: color 0.3s;" onmouseover="this.style.color='#e4405f'" onmouseout="this.style.color='#ecf0f1'"><i class="fab fa-instagram"></i></a>
-                        <a href="#" style="color: #ecf0f1; font-size: 1.5rem; transition: color 0.3s;" onmouseover="this.style.color='#1da1f2'" onmouseout="this.style.color='#ecf0f1'"><i class="fab fa-twitter"></i></a>
+                        <a href="https://www.instagram.com/shagun_sareebaran?igsh=cjJoZXozejhhZ2Nh" target="_blank" style="color: #ecf0f1; font-size: 1.5rem; transition: color 0.3s;" onmouseover="this.style.color='#e4405f'" onmouseout="this.style.color='#ecf0f1'"><i class="fab fa-instagram"></i></a>
                     </div>
                 </div>
             </div>
@@ -146,8 +143,11 @@
             
             <div class="product-detail">
                 <div class="product-images">
-                    <div class="main-image">
-                        <img id="mainProductImage" src="" alt="Product Image">
+                    <div class="main-image-container">
+                        <img id="mainProductImage" src="" alt="Product Image" class="main-image">
+                    </div>
+                    <div class="thumbnail-images" id="modalThumbnails">
+                        <!-- Modal thumbnails will be loaded here -->
                     </div>
                 </div>
                 
