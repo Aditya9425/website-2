@@ -157,17 +157,13 @@ class PaymentManager {
 
         // Create order object
         const order = {
-            id: `ORD${Date.now()}`,
             user_id: userId,
             razorpay_payment_id: razorpayResponse.razorpay_payment_id,
             razorpay_order_id: razorpayResponse.razorpay_order_id,
             items: orderData.items,
             total_amount: orderData.amount,
             shipping_addr: orderData.address,
-            customerDetails: orderData.customerDetails,
-            status: 'confirmed',
-            paymentMethod: 'razorpay',
-            created_at: new Date().toISOString()
+            status: 'confirmed'
         };
 
         // Save order to database and localStorage

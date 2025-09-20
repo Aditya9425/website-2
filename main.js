@@ -1230,17 +1230,11 @@ async function processOrder(total, paymentMethod, orderItems = null, isBuyNow = 
     
     // Create order object
     const order = {
-        id: 'ORD' + Date.now(),
         user_id: userId,
         items: [...items],
-        subtotal: subtotal,
-        deliveryCharges: deliveryCharges,
         total_amount: calculatedTotal,
         shipping_addr: { ...addressData },
-        paymentMethod: paymentMethod,
-        status: paymentMethod === 'cod' ? 'pending' : 'confirmed',
-        isBuyNow: isBuyNow,
-        created_at: new Date().toISOString()
+        status: paymentMethod === 'cod' ? 'pending' : 'confirmed'
     };
     
     console.log('Order created:', order);
