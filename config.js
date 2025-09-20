@@ -3,7 +3,7 @@ const CONFIG = {
     // Backend URLs
     BACKEND_URL: {
         development: 'http://localhost:5000',
-        production: 'https://backend-pink-nine-27.vercel.app'
+        production: 'https://backend-55qrj8nmu-aditya-bathlas-projects.vercel.app'
     },
     
     // Get current backend URL based on environment
