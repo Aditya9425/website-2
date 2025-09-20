@@ -20,7 +20,8 @@ app.use(cors({
         'http://127.0.0.1:5502', 
         'http://localhost:5502',
         'https://shagunsaree.vercel.app',
-        /\.vercel\.app$/
+        /\.vercel\.app$/,
+        /\.railway\.app$/
     ],
     credentials: true
 }));
@@ -41,6 +42,19 @@ app.get('/health', (req, res) => {
         status: 'OK', 
         message: 'Shagun Saree Backend is running',
         timestamp: new Date().toISOString()
+    });
+});
+
+// Root endpoint
+app.get('/', (req, res) => {
+    res.json({ 
+        status: 'OK', 
+        message: 'Shagun Saree Backend API',
+        endpoints: {
+            'GET /health': 'Health check',
+            'POST /api/create-order': 'Create Razorpay order',
+            'POST /api/verify-payment': 'Verify payment'
+        }
     });
 });
 

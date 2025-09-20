@@ -1,0 +1,16 @@
+{
+  "name": "shagun-saree-frontend",
+  "version": "1.0.0",
+  "description": "Shagun Saree E-commerce Frontend",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve . -p $PORT",
+    "dev": "npx serve . -p 3000"
+  },
+  "dependencies": {
+    "serve": "^14.2.1"
+  },
+  "keywords": ["ecommerce", "saree", "frontend"],
+  "author": "Shagun Saree Baran",
+  "license": "MIT"
+}
