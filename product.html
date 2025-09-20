@@ -466,6 +466,14 @@
         }
         
         function buyNowProduct(product, quantity) {
+            // Check if user is logged in
+            const userSession = localStorage.getItem('userSession');
+            if (!userSession) {
+                alert('Please login to buy now.');
+                window.location.href = 'auth.html';
+                return;
+            }
+            
             // Store buy now item separately (don't add to cart)
             const buyNowItem = { ...product, quantity };
             localStorage.setItem('buyNowItem', JSON.stringify(buyNowItem));

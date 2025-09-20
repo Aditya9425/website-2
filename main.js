@@ -633,6 +633,15 @@ function setupCartPage() {
         console.log('Checkout button found, setting up click handler');
         checkoutBtn.onclick = () => {
             console.log('Checkout button clicked, cart length:', cart.length);
+            
+            // Check if user is logged in
+            const userSession = localStorage.getItem('userSession');
+            if (!userSession) {
+                alert('Please login to continue with checkout.');
+                window.location.href = 'auth.html';
+                return;
+            }
+            
             if (cart.length > 0) {
                 console.log('Navigating to address page');
                 window.location.href = 'address.html';
@@ -866,6 +875,14 @@ function handleAddressSubmit(isBuyNow = false) {
 
 // Handle proceed to checkout
 function handleProceedToCheckout(isBuyNow = false) {
+    // Check if user is logged in
+    const userSession = localStorage.getItem('userSession');
+    if (!userSession) {
+        alert('Please login to continue with checkout.');
+        window.location.href = 'auth.html';
+        return;
+    }
+    
     const addressForm = document.getElementById('addressForm');
     
     if (isBuyNow) {
@@ -1025,6 +1042,14 @@ function initializeRazorpay(orderAmount, orderItems = null, isBuyNow = false) {
 // Enhanced place order with payment integration
 function handlePlaceOrderWithPayment(isBuyNow = false) {
     console.log('Handling place order with payment...', isBuyNow ? 'Buy Now flow' : 'Cart flow');
+    
+    // Check if user is logged in
+    const userSession = localStorage.getItem('userSession');
+    if (!userSession) {
+        alert('Please login to place an order.');
+        window.location.href = 'auth.html';
+        return false;
+    }
     
     let orderItems = [];
     let total = 0;
@@ -1399,6 +1424,14 @@ function addToCartFromModal() {
 }
 
 function buyNowFromModal() {
+    // Check if user is logged in
+    const userSession = localStorage.getItem('userSession');
+    if (!userSession) {
+        alert('Please login to buy now.');
+        window.location.href = 'auth.html';
+        return;
+    }
+    
     if (!currentProduct) return;
     
     const quantity = parseInt(document.getElementById('modalQuantity').value);
@@ -1411,6 +1444,14 @@ function buyNowFromModal() {
 }
 
 function buyNow(productId) {
+    // Check if user is logged in
+    const userSession = localStorage.getItem('userSession');
+    if (!userSession) {
+        alert('Please login to buy now.');
+        window.location.href = 'auth.html';
+        return;
+    }
+    
     const product = products.find(p => p.id == productId);
     if (!product) return;
     

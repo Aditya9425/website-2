@@ -25,7 +25,22 @@
                     <i class="fas fa-shopping-cart"></i>
                     <span class="cart-count" id="cartCount">0</span>
                 </a>
-                <button class="login-btn">Login</button>
+                <div id="loginLink" class="login-link">
+                    <button class="login-btn" onclick="window.location.href='auth.html'">Login</button>
+                </div>
+                <div id="profileLink" class="profile-link" style="display: none;">
+                    <div class="user-container">
+                        <i class="fas fa-user"></i>
+                        <span id="userName">User</span>
+                    </div>
+                    <div id="userMenu" class="user-menu" style="display: none;">
+                        <a href="profile.html" class="profile-link">
+                            <i class="fas fa-user"></i>
+                            <span>Profile</span>
+                        </a>
+                        <button id="signOutBtn" class="sign-out-btn" onclick="logout()">Sign Out</button>
+                    </div>
+                </div>
             </div>
         </nav>
     </header>
@@ -201,5 +216,25 @@
     </footer>
 
     <script src="main.js"></script>
+    <script>
+        // User menu toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const userContainer = document.querySelector('.user-container');
+            const userMenu = document.getElementById('userMenu');
+            
+            if (userContainer && userMenu) {
+                userContainer.addEventListener('click', function() {
+                    userMenu.style.display = userMenu.style.display === 'block' ? 'none' : 'block';
+                });
+                
+                // Close menu when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!userContainer.contains(e.target) && !userMenu.contains(e.target)) {
+                        userMenu.style.display = 'none';
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>
