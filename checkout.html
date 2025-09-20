@@ -6,6 +6,7 @@
     <title>Checkout - Shagun Saree Baran</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="navbar-styles.css">
+    <link rel="stylesheet" href="mobile-responsive.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
@@ -21,7 +22,16 @@
                     <span class="logo-text">Shagun Saree</span>
                 </a>
             </div>
-
+            <div class="nav-links" id="navLinks">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="collections.html?category=silk" class="nav-link">Silk Sarees</a>
+                <a href="collections.html?category=cotton" class="nav-link">Cotton Sarees</a>
+                <a href="collections.html?category=bridal" class="nav-link">Wedding Sarees</a>
+                <a href="collections.html?category=designer" class="nav-link">Designer Sarees</a>
+            </div>
+            <button class="mobile-menu-toggle" id="mobileMenuToggle" onclick="toggleMobileMenu()">
+                <i class="fas fa-bars"></i>
+            </button>
             <div class="nav-actions">
                 <a href="cart.html" class="cart-icon">
                     <i class="fas fa-shopping-cart"></i>

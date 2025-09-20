@@ -1774,14 +1774,14 @@ function toggleMobileMenu() {
     const menuToggle = document.getElementById('mobileMenuToggle');
     
     if (navLinks && menuToggle) {
-        const isHidden = navLinks.classList.contains('hidden');
+        const isActive = navLinks.classList.contains('active');
         
-        if (isHidden) {
-            navLinks.classList.remove('hidden');
-            menuToggle.innerHTML = '<i class="fas fa-times"></i>';
-        } else {
-            navLinks.classList.add('hidden');
+        if (isActive) {
+            navLinks.classList.remove('active');
             menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+        } else {
+            navLinks.classList.add('active');
+            menuToggle.innerHTML = '<i class="fas fa-times"></i>';
         }
     }
 }
@@ -1795,7 +1795,7 @@ function closeMobileMenuOnNavClick() {
     navLinks.forEach(link => {
         link.addEventListener('click', () => {
             if (window.innerWidth <= 768) {
-                navLinksContainer.classList.add('hidden');
+                navLinksContainer.classList.remove('active');
                 if (menuToggle) {
                     menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
                 }
@@ -1806,12 +1806,6 @@ function closeMobileMenuOnNavClick() {
 
 // Initialize mobile menu on page load
 function initializeMobileMenu() {
-    // Set initial state for mobile menu
-    const navLinks = document.getElementById('navLinks');
-    if (navLinks && window.innerWidth <= 768) {
-        navLinks.classList.add('hidden');
-    }
-    
     // Close menu on nav link clicks
     closeMobileMenuOnNavClick();
     
@@ -1822,8 +1816,8 @@ function initializeMobileMenu() {
         const navbar = document.querySelector('.navbar');
         
         if (navLinks && menuToggle && navbar) {
-            if (!navbar.contains(e.target) && !navLinks.classList.contains('hidden')) {
-                navLinks.classList.add('hidden');
+            if (!navbar.contains(e.target) && navLinks.classList.contains('active')) {
+                navLinks.classList.remove('active');
                 menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
             }
         }
@@ -1832,11 +1826,11 @@ function initializeMobileMenu() {
     // Handle window resize
     window.addEventListener('resize', () => {
         const navLinks = document.getElementById('navLinks');
-        if (navLinks) {
+        const menuToggle = document.getElementById('mobileMenuToggle');
+        if (navLinks && menuToggle) {
             if (window.innerWidth > 768) {
-                navLinks.classList.remove('hidden');
-            } else {
-                navLinks.classList.add('hidden');
+                navLinks.classList.remove('active');
+                menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
             }
         }
     });
