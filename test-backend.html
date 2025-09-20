@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backend Test - Shagun Saree</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .success { background: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+        .loading { background: #fff3cd; border-color: #ffeaa7; color: #856404; }
+        button { padding: 10px 20px; margin: 10px 5px; border: none; border-radius: 5px; cursor: pointer; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        pre { background: #f8f9fa; padding: 15px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Backend Connection Test</h1>
+    <p>Test your backend connection and payment integration</p>
+
+    <div class="test-section">
+        <h3>1. Health Check</h3>
+        <button class="btn-primary" onclick="testHealthCheck()">Test Health Check</button>
+        <div id="healthResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>2. Create Order Test</h3>
+        <button class="btn-primary" onclick="testCreateOrder()">Test Create Order</button>
+        <div id="orderResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>3. Payment Verification Test</h3>
+        <button class="btn-primary" onclick="testPaymentVerification()">Test Payment Verification</button>
+        <div id="verifyResult"></div>
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+        const backendUrl = window.CONFIG ? window.CONFIG.getBackendUrl() : 'https://backend-9tlcrts2t-aditya-bathlas-projects.vercel.app';
+        
+        async function testHealthCheck() {
+            const resultDiv = document.getElementById('healthResult');
+            resultDiv.innerHTML = '<div class="loading">Testing health check...</div>';
+            
+            try {
+                const response = await fetch(`${backendUrl}/api/health`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Health Check Successful</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${data.error || 'Unknown error'}`);
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Health Check Failed</h4>
+                        <p>Error: ${error.message}</p>
+                        <p>Backend URL: ${backendUrl}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testCreateOrder() {
+            const resultDiv = document.getElementById('orderResult');
+            resultDiv.innerHTML = '<div class="loading">Testing order creation...</div>';
+            
+            try {
+                const response = await fetch(`${backendUrl}/api/create-order`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        amount: 1000,
+                        currency: 'INR',
+                        receipt: 'test_order_' + Date.now()
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Order Creation Successful</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    throw new Error(data.error || 'Order creation failed');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Order Creation Failed</h4>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testPaymentVerification() {
+            const resultDiv = document.getElementById('verifyResult');
+            resultDiv.innerHTML = '<div class="loading">Testing payment verification...</div>';
+            
+            try {
+                // This is a dummy test - in real scenario, these would come from Razorpay
+                const response = await fetch(`${backendUrl}/api/verify-payment`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        razorpay_order_id: 'order_test123',
+                        razorpay_payment_id: 'pay_test123',
+                        razorpay_signature: 'dummy_signature'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <div class="${data.success ? 'success' : 'error'}">
+                        <h4>${data.success ? '✅' : '❌'} Payment Verification Response</h4>
+                        <p>Note: This is expected to fail with dummy data</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Payment Verification Test Failed</h4>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Auto-run health check on page load
+        window.onload = function() {
+            testHealthCheck();
+        };
+    </script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 // Enhanced Payment Integration for Shagun Saree
 class PaymentManager {
     constructor() {
-        this.backendUrl = window.CONFIG ? window.CONFIG.getBackendUrl() : 'http://localhost:5000';
+        this.backendUrl = window.CONFIG ? window.CONFIG.getBackendUrl() : 'https://backend-pink-nine-27.vercel.app';
         this.isProcessing = false;
     }
 
