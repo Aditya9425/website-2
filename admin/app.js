@@ -972,29 +972,26 @@ class AdminPanel {
     // Order Management Methods
     async loadOrders() {
         try {
-            // Try to fetch from backend API first
-            const backendUrl = 'http://localhost:5000'; // Adjust as needed
-            const response = await fetch(`${backendUrl}/api/admin-orders`);
+            // Fetch orders directly from Supabase
+            const supabase = window.supabase.createClient(
+                'https://jstvadizuzvwhabtfhfs.supabase.co',
+                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzdHZhZGl6dXp2d2hhYnRmaGZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NjI3NjAsImV4cCI6MjA3MjIzODc2MH0.6btNpJfUh6Fd5PfoivIvu-f31Fj5IXl1vxBLsHz5ISw'
+            );
             
-            if (response.ok) {
-                const result = await response.json();
-                if (result.success) {
-                    this.orders = result.orders;
-                    this.displayOrders(this.orders);
-                    return;
-                }
+            const { data: orders, error } = await supabase
+                .from('orders')
+                .select('*')
+                .order('created_at', { ascending: false });
+            
+            if (error) {
+                console.error('Supabase error:', error);
+                throw error;
             }
             
-            // Fallback to Firebase if backend is not available
-            const { db } = window.firebaseServices;
-            const snapshot = await db.collection('orders').orderBy('createdAt', 'desc').get();
-            
-            this.orders = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-
+            this.orders = orders || [];
+            console.log('Orders loaded from Supabase:', this.orders);
             this.displayOrders(this.orders);
+            
         } catch (error) {
             console.error('Error loading orders:', error);
             // Show empty state with error message

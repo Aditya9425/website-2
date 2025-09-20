@@ -109,22 +109,19 @@ async function loadUserOrders() {
     `;
     
     try {
-        // Fetch orders from database
-        const backendUrl = window.CONFIG ? window.CONFIG.getBackendUrl() : 'http://localhost:5000';
-        const response = await fetch(`${backendUrl}/api/get-orders?user_id=${currentUser.id}`);
+        // Fetch orders directly from Supabase
+        const { data: userOrders, error } = await supabase
+            .from('orders')
+            .select('*')
+            .eq('user_id', currentUser.id)
+            .order('created_at', { ascending: false });
         
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        if (error) {
+            console.error('Supabase error:', error);
+            throw new Error(error.message);
         }
         
-        const result = await response.json();
-        
-        if (!result.success) {
-            throw new Error(result.error || 'Failed to fetch orders');
-        }
-        
-        const userOrders = result.orders || [];
-        console.log('Orders fetched from database:', userOrders);
+        console.log('Orders fetched from Supabase:', userOrders);
         
         // Also get orders from localStorage as fallback
         const localOrders = JSON.parse(localStorage.getItem('orders') || '[]');
@@ -134,7 +131,7 @@ async function loadUserOrders() {
         );
         
         // Combine database and local orders (remove duplicates)
-        const allOrders = [...userOrders];
+        const allOrders = [...(userOrders || [])];
         userLocalOrders.forEach(localOrder => {
             if (!allOrders.find(dbOrder => dbOrder.id === localOrder.id)) {
                 allOrders.push(localOrder);
@@ -221,9 +218,9 @@ async function loadUserOrders() {
         
         if (userLocalOrders.length > 0) {
             container.innerHTML = `
-                <div class="warning-message">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <p>Showing local orders only. Database connection failed.</p>
+                <div class="warning-message" style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+                    <i class="fas fa-exclamation-triangle" style="color: #856404;"></i>
+                    <span style="color: #856404; margin-left: 8px;">Showing local orders only. Database connection failed.</span>
                 </div>
             ` + userLocalOrders.map(order => {
                 const orderDate = new Date(order.created_at || order.createdAt).toLocaleDateString();
@@ -245,7 +242,7 @@ async function loadUserOrders() {
                         <div class="order-items">
                             ${orderItems.map(item => `
                                 <div class="order-item">
-                                    <img src="${item.image}" alt="${item.name}">
+                                    <img src="${item.image}" alt="${item.name}" style="width: 60px; height: 80px; object-fit: cover; border-radius: 4px;">
                                     <div class="item-details">
                                         <h5>${item.name}</h5>
                                         <p>Qty: ${item.quantity} | ₹${item.price.toLocaleString()}</p>

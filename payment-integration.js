@@ -190,45 +190,41 @@ class PaymentManager {
     // Save order to database and localStorage
     async saveOrder(order) {
         try {
-            // Save to database first
-            const response = await fetch(`${this.backendUrl}/api/save-order`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(order)
-            });
-
-            const result = await response.json();
+            // Save to Supabase directly
+            const supabase = window.supabase.createClient(
+                'https://jstvadizuzvwhabtfhfs.supabase.co',
+                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzdHZhZGl6dXp2d2hhYnRmaGZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NjI3NjAsImV4cCI6MjA3MjIzODc2MH0.6btNpJfUh6Fd5PfoivIvu-f31Fj5IXl1vxBLsHz5ISw'
+            );
             
-            if (result.success) {
-                console.log('Order saved to database successfully:', order.id);
-                
-                // Also save to localStorage as backup
-                const orders = JSON.parse(localStorage.getItem('orders') || '[]');
-                orders.push(order);
-                localStorage.setItem('orders', JSON.stringify(orders));
-                
-                this.showNotification('Order saved successfully!', 'success');
-            } else {
-                console.error('Failed to save order to database:', result.error);
-                
-                // Still save to localStorage as fallback
-                const orders = JSON.parse(localStorage.getItem('orders') || '[]');
-                orders.push(order);
-                localStorage.setItem('orders', JSON.stringify(orders));
-                
-                this.showNotification('Order saved locally. Database sync may be delayed.', 'warning');
+            const { data, error } = await supabase
+                .from('orders')
+                .insert([order])
+                .select()
+                .single();
+            
+            if (error) {
+                console.error('Supabase error:', error);
+                throw error;
             }
+            
+            console.log('Order saved to Supabase successfully:', data);
+            
+            // Also save to localStorage as backup
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            orders.push(order);
+            localStorage.setItem('orders', JSON.stringify(orders));
+            
+            this.showNotification('Order saved successfully!', 'success');
+            
         } catch (error) {
-            console.error('Error saving order:', error);
+            console.error('Error saving order to Supabase:', error);
             
             // Fallback to localStorage only
             try {
                 const orders = JSON.parse(localStorage.getItem('orders') || '[]');
                 orders.push(order);
                 localStorage.setItem('orders', JSON.stringify(orders));
-                this.showNotification('Order saved locally. Please contact support if issues persist.', 'warning');
+                this.showNotification('Order saved locally. Database sync may be delayed.', 'warning');
             } catch (localError) {
                 console.error('Failed to save order even locally:', localError);
                 this.showNotification('Failed to save order. Please contact support immediately.', 'error');
