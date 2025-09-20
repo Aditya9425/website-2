@@ -1,7 +1,4 @@
 backend/
-admin/
 *.sql
 .env
 .env.example
-README.md
-SETUP.md
