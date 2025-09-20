@@ -8,4 +8,4 @@ cmds = ['npm install']
 cmds = ['echo "Building static site"']
 
 [start]
-cmd = 'npx serve . -p $PORT'
+cmd = 'node server-combined.js'
