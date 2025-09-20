@@ -1774,12 +1774,12 @@ function toggleMobileMenu() {
     const menuToggle = document.getElementById('mobileMenuToggle');
     
     if (navLinks && menuToggle) {
-        const isActive = navLinks.classList.contains('active');
-        
-        if (isActive) {
+        if (navLinks.style.display === 'flex') {
+            navLinks.style.display = 'none';
             navLinks.classList.remove('active');
             menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
         } else {
+            navLinks.style.display = 'flex';
             navLinks.classList.add('active');
             menuToggle.innerHTML = '<i class="fas fa-times"></i>';
         }
