@@ -979,6 +979,57 @@ function handlePlaceOrder() {
     alert('Please use the Place Order button on the checkout page.');
 }
 
+// Save order to database
+async function saveOrderToDatabase(order) {
+    try {
+        const backendUrl = window.CONFIG ? window.CONFIG.getBackendUrl() : 'http://localhost:5000';
+        
+        const response = await fetch(`${backendUrl}/api/save-order`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(order)
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+            console.log('Order saved to database successfully:', order.id);
+            
+            // Also save to localStorage as backup
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            orders.push(order);
+            localStorage.setItem('orders', JSON.stringify(orders));
+            
+            showNotification('Order saved successfully!', 'success');
+        } else {
+            console.error('Failed to save order to database:', result.error);
+            
+            // Still save to localStorage as fallback
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            orders.push(order);
+            localStorage.setItem('orders', JSON.stringify(orders));
+            
+            showNotification('Order saved locally. Database sync may be delayed.', 'warning');
+        }
+    } catch (error) {
+        console.error('Error saving order to database:', error);
+        
+        // Fallback to localStorage only
+        try {
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            orders.push(order);
+            localStorage.setItem('orders', JSON.stringify(orders));
+            showNotification('Order saved locally. Please contact support if issues persist.', 'warning');
+        } catch (localError) {
+            console.error('Failed to save order even locally:', localError);
+            showNotification('Failed to save order. Please contact support immediately.', 'error');
+            throw localError;
+        }
+    }
+}
+
 // Show order confirmation modal
 function showOrderConfirmation(order) {
     console.log('Showing order confirmation for order:', order.id);
@@ -989,30 +1040,34 @@ function showOrderConfirmation(order) {
         const orderTotal = document.getElementById('orderTotal');
         
         if (orderNumber) orderNumber.textContent = order.id;
-        if (orderTotal) orderTotal.textContent = `₹${order.total.toLocaleString()}`;
+        if (orderTotal) orderTotal.textContent = `₹${(order.total_amount || order.total).toLocaleString()}`;
         
         // Show modal
         const modal = document.getElementById('orderConfirmationModal');
         if (modal) {
-            modal.style.display = 'block';
+            modal.style.display = 'flex';
             
-            // Auto-hide modal after 10 seconds and redirect
+            // Auto-hide modal after 8 seconds and redirect to profile
             setTimeout(() => {
                 modal.style.display = 'none';
-                window.location.href = 'index.html';
-            }, 10000);
+                window.location.href = 'profile.html';
+            }, 8000);
         } else {
             // Fallback if modal doesn't exist
-            alert(`Order placed successfully!\n\nOrder ID: ${order.id}\nTotal Amount: ₹${order.total.toLocaleString()}\n\nThank you for shopping with us!`);
-            setTimeout(() => {
+            const result = confirm(`Order placed successfully!\n\nOrder ID: ${order.id}\nTotal Amount: ₹${(order.total_amount || order.total).toLocaleString()}\n\nClick OK to view your orders or Cancel to go to home page.`);
+            if (result) {
+                window.location.href = 'profile.html';
+            } else {
                 window.location.href = 'index.html';
-            }, 2000);
+            }
         }
     } catch (error) {
         console.error('Error showing order confirmation:', error);
         // Fallback confirmation
-        alert(`Order placed successfully!\n\nOrder ID: ${order.id}\nTotal Amount: ₹${order.total.toLocaleString()}`);
-        window.location.href = 'index.html';
+        const result = confirm(`Order placed successfully!\n\nOrder ID: ${order.id}\nTotal Amount: ₹${(order.total_amount || order.total).toLocaleString()}\n\nClick OK to view your orders.`);
+        if (result) {
+            window.location.href = 'profile.html';
+        }
     }
 }
 
@@ -1128,11 +1183,22 @@ function handlePlaceOrderWithPayment(isBuyNow = false) {
 }
 
 // Process order after payment (or for COD)
-function processOrder(total, paymentMethod, orderItems = null, isBuyNow = false) {
+async function processOrder(total, paymentMethod, orderItems = null, isBuyNow = false) {
     console.log('=== PROCESSING ORDER ===');
     console.log('Total:', total);
     console.log('Payment method:', paymentMethod);
     console.log('Is Buy Now:', isBuyNow);
+    
+    // Get user session
+    const userSession = JSON.parse(localStorage.getItem('userSession') || '{}');
+    const userId = userSession.id;
+    
+    if (!userId) {
+        console.error('No user ID found, cannot save order to database');
+        alert('Please login to place an order.');
+        window.location.href = 'auth.html';
+        return false;
+    }
     
     // Determine order items based on flow
     let items = [];
@@ -1175,30 +1241,28 @@ function processOrder(total, paymentMethod, orderItems = null, isBuyNow = false)
     // Create order object
     const order = {
         id: 'ORD' + Date.now(),
+        user_id: userId,
         items: [...items],
         subtotal: subtotal,
         deliveryCharges: deliveryCharges,
-        total: calculatedTotal,
-        address: { ...addressData },
+        total_amount: calculatedTotal,
+        shipping_addr: { ...addressData },
         paymentMethod: paymentMethod,
         status: paymentMethod === 'cod' ? 'pending' : 'confirmed',
         isBuyNow: isBuyNow,
-        createdAt: new Date().toISOString()
+        created_at: new Date().toISOString()
     };
     
     console.log('Order created:', order);
     
     try {
         // Validate order data before saving
-        if (!order.id || !order.items || order.items.length === 0 || !order.total) {
+        if (!order.id || !order.items || order.items.length === 0 || !order.total_amount) {
             throw new Error('Invalid order data');
         }
         
-        // Save order to localStorage
-        const orders = JSON.parse(localStorage.getItem('orders') || '[]');
-        orders.push(order);
-        localStorage.setItem('orders', JSON.stringify(orders));
-        console.log('Order saved to localStorage');
+        // Save order to database
+        await saveOrderToDatabase(order);
         
         // Clear appropriate storage after successful order
         if (isBuyNow) {

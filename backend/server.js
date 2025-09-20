@@ -53,7 +53,10 @@ app.get('/', (req, res) => {
         endpoints: {
             'GET /health': 'Health check',
             'POST /api/create-order': 'Create Razorpay order',
-            'POST /api/verify-payment': 'Verify payment'
+            'POST /api/verify-payment': 'Verify payment',
+            'POST /api/save-order': 'Save order to database',
+            'GET /api/get-orders': 'Get user orders',
+            'GET /api/admin-orders': 'Get all orders (admin)'
         }
     });
 });
@@ -203,6 +206,16 @@ app.post('/api/webhook', (req, res) => {
         res.status(500).json({ error: 'Webhook processing failed' });
     }
 });
+
+// Import order management endpoints
+const saveOrderHandler = require('./api/save-order');
+const getOrdersHandler = require('./api/get-orders');
+const adminOrdersHandler = require('./api/admin-orders');
+
+// Order management endpoints
+app.post('/api/save-order', saveOrderHandler);
+app.get('/api/get-orders', getOrdersHandler);
+app.get('/api/admin-orders', adminOrdersHandler);
 
 // Get payment status
 app.get('/api/payment-status/:paymentId', async (req, res) => {

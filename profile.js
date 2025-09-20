@@ -83,58 +83,196 @@ async function loadUserProfile() {
     }
 }
 
-// Load user orders
-function loadUserOrders() {
-    const orders = JSON.parse(localStorage.getItem('orders') || '[]');
-    const userOrders = orders.filter(order => 
-        order.address && order.address.email === currentUser.email
-    );
-    
+// Load user orders from database
+async function loadUserOrders() {
     const container = document.getElementById('ordersContainer');
     
-    if (userOrders.length === 0) {
+    if (!currentUser || !currentUser.id) {
+        console.error('No user ID found');
         container.innerHTML = `
             <div class="empty-state">
-                <i class="fas fa-shopping-bag"></i>
-                <h3>No orders yet</h3>
-                <p>Start shopping to see your orders here</p>
-                <a href="collections.html" class="btn-primary">Start Shopping</a>
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>Unable to load orders</h3>
+                <p>Please login again to view your orders</p>
+                <a href="auth.html" class="btn-primary">Login</a>
             </div>
         `;
         return;
     }
     
-    container.innerHTML = userOrders.map(order => `
-        <div class="order-card">
-            <div class="order-header">
-                <div class="order-info">
-                    <h4>Order #${order.id}</h4>
-                    <p>Placed on ${new Date(order.createdAt).toLocaleDateString()}</p>
+    // Show loading state
+    container.innerHTML = `
+        <div class="loading-state">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Loading your orders...</p>
+        </div>
+    `;
+    
+    try {
+        // Fetch orders from database
+        const backendUrl = window.CONFIG ? window.CONFIG.getBackendUrl() : 'http://localhost:5000';
+        const response = await fetch(`${backendUrl}/api/get-orders?user_id=${currentUser.id}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        if (!result.success) {
+            throw new Error(result.error || 'Failed to fetch orders');
+        }
+        
+        const userOrders = result.orders || [];
+        console.log('Orders fetched from database:', userOrders);
+        
+        // Also get orders from localStorage as fallback
+        const localOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+        const userLocalOrders = localOrders.filter(order => 
+            (order.user_id === currentUser.id) || 
+            (order.address && order.address.email === currentUser.email)
+        );
+        
+        // Combine database and local orders (remove duplicates)
+        const allOrders = [...userOrders];
+        userLocalOrders.forEach(localOrder => {
+            if (!allOrders.find(dbOrder => dbOrder.id === localOrder.id)) {
+                allOrders.push(localOrder);
+            }
+        });
+        
+        // Sort by creation date (newest first)
+        allOrders.sort((a, b) => new Date(b.created_at || b.createdAt) - new Date(a.created_at || a.createdAt));
+        
+        if (allOrders.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-shopping-bag"></i>
+                    <h3>No orders yet</h3>
+                    <p>Start shopping to see your orders here</p>
+                    <a href="collections.html" class="btn-primary">Start Shopping</a>
                 </div>
-                <div class="order-status">
-                    <span class="status-badge ${order.status}">${order.status}</span>
-                </div>
-            </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = allOrders.map(order => {
+            const orderDate = new Date(order.created_at || order.createdAt).toLocaleDateString();
+            const orderTotal = order.total_amount || order.total;
+            const orderItems = order.items || [];
             
-            <div class="order-items">
-                ${order.items.map(item => `
-                    <div class="order-item">
-                        <img src="${item.image}" alt="${item.name}">
-                        <div class="item-details">
-                            <h5>${item.name}</h5>
-                            <p>Qty: ${item.quantity} | ₹${item.price.toLocaleString()}</p>
+            return `
+                <div class="order-card">
+                    <div class="order-header">
+                        <div class="order-info">
+                            <h4>Order #${order.id}</h4>
+                            <p>Placed on ${orderDate}</p>
+                        </div>
+                        <div class="order-status">
+                            <span class="status-badge ${order.status}">${order.status}</span>
                         </div>
                     </div>
-                `).join('')}
-            </div>
-            
-            <div class="order-footer">
-                <div class="order-total">
-                    <strong>Total: ₹${order.total.toLocaleString()}</strong>
+                    
+                    <div class="order-items">
+                        ${orderItems.map(item => {
+                            let imageUrl = item.image;
+                            if (imageUrl && !imageUrl.startsWith('http')) {
+                                imageUrl = `https://jstvadizuzvwhabtfhfs.supabase.co/storage/v1/object/public/Sarees/${imageUrl}`;
+                            }
+                            if (!imageUrl || imageUrl === 'undefined') {
+                                imageUrl = `https://via.placeholder.com/60x80/FF6B6B/FFFFFF?text=${encodeURIComponent(item.name || 'Product')}`;
+                            }
+                            
+                            return `
+                                <div class="order-item">
+                                    <img src="${imageUrl}" alt="${item.name}" onerror="this.src='https://via.placeholder.com/60x80/FF6B6B/FFFFFF?text=Product'">
+                                    <div class="item-details">
+                                        <h5>${item.name}</h5>
+                                        <p>Qty: ${item.quantity} | ₹${item.price.toLocaleString()}</p>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                    
+                    <div class="order-footer">
+                        <div class="order-total">
+                            <strong>Total: ₹${orderTotal.toLocaleString()}</strong>
+                        </div>
+                        <div class="order-actions">
+                            <button class="btn-secondary" onclick="viewOrderDetails('${order.id}')">
+                                <i class="fas fa-eye"></i> View Details
+                            </button>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-    `).join('');
+            `;
+        }).join('');
+        
+    } catch (error) {
+        console.error('Error loading orders:', error);
+        
+        // Fallback to localStorage orders
+        const localOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+        const userLocalOrders = localOrders.filter(order => 
+            (order.user_id === currentUser.id) || 
+            (order.address && order.address.email === currentUser.email)
+        );
+        
+        if (userLocalOrders.length > 0) {
+            container.innerHTML = `
+                <div class="warning-message">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>Showing local orders only. Database connection failed.</p>
+                </div>
+            ` + userLocalOrders.map(order => {
+                const orderDate = new Date(order.created_at || order.createdAt).toLocaleDateString();
+                const orderTotal = order.total_amount || order.total;
+                const orderItems = order.items || [];
+                
+                return `
+                    <div class="order-card">
+                        <div class="order-header">
+                            <div class="order-info">
+                                <h4>Order #${order.id}</h4>
+                                <p>Placed on ${orderDate}</p>
+                            </div>
+                            <div class="order-status">
+                                <span class="status-badge ${order.status}">${order.status}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="order-items">
+                            ${orderItems.map(item => `
+                                <div class="order-item">
+                                    <img src="${item.image}" alt="${item.name}">
+                                    <div class="item-details">
+                                        <h5>${item.name}</h5>
+                                        <p>Qty: ${item.quantity} | ₹${item.price.toLocaleString()}</p>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        <div class="order-footer">
+                            <div class="order-total">
+                                <strong>Total: ₹${orderTotal.toLocaleString()}</strong>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        } else {
+            container.innerHTML = `
+                <div class="error-state">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <h3>Unable to load orders</h3>
+                    <p>There was an error loading your orders. Please try again later.</p>
+                    <button class="btn-primary" onclick="loadUserOrders()">Retry</button>
+                </div>
+            `;
+        }
+    }
 }
 
 // Toggle profile edit mode
@@ -232,6 +370,127 @@ function switchSection(sectionName) {
     }
 }
 
+// View order details
+function viewOrderDetails(orderId) {
+    // Find order in database orders or localStorage
+    const localOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+    const order = localOrders.find(o => o.id === orderId);
+    
+    if (!order) {
+        alert('Order not found');
+        return;
+    }
+    
+    const orderDate = new Date(order.created_at || order.createdAt).toLocaleDateString();
+    const orderTotal = order.total_amount || order.total;
+    const shippingAddr = order.shipping_addr || order.address;
+    
+    const detailsHTML = `
+        <div class="order-details-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Order Details - #${order.id}</h3>
+                    <button onclick="closeOrderDetails()" class="close-btn">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="order-info-section">
+                        <h4>Order Information</h4>
+                        <p><strong>Order ID:</strong> ${order.id}</p>
+                        <p><strong>Date:</strong> ${orderDate}</p>
+                        <p><strong>Status:</strong> <span class="status-badge ${order.status}">${order.status}</span></p>
+                        <p><strong>Payment Method:</strong> ${order.paymentMethod || 'Razorpay'}</p>
+                    </div>
+                    
+                    <div class="shipping-info-section">
+                        <h4>Shipping Address</h4>
+                        <p>${shippingAddr.firstName} ${shippingAddr.lastName}</p>
+                        <p>${shippingAddr.addressLine1}</p>
+                        ${shippingAddr.addressLine2 ? `<p>${shippingAddr.addressLine2}</p>` : ''}
+                        <p>${shippingAddr.city}, ${shippingAddr.state} - ${shippingAddr.pincode}</p>
+                        <p>Mobile: ${shippingAddr.mobile}</p>
+                        <p>Email: ${shippingAddr.email}</p>
+                    </div>
+                    
+                    <div class="items-section">
+                        <h4>Items Ordered</h4>
+                        ${order.items.map(item => {
+                            let imageUrl = item.image;
+                            if (imageUrl && !imageUrl.startsWith('http')) {
+                                imageUrl = `https://jstvadizuzvwhabtfhfs.supabase.co/storage/v1/object/public/Sarees/${imageUrl}`;
+                            }
+                            if (!imageUrl || imageUrl === 'undefined') {
+                                imageUrl = `https://via.placeholder.com/80x100/FF6B6B/FFFFFF?text=${encodeURIComponent(item.name || 'Product')}`;
+                            }
+                            
+                            return `
+                                <div class="order-detail-item">
+                                    <img src="${imageUrl}" alt="${item.name}" onerror="this.src='https://via.placeholder.com/80x100/FF6B6B/FFFFFF?text=Product'">
+                                    <div class="item-info">
+                                        <h5>${item.name}</h5>
+                                        <p>Price: ₹${item.price.toLocaleString()}</p>
+                                        <p>Quantity: ${item.quantity}</p>
+                                        <p><strong>Subtotal: ₹${(item.price * item.quantity).toLocaleString()}</strong></p>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                    
+                    <div class="order-summary-section">
+                        <h4>Order Summary</h4>
+                        <div class="summary-row">
+                            <span>Subtotal:</span>
+                            <span>₹${(order.subtotal || order.items.reduce((sum, item) => sum + (item.price * item.quantity), 0)).toLocaleString()}</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Delivery Charges:</span>
+                            <span>₹${(order.deliveryCharges || 0).toLocaleString()}</span>
+                        </div>
+                        <div class="summary-row total">
+                            <span><strong>Total:</strong></span>
+                            <span><strong>₹${orderTotal.toLocaleString()}</strong></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add modal to page
+    const modalContainer = document.createElement('div');
+    modalContainer.id = 'orderDetailsModal';
+    modalContainer.innerHTML = detailsHTML;
+    modalContainer.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.8);
+        z-index: 10000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    `;
+    
+    document.body.appendChild(modalContainer);
+    document.body.style.overflow = 'hidden';
+}
+
+// Close order details modal
+function closeOrderDetails() {
+    const modal = document.getElementById('orderDetailsModal');
+    if (modal) {
+        modal.remove();
+        document.body.style.overflow = 'auto';
+    }
+}
+
+// Make functions globally available
+window.viewOrderDetails = viewOrderDetails;
+window.closeOrderDetails = closeOrderDetails;
+
 // Initialize profile page
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Profile page DOM loaded');
@@ -243,7 +502,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('User authenticated, loading profile...');
     loadUserProfile();
-    loadUserOrders();
+    
+    // Load orders initially if on orders section
+    const currentSection = document.querySelector('.profile-section.active');
+    if (currentSection && currentSection.id === 'ordersSection') {
+        loadUserOrders();
+    }
     
     // Set initial readonly state
     toggleEditMode(false);

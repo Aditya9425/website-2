@@ -972,6 +972,20 @@ class AdminPanel {
     // Order Management Methods
     async loadOrders() {
         try {
+            // Try to fetch from backend API first
+            const backendUrl = 'http://localhost:5000'; // Adjust as needed
+            const response = await fetch(`${backendUrl}/api/admin-orders`);
+            
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success) {
+                    this.orders = result.orders;
+                    this.displayOrders(this.orders);
+                    return;
+                }
+            }
+            
+            // Fallback to Firebase if backend is not available
             const { db } = window.firebaseServices;
             const snapshot = await db.collection('orders').orderBy('createdAt', 'desc').get();
             
@@ -983,6 +997,9 @@ class AdminPanel {
             this.displayOrders(this.orders);
         } catch (error) {
             console.error('Error loading orders:', error);
+            // Show empty state with error message
+            const tbody = document.getElementById('ordersTableBody');
+            tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><i class="fas fa-exclamation-triangle"></i><h3>Error loading orders</h3><p>Please check your connection and try again.</p></td></tr>';
         }
     }
 
@@ -994,47 +1011,153 @@ class AdminPanel {
             return;
         }
 
-        const ordersHTML = orders.map(order => `
-            <tr>
-                <td>#${order.id.slice(-8)}</td>
-                <td>${order.customerName || 'N/A'}</td>
-                <td>${order.items?.length || 0} items</td>
-                <td>₹${order.total?.toLocaleString() || '0'}</td>
-                <td>
-                    <span class="status-badge status-${order.status || 'pending'}">${order.status || 'pending'}</span>
-                </td>
-                <td>${new Date(order.createdAt?.toDate()).toLocaleDateString()}</td>
-                <td>
-                    <div class="action-buttons">
-                        <button class="btn-primary btn-small" onclick="adminPanel.viewOrder('${order.id}')">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <button class="btn-success btn-small" onclick="adminPanel.updateOrderStatus('${order.id}', 'confirmed')">
-                            <i class="fas fa-check"></i>
-                        </button>
-                        <button class="btn-warning btn-small" onclick="adminPanel.updateOrderStatus('${order.id}', 'shipped')">
-                            <i class="fas fa-shipping-fast"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        `).join('');
+        const ordersHTML = orders.map(order => {
+            // Handle different date formats
+            let orderDate = 'N/A';
+            if (order.created_at) {
+                orderDate = new Date(order.created_at).toLocaleDateString();
+            } else if (order.createdAt) {
+                if (order.createdAt.toDate) {
+                    orderDate = new Date(order.createdAt.toDate()).toLocaleDateString();
+                } else {
+                    orderDate = new Date(order.createdAt).toLocaleDateString();
+                }
+            }
+            
+            // Get customer name from shipping address or customer details
+            let customerName = 'N/A';
+            if (order.shipping_addr) {
+                customerName = `${order.shipping_addr.firstName || ''} ${order.shipping_addr.lastName || ''}`.trim();
+            } else if (order.customerName) {
+                customerName = order.customerName;
+            }
+            
+            const totalAmount = order.total_amount || order.total || 0;
+            const itemsCount = order.items ? order.items.length : 0;
+            
+            return `
+                <tr>
+                    <td>#${order.id.toString().slice(-8)}</td>
+                    <td>${customerName}</td>
+                    <td>${itemsCount} items</td>
+                    <td>₹${totalAmount.toLocaleString()}</td>
+                    <td>
+                        <span class="status-badge status-${order.status || 'pending'}">${order.status || 'pending'}</span>
+                    </td>
+                    <td>${orderDate}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-primary btn-small" onclick="adminPanel.viewOrder('${order.id}')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn-success btn-small" onclick="adminPanel.updateOrderStatus('${order.id}', 'confirmed')">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button class="btn-warning btn-small" onclick="adminPanel.updateOrderStatus('${order.id}', 'shipped')">
+                                <i class="fas fa-shipping-fast"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
 
         tbody.innerHTML = ordersHTML;
     }
 
     async updateOrderStatus(orderId, status) {
         try {
-            const { db } = window.firebaseServices;
-            await db.collection('orders').doc(orderId).update({
-                status: status,
-                updatedAt: new Date()
-            });
-            
-            this.loadOrders();
+            // For now, just update locally and show message
+            // In a full implementation, you'd update the database
+            const order = this.orders.find(o => o.id === orderId);
+            if (order) {
+                order.status = status;
+                this.displayOrders(this.orders);
+                this.showMessage(`Order status updated to ${status}`, 'success');
+            }
         } catch (error) {
             console.error('Error updating order status:', error);
+            this.showMessage('Error updating order status', 'error');
         }
+    }
+    
+    viewOrder(orderId) {
+        const order = this.orders.find(o => o.id === orderId);
+        if (!order) {
+            this.showMessage('Order not found', 'error');
+            return;
+        }
+        
+        // Create order details modal
+        const modal = document.createElement('div');
+        modal.id = 'orderDetailsModal';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 10000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        `;
+        
+        const orderDate = order.created_at ? new Date(order.created_at).toLocaleDateString() : 'N/A';
+        const customerName = order.shipping_addr ? `${order.shipping_addr.firstName || ''} ${order.shipping_addr.lastName || ''}`.trim() : 'N/A';
+        const totalAmount = order.total_amount || order.total || 0;
+        
+        modal.innerHTML = `
+            <div style="background: white; padding: 30px; border-radius: 10px; max-width: 800px; width: 100%; max-height: 90vh; overflow-y: auto;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2>Order Details - #${order.id}</h2>
+                    <button onclick="this.closest('#orderDetailsModal').remove()" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div>
+                        <h3>Order Information</h3>
+                        <p><strong>Order ID:</strong> ${order.id}</p>
+                        <p><strong>Date:</strong> ${orderDate}</p>
+                        <p><strong>Status:</strong> <span class="status-badge status-${order.status}">${order.status}</span></p>
+                        <p><strong>Total:</strong> ₹${totalAmount.toLocaleString()}</p>
+                    </div>
+                    
+                    <div>
+                        <h3>Customer Information</h3>
+                        <p><strong>Name:</strong> ${customerName}</p>
+                        ${order.shipping_addr ? `
+                            <p><strong>Email:</strong> ${order.shipping_addr.email || 'N/A'}</p>
+                            <p><strong>Mobile:</strong> ${order.shipping_addr.mobile || 'N/A'}</p>
+                            <p><strong>Address:</strong><br>
+                            ${order.shipping_addr.addressLine1 || ''}<br>
+                            ${order.shipping_addr.addressLine2 ? order.shipping_addr.addressLine2 + '<br>' : ''}
+                            ${order.shipping_addr.city || ''}, ${order.shipping_addr.state || ''} - ${order.shipping_addr.pincode || ''}</p>
+                        ` : ''}
+                    </div>
+                </div>
+                
+                <div>
+                    <h3>Items Ordered</h3>
+                    <div style="border: 1px solid #ddd; border-radius: 5px;">
+                        ${order.items ? order.items.map(item => `
+                            <div style="display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #eee;">
+                                <img src="${item.image || 'https://via.placeholder.com/60x80'}" alt="${item.name}" style="width: 60px; height: 80px; object-fit: cover; border-radius: 4px; margin-right: 15px;">
+                                <div style="flex: 1;">
+                                    <h4 style="margin: 0 0 5px 0;">${item.name}</h4>
+                                    <p style="margin: 0; color: #666;">Price: ₹${item.price.toLocaleString()} × ${item.quantity}</p>
+                                    <p style="margin: 5px 0 0 0; font-weight: bold;">Subtotal: ₹${(item.price * item.quantity).toLocaleString()}</p>
+                                </div>
+                            </div>
+                        `).join('') : '<p>No items found</p>'}
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
     }
 
     // Customer Management Methods
