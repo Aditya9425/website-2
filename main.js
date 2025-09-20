@@ -514,26 +514,34 @@ function displayCartItems() {
     
     if (cartItemCount) cartItemCount.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
     
-    cartItemsList.innerHTML = cart.map(item => `
+    cartItemsList.innerHTML = cart.map(item => {
+        let imageUrl;
+        if (item.image && item.image.startsWith('http')) {
+            imageUrl = item.image;
+        } else if (item.image) {
+            imageUrl = `https://jstvadizuzvwhabtfhfs.supabase.co/storage/v1/object/public/Sarees/${item.image}`;
+        } else {
+            imageUrl = `https://via.placeholder.com/300x400/FF6B6B/FFFFFF?text=${encodeURIComponent(item.name || 'Product')}`;
+        }
+        
+        return `
         <div class="cart-item">
-            <img src="${item.image}" alt="${item.name}" class="cart-item-image">
-            <div class="cart-item-details">
-                <h4>${item.name}</h4>
-                <div class="cart-item-price">₹${item.price.toLocaleString()}</div>
-                <div class="cart-item-actions">
-                    <div class="quantity-controls">
-                        <button class="qty-decrease" data-id="${item.id}">-</button>
-                        <span class="quantity-display">${item.quantity}</span>
-                        <button class="qty-increase" data-id="${item.id}">+</button>
-                    </div>
-                    <button class="remove-item-btn" data-id="${item.id}">Remove</button>
-                </div>
+            <div class="cart-item-image">
+                <img src="${imageUrl}" alt="${item.name}">
             </div>
-            <div class="cart-item-total">
-                ₹${(item.price * item.quantity).toLocaleString()}
+            <div class="cart-item-details">
+                <h4 class="cart-item-name">${item.name}</h4>
+                <div class="cart-item-price">₹${item.price.toLocaleString()}</div>
+                <div class="quantity-controls">
+                    <button class="quantity-btn qty-decrease" data-id="${item.id}">-</button>
+                    <input type="number" class="quantity-input" value="${item.quantity}" min="1" readonly>
+                    <button class="quantity-btn qty-increase" data-id="${item.id}">+</button>
+                </div>
+                <button class="remove-btn" data-id="${item.id}">Remove</button>
             </div>
         </div>
-    `).join('');
+        `;
+    }).join('');
     
     // Add event listeners to the buttons
     document.querySelectorAll('.qty-decrease').forEach(btn => {
@@ -556,7 +564,7 @@ function displayCartItems() {
         });
     });
     
-    document.querySelectorAll('.remove-item-btn').forEach(btn => {
+    document.querySelectorAll('.remove-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const productId = e.target.getAttribute('data-id');
             removeFromCart(productId);
@@ -1838,6 +1846,24 @@ function initializeMobileMenu() {
 
 // Make functions globally available
 window.toggleMobileMenu = toggleMobileMenu;
+
+// Enhanced mobile menu toggle for better mobile experience
+function toggleMobileMenu() {
+    const navLinks = document.getElementById('navLinks');
+    const menuToggle = document.getElementById('mobileMenuToggle');
+    
+    if (navLinks && menuToggle) {
+        navLinks.classList.toggle('active');
+        
+        if (navLinks.classList.contains('active')) {
+            menuToggle.innerHTML = '<i class="fas fa-times"></i>';
+            document.body.style.overflow = 'hidden'; // Prevent background scroll
+        } else {
+            menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+            document.body.style.overflow = 'auto';
+        }
+    }
+}
 
 // Category filter functionality
 function setupCategoryFilters() {
