@@ -1,47 +1,46 @@
-# Shagun Saree E-commerce Backend
+# Shagun Saree Backend - Vercel Deployment
 
-Flask backend with Supabase integration for the saree e-commerce website.
+## Quick Deploy to Vercel
 
-## Setup
-
-1. **Install dependencies:**
+1. **Install Vercel CLI**:
    ```bash
-   pip install -r requirements.txt
+   npm i -g vercel
    ```
 
-2. **Configure Supabase:**
-   - Copy `.env.example` to `.env`
-   - Add your Supabase URL and anon key
-   - Run the SQL schema in your Supabase dashboard
-
-3. **Run the application:**
+2. **Login to Vercel**:
    ```bash
-   python app.py
+   vercel login
    ```
+
+3. **Deploy**:
+   ```bash
+   cd backend
+   vercel
+   ```
+
+## Environment Variables
+
+Set these in Vercel dashboard:
+
+- `RAZORPAY_KEY_ID` - Your Razorpay Key ID
+- `RAZORPAY_KEY_SECRET` - Your Razorpay Key Secret
+- `NODE_ENV` - Set to "production"
 
 ## API Endpoints
 
-- `GET /` - API information
-- `GET /products` - Get all products
-- `GET /products/<id>` - Get product by ID
-- `POST /products` - Add new product
-- `PUT /products/<id>` - Update product
-- `DELETE /products/<id>` - Delete product
+- `GET /health` - Health check
+- `POST /api/create-order` - Create Razorpay order
+- `POST /api/verify-payment` - Verify payment
+- `GET /api/payment-status/:id` - Get payment status
 
-## Example Product JSON
+## Frontend Integration
 
-```json
-{
-  "name": "Silk Saree",
-  "price": 5000,
-  "original_price": 6000,
-  "category": "silk",
-  "fabric": "Silk",
-  "description": "Beautiful silk saree",
-  "images": ["url1", "url2"],
-  "colors": ["Red", "Blue"],
-  "sizes": ["Free Size"],
-  "rating": 4.5,
-  "reviews": 10
-}
+Update your frontend URLs from:
+```javascript
+const backendUrl = 'http://localhost:5000';
+```
+
+To your Vercel URL:
+```javascript
+const backendUrl = 'https://your-app.vercel.app';
 ```

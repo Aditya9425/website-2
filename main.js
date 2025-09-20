@@ -568,7 +568,7 @@ function updateOrderSummary() {
     console.log('Cart length:', cart.length);
     
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const deliveryCharges = subtotal > 999 ? 0 : 200;
+    const deliveryCharges = subtotal < 999 ? 0 : 200;
     const total = subtotal + deliveryCharges;
     
     console.log('Calculated values - Subtotal:', subtotal, 'Delivery:', deliveryCharges, 'Total:', total);
@@ -1016,7 +1016,7 @@ function showOrderConfirmation(order) {
     }
 }
 
-// Secure Razorpay integration
+// Enhanced Razorpay integration using new backend
 function initializeRazorpay(orderAmount, orderItems = null, isBuyNow = false) {
     console.log('Initializing Razorpay with amount:', orderAmount, 'isBuyNow:', isBuyNow);
     
@@ -1028,16 +1028,22 @@ function initializeRazorpay(orderAmount, orderItems = null, isBuyNow = false) {
         mobile: addressData.mobile || ''
     };
     
-    // Store order context for payment success callback
-    const orderContext = {
+    // Prepare order data for new payment manager
+    const orderData = {
         amount: orderAmount,
-        items: orderItems,
-        isBuyNow: isBuyNow
+        items: orderItems || [],
+        isBuyNow: isBuyNow,
+        address: addressData,
+        customerDetails: customerDetails
     };
-    localStorage.setItem('orderContext', JSON.stringify(orderContext));
     
-    // Use secure Razorpay integration
-    initializeRazorpayCheckout(orderAmount, customerDetails);
+    // Use new payment manager if available
+    if (typeof paymentManager !== 'undefined') {
+        paymentManager.initiatePayment(orderData);
+    } else {
+        // Fallback to old method
+        initializeRazorpayCheckout(orderAmount, customerDetails);
+    }
 }
 // Enhanced place order with payment integration
 function handlePlaceOrderWithPayment(isBuyNow = false) {
@@ -1065,7 +1071,7 @@ function handlePlaceOrderWithPayment(isBuyNow = false) {
         }
         orderItems = [buyNowItem];
         const subtotal = buyNowItem.price * buyNowItem.quantity;
-        const deliveryCharges = subtotal > 999 ? 0 : 200;
+        const deliveryCharges = subtotal < 999 ? 0 : 200;
         total = subtotal + deliveryCharges;
     } else {
         // Regular cart flow
@@ -1078,7 +1084,7 @@ function handlePlaceOrderWithPayment(isBuyNow = false) {
         }
         orderItems = [...cart];
         const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const deliveryCharges = subtotal > 999 ? 0 : 200;
+        const deliveryCharges = subtotal < 999 ? 0 : 200;
         total = subtotal + deliveryCharges;
     }
     
@@ -1163,7 +1169,7 @@ function processOrder(total, paymentMethod, orderItems = null, isBuyNow = false)
     
     // Calculate totals
     const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const deliveryCharges = subtotal > 999 ? 0 : 200;
+    const deliveryCharges = subtotal < 999 ? 0 : 200;
     const calculatedTotal = subtotal + deliveryCharges;
     
     // Create order object
@@ -1679,7 +1685,7 @@ function updateBuyNowOrderSummary() {
     }
     
     const subtotal = buyNowItem.price * buyNowItem.quantity;
-    const deliveryCharges = subtotal > 999 ? 0 : 200;
+    const deliveryCharges = subtotal < 999 ? 0 : 200;
     const total = subtotal + deliveryCharges;
     
     console.log('Buy Now calculated values - Subtotal:', subtotal, 'Delivery:', deliveryCharges, 'Total:', total);

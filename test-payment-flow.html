@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Payment Flow</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        button { padding: 10px 20px; margin: 5px; background: #FF6B6B; color: white; border: none; cursor: pointer; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Payment Flow Test</h1>
+    
+    <div class="test-section">
+        <h3>Test Order Confirmation Modal</h3>
+        <button onclick="testOrderModal()">Test Order Modal</button>
+        <p>This will show the order confirmation modal directly</p>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test Payment Completion</h3>
+        <button onclick="testPaymentCompletion()">Test Payment Success</button>
+        <p>This simulates a successful payment</p>
+    </div>
+    
+    <div class="test-section">
+        <h3>Setup Test Data</h3>
+        <button onclick="setupTestData()">Setup Test Cart & Address</button>
+        <p>This sets up test cart and address data</p>
+    </div>
+    
+    <div id="results"></div>
+    
+    <!-- Order Confirmation Modal -->
+    <div class="modal-overlay" id="orderConfirmationModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; justify-content: center; align-items: center;">
+        <div class="modal-content" style="background: white; padding: 30px; border-radius: 10px; max-width: 500px; width: 90%; text-align: center;">
+            <div class="modal-header">
+                <h2>Order Confirmed!</h2>
+                <button class="modal-close" id="modalClose" style="float: right;">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="success-icon">
+                    <div style="font-size: 48px; color: green;">✅</div>
+                </div>
+                <h3>Thank you for your order!</h3>
+                <p>Your order has been successfully placed. You will receive a confirmation email shortly.</p>
+                <div class="order-details">
+                    <div class="order-number">
+                        <strong>Order Number:</strong>
+                        <span id="orderNumber">#SSB2024001</span>
+                    </div>
+                    <div class="order-total">
+                        <strong>Total Amount:</strong>
+                        <span id="orderTotal">₹0</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeModal()" style="background: #28a745;">Continue Shopping</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = type;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${message}`;
+            results.appendChild(div);
+        }
+        
+        function setupTestData() {
+            // Setup test cart
+            const testCart = [
+                {
+                    id: 1,
+                    name: "Test Saree",
+                    price: 2500,
+                    image: "https://via.placeholder.com/300x400/FF6B6B/FFFFFF?text=Test+Saree",
+                    quantity: 1
+                }
+            ];
+            localStorage.setItem('cart', JSON.stringify(testCart));
+            
+            // Setup test address
+            const testAddress = {
+                firstName: "Test",
+                lastName: "User",
+                email: "test@example.com",
+                mobile: "9999999999",
+                addressLine1: "123 Test Street",
+                city: "Test City",
+                state: "Test State",
+                pincode: "123456"
+            };
+            localStorage.setItem('deliveryAddress', JSON.stringify(testAddress));
+            
+            log('Test data setup complete', 'success');
+        }
+        
+        function testOrderModal() {
+            const modal = document.getElementById('orderConfirmationModal');
+            const orderNumber = document.getElementById('orderNumber');
+            const orderTotal = document.getElementById('orderTotal');
+            
+            if (orderNumber) orderNumber.textContent = `ORD${Date.now()}`;
+            if (orderTotal) orderTotal.textContent = '₹2,700';
+            
+            if (modal) {
+                modal.style.display = 'flex';
+                log('Order modal displayed', 'success');
+                
+                // Auto close after 5 seconds
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                    log('Modal auto-closed', 'info');
+                }, 5000);
+            } else {
+                log('Modal not found!', 'error');
+            }
+        }
+        
+        function testPaymentCompletion() {
+            // Simulate payment completion
+            const paymentId = `pay_${Date.now()}`;
+            const orderId = `order_${Date.now()}`;
+            
+            log(`Simulating payment completion: ${paymentId}`, 'info');
+            
+            // Test the completion flow
+            handlePaymentCompletion(paymentId, orderId);
+        }
+        
+        function handlePaymentCompletion(paymentId, orderId) {
+            log('Payment completed: ' + paymentId, 'success');
+            
+            // Get test data
+            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) + 200; // Add delivery
+            
+            // Show success
+            showSimpleSuccess(paymentId, total);
+        }
+        
+        function showSimpleSuccess(paymentId, total) {
+            const modal = document.getElementById('orderConfirmationModal');
+            if (modal) {
+                const orderNumber = document.getElementById('orderNumber');
+                const orderTotal = document.getElementById('orderTotal');
+                
+                if (orderNumber) orderNumber.textContent = `ORD${Date.now()}`;
+                if (orderTotal) orderTotal.textContent = `₹${total.toLocaleString()}`;
+                
+                modal.style.display = 'flex';
+                log('Success modal shown', 'success');
+                
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                    log('Would redirect to home page', 'info');
+                }, 5000);
+            } else {
+                alert(`✅ Payment Successful!\\n\\nPayment ID: ${paymentId}\\nAmount: ₹${total.toLocaleString()}`);
+                log('Fallback alert shown', 'success');
+            }
+        }
+        
+        function closeModal() {
+            const modal = document.getElementById('orderConfirmationModal');
+            if (modal) {
+                modal.style.display = 'none';
+                log('Modal closed manually', 'info');
+            }
+        }
+        
+        // Setup modal close handler
+        document.getElementById('modalClose').onclick = closeModal;
+        
+        log('Test page loaded successfully', 'success');
+    </script>
+</body>
+</html>
+</html>

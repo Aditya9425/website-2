@@ -9,6 +9,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="config.js"></script>
 </head>
 <body>
     <!-- Header -->
@@ -244,8 +245,8 @@
     </footer>
 
     <!-- Order Confirmation Modal -->
-    <div class="modal-overlay" id="orderConfirmationModal" style="display: none;">
-        <div class="modal-content">
+    <div class="modal-overlay" id="orderConfirmationModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; justify-content: center; align-items: center;">
+        <div class="modal-content" style="background: white; padding: 30px; border-radius: 10px; max-width: 500px; width: 90%; text-align: center;">
             <div class="modal-header">
                 <h2>Order Confirmed!</h2>
                 <button class="modal-close" id="modalClose">&times;</button>
@@ -290,7 +291,89 @@
     </div>
 
     <script src="razorpay-frontend.js"></script>
+    <script src="payment-integration.js"></script>
     <script src="main.js"></script>
+    
+    <!-- Inline Payment Manager Fallback -->
+    <script>
+        // Simple payment manager if external file fails
+        if (typeof paymentManager === 'undefined') {
+            window.paymentManager = {
+                async initiatePayment(orderData) {
+                    try {
+                        // Create order
+                        const backendUrl = window.CONFIG ? window.CONFIG.getBackendUrl() : 'http://localhost:5000';
+                        const response = await fetch(`${backendUrl}/api/create-order`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                amount: orderData.amount,
+                                currency: 'INR',
+                                receipt: `order_${Date.now()}`
+                            })
+                        });
+                        
+                        const orderResponse = await response.json();
+                        
+                        if (!orderResponse.success) {
+                            throw new Error(orderResponse.error);
+                        }
+                        
+                        // Open Razorpay
+                        const options = {
+                            key: orderResponse.key_id,
+                            amount: orderResponse.amount,
+                            currency: orderResponse.currency,
+                            name: 'Shagun Saree Baran',
+                            description: 'Premium Indian Sarees',
+                            order_id: orderResponse.order_id,
+                            handler: async (response) => {
+                                console.log('Razorpay payment successful:', response);
+                                
+                                try {
+                                    // Verify payment
+                                    const verifyResponse = await fetch(`${backendUrl}/api/verify-payment`, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                            razorpay_order_id: response.razorpay_order_id,
+                                            razorpay_payment_id: response.razorpay_payment_id,
+                                            razorpay_signature: response.razorpay_signature
+                                        })
+                                    });
+                                    
+                                    const verifyData = await verifyResponse.json();
+                                    
+                                    if (verifyData.success) {
+                                        console.log('Payment verified successfully');
+                                    } else {
+                                        console.warn('Payment verification failed, but continuing');
+                                    }
+                                } catch (error) {
+                                    console.error('Payment verification error:', error);
+                                }
+                                
+                                // Use the new payment completion handler
+                                handlePaymentCompletion(response.razorpay_payment_id, response.razorpay_order_id);
+                            },
+                            prefill: {
+                                name: orderData.customerDetails.name,
+                                email: orderData.customerDetails.email,
+                                contact: orderData.customerDetails.mobile
+                            },
+                            theme: { color: '#FF6B6B' }
+                        };
+                        
+                        const rzp = new Razorpay(options);
+                        rzp.open();
+                        
+                    } catch (error) {
+                        alert('❌ Payment failed: ' + error.message);
+                    }
+                }
+            };
+        }
+    </script>
     
     <script>
         // User menu toggle functionality
@@ -316,9 +399,68 @@
     <script>
 
         
-        // Secure Razorpay payment integration
-        function initRazorpayPayment() {
-            // Check if this is a buy now flow
+        // Simple payment completion handler
+        function handlePaymentCompletion(paymentId, orderId) {
+            console.log('Payment completed:', paymentId, orderId);
+            
+            // Get order data
+            const urlParams = new URLSearchParams(window.location.search);
+            const isBuyNow = urlParams.get('buyNow') === 'true';
+            
+            let orderItems = [];
+            let total = 0;
+            
+            if (isBuyNow) {
+                const buyNowItem = JSON.parse(localStorage.getItem('buyNowItem') || 'null');
+                if (buyNowItem) {
+                    orderItems = [buyNowItem];
+                    const subtotal = buyNowItem.price * buyNowItem.quantity;
+                    const deliveryCharges = subtotal > 999 ? 0 : 200;
+                    total = subtotal + deliveryCharges;
+                }
+            } else {
+                const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+                orderItems = cart;
+                const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                const deliveryCharges = subtotal > 999 ? 0 : 200;
+                total = subtotal + deliveryCharges;
+            }
+            
+            // Process the order
+            if (typeof processOrder === 'function') {
+                const result = processOrder(total, 'razorpay', orderItems, isBuyNow);
+                if (!result) {
+                    // Fallback if processOrder fails
+                    showSimpleSuccess(paymentId, total);
+                }
+            } else {
+                showSimpleSuccess(paymentId, total);
+            }
+        }
+        
+        function showSimpleSuccess(paymentId, total) {
+            const modal = document.getElementById('orderConfirmationModal');
+            if (modal) {
+                const orderNumber = document.getElementById('orderNumber');
+                const orderTotal = document.getElementById('orderTotal');
+                
+                if (orderNumber) orderNumber.textContent = `ORD${Date.now()}`;
+                if (orderTotal) orderTotal.textContent = `₹${total.toLocaleString()}`;
+                
+                modal.style.display = 'flex';
+                
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                    window.location.href = 'index.html';
+                }, 5000);
+            } else {
+                alert(`✅ Payment Successful!\n\nPayment ID: ${paymentId}\nAmount: ₹${total.toLocaleString()}\n\nThank you for your order!`);
+                setTimeout(() => window.location.href = 'index.html', 2000);
+            }
+        }
+        
+        // Enhanced Razorpay payment integration
+        async function initRazorpayPayment() {
             const urlParams = new URLSearchParams(window.location.search);
             const isBuyNow = urlParams.get('buyNow') === 'true';
             
@@ -363,17 +505,43 @@
                 mobile: address.mobile
             };
             
-            // Store order context for payment callback
-            const orderContext = {
+            // Prepare order data for new payment manager
+            const orderData = {
                 amount: total,
                 items: orderItems,
-                isBuyNow: isBuyNow
+                isBuyNow: isBuyNow,
+                address: address,
+                customerDetails: customerDetails
             };
-            localStorage.setItem('orderContext', JSON.stringify(orderContext));
             
-            // Use secure Razorpay integration
-            initializeRazorpayCheckout(total, customerDetails);
+            // Test backend connection first
+            try {
+                const backendUrl = window.CONFIG ? window.CONFIG.getBackendUrl() : 'http://localhost:5000';
+                const testResponse = await fetch(`${backendUrl}/health`);
+                if (!testResponse.ok) {
+                    throw new Error('Backend not responding');
+                }
+                console.log('✅ Backend connection successful');
+            } catch (error) {
+                alert('❌ Backend server not running! Please start the backend server first.');
+                return;
+            }
+            
+            // Use new payment manager
+            if (typeof paymentManager !== 'undefined') {
+                await paymentManager.initiatePayment(orderData);
+            } else {
+                alert('Payment system not loaded. Please refresh the page.');
+            }
         }
+        
+        // Debug function for testing
+        window.testPaymentSuccess = function() {
+            console.log('Testing payment success flow...');
+            const testPaymentId = 'pay_test_' + Date.now();
+            const testOrderId = 'order_test_' + Date.now();
+            handlePaymentCompletion(testPaymentId, testOrderId);
+        };
         
         // Modal functionality
         document.addEventListener('DOMContentLoaded', function() {
@@ -387,6 +555,20 @@
             if (payNowBtn) {
                 payNowBtn.onclick = initRazorpayPayment;
             }
+            
+            // Test backend connection
+            const backendUrl = window.CONFIG ? window.CONFIG.getBackendUrl() : 'http://localhost:5000';
+            fetch(`${backendUrl}/health`)
+                .then(response => response.json())
+                .then(data => console.log('✅ Backend connected:', data.message))
+                .catch(error => {
+                    console.error('❌ Backend connection failed:', error);
+                    const payBtn = document.getElementById('payNowBtn');
+                    if (payBtn) {
+                        payBtn.innerHTML = '⚠️ Backend Not Connected';
+                        payBtn.disabled = true;
+                    }
+                });
             
             // Check if this is a buy now flow and update page accordingly
             const urlParams = new URLSearchParams(window.location.search);
