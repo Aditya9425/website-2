@@ -254,6 +254,9 @@ function logout() {
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('DOM loaded, initializing...');
     
+    // Initialize mobile menu
+    initializeMobileMenu();
+    
     // Check user authentication
     checkUserAuth();
     
@@ -1764,6 +1767,83 @@ function updateBuyNowOrderSummary() {
 
 window.logout = logout;
 window.openColorVariant = openColorVariant;
+
+// Mobile Menu Toggle Functionality
+function toggleMobileMenu() {
+    const navLinks = document.getElementById('navLinks');
+    const menuToggle = document.getElementById('mobileMenuToggle');
+    
+    if (navLinks && menuToggle) {
+        const isHidden = navLinks.classList.contains('hidden');
+        
+        if (isHidden) {
+            navLinks.classList.remove('hidden');
+            menuToggle.innerHTML = '<i class="fas fa-times"></i>';
+        } else {
+            navLinks.classList.add('hidden');
+            menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+        }
+    }
+}
+
+// Close mobile menu when clicking on a nav link
+function closeMobileMenuOnNavClick() {
+    const navLinks = document.querySelectorAll('.nav-link');
+    const navLinksContainer = document.getElementById('navLinks');
+    const menuToggle = document.getElementById('mobileMenuToggle');
+    
+    navLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            if (window.innerWidth <= 768) {
+                navLinksContainer.classList.add('hidden');
+                if (menuToggle) {
+                    menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+                }
+            }
+        });
+    });
+}
+
+// Initialize mobile menu on page load
+function initializeMobileMenu() {
+    // Set initial state for mobile menu
+    const navLinks = document.getElementById('navLinks');
+    if (navLinks && window.innerWidth <= 768) {
+        navLinks.classList.add('hidden');
+    }
+    
+    // Close menu on nav link clicks
+    closeMobileMenuOnNavClick();
+    
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+        const navLinks = document.getElementById('navLinks');
+        const menuToggle = document.getElementById('mobileMenuToggle');
+        const navbar = document.querySelector('.navbar');
+        
+        if (navLinks && menuToggle && navbar) {
+            if (!navbar.contains(e.target) && !navLinks.classList.contains('hidden')) {
+                navLinks.classList.add('hidden');
+                menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+            }
+        }
+    });
+    
+    // Handle window resize
+    window.addEventListener('resize', () => {
+        const navLinks = document.getElementById('navLinks');
+        if (navLinks) {
+            if (window.innerWidth > 768) {
+                navLinks.classList.remove('hidden');
+            } else {
+                navLinks.classList.add('hidden');
+            }
+        }
+    });
+}
+
+// Make functions globally available
+window.toggleMobileMenu = toggleMobileMenu;
 
 // Category filter functionality
 function setupCategoryFilters() {
