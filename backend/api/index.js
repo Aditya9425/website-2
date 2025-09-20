@@ -1,31 +1,32 @@
-const express = require('express');
-const cors = require('cors');
-const crypto = require('crypto');
-const Razorpay = require('razorpay');
-const helmet = require('helmet');
-
-const app = express();
-
-// Security middleware
-app.use(helmet());
-
-// CORS configuration
-app.use(cors({
-    origin: [
-        'http://localhost:3000', 
-        'http://127.0.0.1:5500', 
-        'http://localhost:5500', 
-        'http://127.0.0.1:5502', 
-        'http://localhost:5502',
-        'https://shagunsaree.vercel.app',
-        /\.vercel\.app$/
-    ],
-    credentials: true
-}));
-
-// Body parser middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+module.exports = (req, res) => {
+    // Set CORS headers
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+    
+    if (req.url === '/health' || req.url === '/api/health') {
+        return res.json({
+            status: 'OK',
+            message: 'Shagun Saree Backend is running',
+            timestamp: new Date().toISOString()
+        });
+    }
+    
+    // Root endpoint
+    res.json({ 
+        status: 'OK', 
+        message: 'Shagun Saree Backend API',
+        endpoints: {
+            'GET /api/health': 'Health check',
+            'POST /api/create-order': 'Create Razorpay order',
+            'POST /api/verify-payment': 'Verify payment'
+        }
+    });
+};
 
 // Initialize Razorpay
 const razorpay = new Razorpay({
