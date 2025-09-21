@@ -1,7 +1,5 @@
-// Supabase Configuration
-const SUPABASE_URL = 'https://jstvadizuzvwhabtfhfs.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzdHZhZGl6dXp2d2hhYnRmaGZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NjI3NjAsImV4cCI6MjA3MjIzODc2MH0.6btNpJfUh6Fd5PfoivIvu-f31Fj5IXl1vxBLsHz5ISw';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Use existing Supabase client from main.js
+// const supabase is already declared in main.js
 
 let currentUser = null;
 
@@ -83,7 +81,7 @@ async function loadUserProfile() {
     }
 }
 
-// Load user orders from Supabase (user-specific)
+// Load user orders from Supabase (user-specific with RLS)
 async function loadUserOrders() {
     const container = document.getElementById('ordersContainer');
     
@@ -109,9 +107,18 @@ async function loadUserOrders() {
     `;
     
     try {
-        console.log('🔍 Fetching orders for user:', currentUser.id);
+        console.log('🔍 Fetching orders for user ID:', currentUser.id);
+        console.log('🔍 User object:', currentUser);
         
-        // Fetch only current user's orders from Supabase
+        // First, check if orders table exists and has data
+        const { data: allOrders, error: testError } = await supabase
+            .from('orders')
+            .select('user_id')
+            .limit(5);
+        
+        console.log('📊 Sample orders in database:', allOrders);
+        
+        // Fetch ONLY current user's orders from Supabase
         const { data: userOrders, error } = await supabase
             .from('orders')
             .select('*')
@@ -123,12 +130,13 @@ async function loadUserOrders() {
             throw error;
         }
         
-        console.log('✅ Orders fetched from Supabase:', userOrders);
+        console.log('✅ Orders fetched from Supabase:', userOrders?.length || 0, 'orders');
+        console.log('📋 User orders data:', userOrders);
         
-        // Use only Supabase orders (no localStorage fallback for security)
-        const allOrders = userOrders || [];
+        // Use fetched orders directly
+        const secureOrders = userOrders || [];
         
-        if (allOrders.length === 0) {
+        if (secureOrders.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
                     <i class="fas fa-shopping-bag"></i>
@@ -140,53 +148,65 @@ async function loadUserOrders() {
             return;
         }
         
-        // Display user's orders in card layout
-        container.innerHTML = allOrders.map(order => {
+        // Display compact mobile-friendly orders
+        container.innerHTML = secureOrders.map(order => {
             const orderDate = new Date(order.created_at).toLocaleDateString();
             const orderItems = order.items || [];
             const itemsCount = orderItems.length;
             const firstItem = orderItems[0];
+            const shortId = order.id.slice(-8);
             
             return `
-                <div class="order-card">
-                    <div class="order-header">
-                        <div class="order-info">
-                            <h4>Order #${order.id.toString().slice(-8)}</h4>
-                            <p class="order-date">${orderDate}</p>
+                <div style="
+                    background: white;
+                    border-radius: 8px;
+                    padding: 12px;
+                    margin-bottom: 12px;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                    border-left: 4px solid #FF6B6B;
+                ">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <div>
+                            <h4 style="margin: 0; font-size: 14px; color: #333;">#${shortId}</h4>
+                            <p style="margin: 0; font-size: 12px; color: #666;">${orderDate}</p>
                         </div>
-                        <div class="order-status">
-                            <span class="status-badge status-${order.status}">${order.status}</span>
-                        </div>
+                        <span style="
+                            background: ${order.status === 'confirmed' ? '#28a745' : '#ffc107'};
+                            color: white;
+                            padding: 4px 8px;
+                            border-radius: 12px;
+                            font-size: 11px;
+                            text-transform: uppercase;
+                        ">${order.status}</span>
                     </div>
                     
-                    <div class="order-content">
-                        <div class="order-items-preview">
-                            ${firstItem ? `
-                                <div class="item-preview">
-                                    <img src="${firstItem.image || 'https://via.placeholder.com/60x80/FF6B6B/FFFFFF?text=Product'}" 
-                                         alt="${firstItem.name}" 
-                                         onerror="this.src='https://via.placeholder.com/60x80/FF6B6B/FFFFFF?text=Product'">
-                                    <div class="item-info">
-                                        <h5>${firstItem.name}</h5>
-                                        <p>${itemsCount} item${itemsCount > 1 ? 's' : ''}</p>
-                                    </div>
-                                </div>
-                            ` : '<p>No items</p>'}
-                        </div>
-                        
-                        <div class="order-summary">
-                            <div class="order-total">
-                                <span class="total-label">Total Amount</span>
-                                <span class="total-amount">₹${order.total_amount.toLocaleString()}</span>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        ${firstItem ? `
+                            <img src="${firstItem.image || 'https://via.placeholder.com/40x50/FF6B6B/FFFFFF?text=P'}" 
+                                 style="width: 40px; height: 50px; object-fit: cover; border-radius: 4px;"
+                                 onerror="this.src='https://via.placeholder.com/40x50/FF6B6B/FFFFFF?text=P'">
+                            <div style="flex: 1;">
+                                <h5 style="margin: 0; font-size: 13px; color: #333;">${firstItem.name}</h5>
+                                <p style="margin: 0; font-size: 11px; color: #666;">${itemsCount} item${itemsCount > 1 ? 's' : ''}</p>
                             </div>
+                        ` : '<p style="margin: 0; font-size: 12px; color: #999;">No items</p>'}
+                        <div style="text-align: right;">
+                            <div style="font-weight: bold; color: #FF6B6B; font-size: 14px;">₹${order.total_amount.toLocaleString()}</div>
                         </div>
                     </div>
                     
-                    <div class="order-actions">
-                        <button class="btn-outline" onclick="viewOrderDetails('${order.id}')">
-                            <i class="fas fa-eye"></i> View Details
-                        </button>
-                    </div>
+                    <button onclick="viewOrderDetails('${order.id}')" style="
+                        width: 100%;
+                        background: #f8f9fa;
+                        border: 1px solid #dee2e6;
+                        color: #495057;
+                        padding: 8px;
+                        border-radius: 4px;
+                        font-size: 12px;
+                        cursor: pointer;
+                    ">
+                        <i class="fas fa-eye"></i> View Details
+                    </button>
                 </div>
             `;
         }).join('');
@@ -207,17 +227,18 @@ async function loadUserOrders() {
 // Toggle profile edit mode
 function toggleEditMode(enable) {
     const form = document.getElementById('profileForm');
+    if (!form) return;
+    
     const editableInputs = form.querySelectorAll('input:not(.readonly-field)');
     const actions = form.querySelector('.form-actions');
     const editBtn = document.getElementById('editProfileBtn');
     
-    // Toggle readonly for editable inputs only
     editableInputs.forEach(input => {
         input.readOnly = !enable;
     });
     
-    actions.style.display = enable ? 'flex' : 'none';
-    editBtn.style.display = enable ? 'none' : 'inline-flex';
+    if (actions) actions.style.display = enable ? 'flex' : 'none';
+    if (editBtn) editBtn.style.display = enable ? 'none' : 'inline-flex';
 }
 
 // Update user profile
@@ -299,20 +320,35 @@ function switchSection(sectionName) {
     }
 }
 
-// View order details
-function viewOrderDetails(orderId) {
-    // Find order in database orders or localStorage
-    const localOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-    const order = localOrders.find(o => o.id === orderId);
-    
-    if (!order) {
-        alert('Order not found');
-        return;
+// View order details (fetch from Supabase for security)
+async function viewOrderDetails(orderId) {
+    try {
+        // Fetch order details from Supabase
+        const { data: order, error } = await supabase
+            .from('orders')
+            .select('*')
+            .eq('id', orderId)
+            .eq('user_id', currentUser.id)
+            .single();
+        
+        if (error || !order) {
+            alert('Order not found or access denied');
+            return;
+        }
+        
+        showOrderDetailsModal(order);
+        
+    } catch (error) {
+        console.error('Error fetching order details:', error);
+        alert('Unable to load order details. Please try again.');
     }
-    
-    const orderDate = new Date(order.created_at || order.createdAt).toLocaleDateString();
-    const orderTotal = order.total_amount || order.total;
-    const shippingAddr = order.shipping_addr || order.address;
+}
+
+// Show order details modal
+function showOrderDetailsModal(order) {
+    const orderDate = new Date(order.created_at).toLocaleDateString();
+    const orderTotal = order.total_amount;
+    const shippingAddr = order.shipping_addr;
     
     const detailsHTML = `
         <div class="order-details-modal">
@@ -352,13 +388,14 @@ function viewOrderDetails(orderId) {
                             }
                             
                             return `
-                                <div class="order-detail-item">
-                                    <img src="${imageUrl}" alt="${item.name}" onerror="this.src='https://via.placeholder.com/80x100/FF6B6B/FFFFFF?text=Product'">
-                                    <div class="item-info">
-                                        <h5>${item.name}</h5>
-                                        <p>Price: ₹${item.price.toLocaleString()}</p>
-                                        <p>Quantity: ${item.quantity}</p>
-                                        <p><strong>Subtotal: ₹${(item.price * item.quantity).toLocaleString()}</strong></p>
+                                <div style="display: flex; gap: 10px; padding: 8px; border-bottom: 1px solid #eee;">
+                                    <img src="${imageUrl}" alt="${item.name}" 
+                                         style="width: 50px; height: 60px; object-fit: cover; border-radius: 4px;"
+                                         onerror="this.src='https://via.placeholder.com/50x60/FF6B6B/FFFFFF?text=P'">
+                                    <div style="flex: 1;">
+                                        <h5 style="margin: 0 0 4px 0; font-size: 14px;">${item.name}</h5>
+                                        <p style="margin: 0; font-size: 12px; color: #666;">₹${item.price.toLocaleString()} × ${item.quantity}</p>
+                                        <p style="margin: 4px 0 0 0; font-weight: bold; color: #FF6B6B;">₹${(item.price * item.quantity).toLocaleString()}</p>
                                     </div>
                                 </div>
                             `;
@@ -400,8 +437,21 @@ function viewOrderDetails(orderId) {
         display: flex;
         justify-content: center;
         align-items: center;
-        padding: 20px;
+        padding: 10px;
     `;
+    
+    // Add mobile-friendly modal styles
+    const modalContent = modalContainer.querySelector('.modal-content');
+    if (modalContent) {
+        modalContent.style.cssText = `
+            background: white;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        `;
+    }
     
     document.body.appendChild(modalContainer);
     document.body.style.overflow = 'hidden';
@@ -438,8 +488,10 @@ document.addEventListener('DOMContentLoaded', function() {
         loadUserOrders();
     }
     
-    // Set initial readonly state
-    toggleEditMode(false);
+    // Set initial readonly state (if form exists)
+    if (document.getElementById('profileForm')) {
+        toggleEditMode(false);
+    }
     
     // Navigation event listeners
     document.querySelectorAll('.profile-nav-link').forEach(link => {
@@ -450,27 +502,36 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Edit profile button
-    document.getElementById('editProfileBtn').addEventListener('click', () => {
-        toggleEditMode(true);
-    });
+    // Edit profile button (if exists)
+    const editBtn = document.getElementById('editProfileBtn');
+    if (editBtn) {
+        editBtn.addEventListener('click', () => {
+            toggleEditMode(true);
+        });
+    }
     
-    // Cancel edit button
-    document.getElementById('cancelEditBtn').addEventListener('click', () => {
-        toggleEditMode(false);
-        loadUserProfile(); // Reset form
-    });
+    // Cancel edit button (if exists)
+    const cancelBtn = document.getElementById('cancelEditBtn');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+            toggleEditMode(false);
+            loadUserProfile();
+        });
+    }
     
-    // Profile form submission
-    document.getElementById('profileForm').addEventListener('submit', (e) => {
-        e.preventDefault();
-        
-        const formData = {
-            firstName: document.getElementById('firstName').value,
-            lastName: document.getElementById('lastName').value,
-            mobile: document.getElementById('mobile').value
-        };
-        
-        updateUserProfile(formData);
-    });
+    // Profile form submission (if exists)
+    const profileForm = document.getElementById('profileForm');
+    if (profileForm) {
+        profileForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                mobile: document.getElementById('mobile').value
+            };
+            
+            updateUserProfile(formData);
+        });
+    }
 });

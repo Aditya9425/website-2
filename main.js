@@ -922,7 +922,7 @@ async function saveOrderToDatabase(order) {
     try {
         console.log('💾 Saving order to Supabase:', order);
         
-        // Prepare order data for Supabase
+        // Prepare order data for Supabase (UUID will be auto-generated)
         const orderData = {
             user_id: order.user_id,
             items: order.items,
@@ -938,7 +938,7 @@ async function saveOrderToDatabase(order) {
         const { data, error } = await supabase
             .from('orders')
             .insert([orderData])
-            .select('id, created_at')
+            .select('id, created_at, *')
             .single();
         
         if (error) {
@@ -948,47 +948,27 @@ async function saveOrderToDatabase(order) {
         
         console.log('✅ Order saved to Supabase with ID:', data.id);
         
-        // Update the order object with the returned data
+        // Update the order object with the returned data including UUID
         order.id = data.id;
         order.created_at = data.created_at;
         
-        // Also save to localStorage as backup
-        const orders = JSON.parse(localStorage.getItem('orders') || '[]');
-        orders.push(order);
-        localStorage.setItem('orders', JSON.stringify(orders));
+        showNotification('Order saved successfully!', 'success');
         
         return data;
         
     } catch (error) {
         console.error('❌ Error saving order to Supabase:', error);
-        
-        // Fallback to localStorage only with temporary ID
-        try {
-            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
-            // Generate a temporary ID for localStorage
-            order.id = 'temp_' + Date.now();
-            order.created_at = new Date().toISOString();
-            orders.push(order);
-            localStorage.setItem('orders', JSON.stringify(orders));
-            showNotification('Order saved locally. Database sync may be delayed.', 'warning');
-            return order;
-        } catch (localError) {
-            console.error('❌ Failed to save order even locally:', localError);
-            showNotification('Failed to save order. Please contact support immediately.', 'error');
-            throw localError;
-        }
+        showNotification('Failed to save order. Please contact support immediately.', 'error');
+        throw error;
     }
 }
 
-// Show order confirmation popup with order_id
+// Show order confirmation popup with actual order_id
 function showOrderConfirmation(order) {
     console.log('✅ Showing order confirmation for order:', order.id);
     
     try {
-        // Create and show confirmation popup with order_id
-        const confirmationMessage = `Your order has been placed successfully. Your Order ID is: ${order.id}`;
-        
-        // Create custom popup
+        // Create and show confirmation popup with actual order_id
         const popup = document.createElement('div');
         popup.style.cssText = `
             position: fixed;
@@ -997,10 +977,10 @@ function showOrderConfirmation(order) {
             width: 100%;
             height: 100%;
             background: rgba(0,0,0,0.8);
+            z-index: 10000;
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 10000;
         `;
         
         popup.innerHTML = `
@@ -1016,27 +996,34 @@ function showOrderConfirmation(order) {
                 <div style="color: #28a745; font-size: 60px; margin-bottom: 20px;">
                     <i class="fas fa-check-circle"></i>
                 </div>
-                <h2 style="color: #333; margin-bottom: 15px;">Order Confirmed!</h2>
-                <p style="color: #666; font-size: 16px; margin-bottom: 20px;">${confirmationMessage}</p>
-                <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
-                    <strong style="color: #333;">Order ID:</strong>
-                    <div style="font-family: monospace; font-size: 18px; color: #007bff; margin-top: 5px;">${order.id}</div>
+                <h2 style="color: #333; margin-bottom: 15px;">Order Placed Successfully!</h2>
+                <p style="color: #666; margin-bottom: 20px; font-size: 16px;">
+                    Your order has been placed successfully. Your Order ID is:
+                </p>
+                <div style="
+                    background: #f8f9fa;
+                    padding: 15px;
+                    border-radius: 8px;
+                    margin: 20px 0;
+                    border-left: 4px solid #28a745;
+                ">
+                    <strong style="color: #333; font-size: 18px;">${order.id}</strong>
                 </div>
-                <div style="color: #666; margin-bottom: 25px;">
-                    <strong>Total Amount:</strong> ₹${(order.total_amount || order.total || 0).toLocaleString()}
-                </div>
+                <p style="color: #666; margin-bottom: 25px;">
+                    Total Amount: <strong>₹${(order.total_amount || 0).toLocaleString()}</strong>
+                </p>
                 <button onclick="this.parentElement.parentElement.remove(); window.location.href='index.html';" 
                         style="
                             background: #FF6B6B;
                             color: white;
                             border: none;
                             padding: 12px 30px;
-                            border-radius: 5px;
+                            border-radius: 6px;
                             font-size: 16px;
                             cursor: pointer;
                             transition: background 0.3s;
                         "
-                        onmouseover="this.style.background='#ff5252'"
+                        onmouseover="this.style.background='#FF5252'"
                         onmouseout="this.style.background='#FF6B6B'">
                     Continue Shopping
                 </button>
@@ -1047,18 +1034,15 @@ function showOrderConfirmation(order) {
         
         // Auto-close after 10 seconds
         setTimeout(() => {
-            if (popup.parentElement) {
+            if (popup.parentNode) {
                 popup.remove();
                 window.location.href = 'index.html';
             }
         }, 10000);
         
-        // Also show notification
-        showNotification('🎉 Order placed successfully!', 'success');
-        
     } catch (error) {
         console.error('❌ Error showing order confirmation:', error);
-        // Fallback confirmation
+        // Fallback alert with order_id
         alert(`Your order has been placed successfully. Your Order ID is: ${order.id}`);
         setTimeout(() => {
             window.location.href = 'index.html';
@@ -1178,11 +1162,12 @@ function handlePlaceOrderWithPayment(isBuyNow = false) {
 }
 
 // Process order after payment (or for COD)
-async function processOrder(total, paymentMethod, orderItems = null, isBuyNow = false) {
+async function processOrder(total, paymentMethod, orderItems = null, isBuyNow = false, paymentId = null) {
     console.log('=== PROCESSING ORDER ===');
     console.log('Total:', total);
     console.log('Payment method:', paymentMethod);
     console.log('Is Buy Now:', isBuyNow);
+    console.log('Payment ID:', paymentId);
     
     // Get user session
     const userSession = JSON.parse(localStorage.getItem('userSession') || '{}');
@@ -1192,7 +1177,7 @@ async function processOrder(total, paymentMethod, orderItems = null, isBuyNow = 
         console.error('❌ No user ID found, cannot save order to database');
         alert('Please login to place an order.');
         window.location.href = 'auth.html';
-        return false;
+        return null;
     }
     
     // Determine order items based on flow
@@ -1202,7 +1187,7 @@ async function processOrder(total, paymentMethod, orderItems = null, isBuyNow = 
         if (!buyNowItem) {
             console.error('❌ Buy now item is missing');
             alert('No item selected for purchase.');
-            return false;
+            return null;
         }
         items = Array.isArray(buyNowItem) ? buyNowItem : [buyNowItem];
     } else {
@@ -1210,7 +1195,7 @@ async function processOrder(total, paymentMethod, orderItems = null, isBuyNow = 
         if (!cart || cart.length === 0) {
             console.error('❌ Cart is empty, cannot process order');
             alert('Your cart is empty. Please add items before placing an order.');
-            return false;
+            return null;
         }
         items = [...cart];
     }
@@ -1225,17 +1210,17 @@ async function processOrder(total, paymentMethod, orderItems = null, isBuyNow = 
         alert('Delivery address is required. Please provide your address.');
         const addressUrl = isBuyNow ? 'address.html?buyNow=true' : 'address.html';
         window.location.href = addressUrl;
-        return false;
+        return null;
     }
     
     // Calculate totals
     const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const deliveryCharges = 0; // Set to 0 for testing
+    const deliveryCharges = 0;
     const calculatedTotal = subtotal + deliveryCharges;
     
     // Create order object with proper structure for Supabase
     const order = {
-        user_id: userId,
+        user_id: userId.toString(), // Ensure string format
         items: items.map(item => ({
             id: item.id,
             name: item.name,
@@ -1257,7 +1242,8 @@ async function processOrder(total, paymentMethod, orderItems = null, isBuyNow = 
             pincode: addressData.pincode
         },
         status: paymentMethod === 'cod' ? 'pending' : 'confirmed',
-        payment_method: paymentMethod
+        payment_method: paymentMethod,
+        payment_id: paymentId // Store the payment ID from Razorpay
     };
     
     console.log('📋 Order created:', order);
@@ -1268,14 +1254,14 @@ async function processOrder(total, paymentMethod, orderItems = null, isBuyNow = 
             throw new Error('Invalid order data - missing items or total amount');
         }
         
-        // Save order to database
+        // Save order to database and get the generated UUID
         const savedOrder = await saveOrderToDatabase(order);
         
-        // Update order with saved data
-        if (savedOrder) {
-            order.id = savedOrder.id;
-            order.created_at = savedOrder.created_at;
+        if (!savedOrder || !savedOrder.id) {
+            throw new Error('Failed to save order to database');
         }
+        
+        console.log('✅ Order saved with ID:', savedOrder.id);
         
         // Clear appropriate storage after successful order
         if (isBuyNow) {
@@ -1288,15 +1274,13 @@ async function processOrder(total, paymentMethod, orderItems = null, isBuyNow = 
             console.log('✅ Cart cleared');
         }
         
-        // Show order confirmation
-        showOrderConfirmation(order);
-        console.log('✅ Order confirmation shown');
+        // Return the saved order with the database-generated ID
+        return savedOrder;
         
-        return true;
     } catch (error) {
         console.error('❌ Error processing order:', error);
         alert('There was an error processing your order. Please try again.');
-        return false;
+        return null;
     }
 }
 

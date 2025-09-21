@@ -409,10 +409,7 @@
     </script>
     
     <script>
-        // Initialize Supabase client for fallback order creation
-        const SUPABASE_URL = 'https://jstvadizuzvwhabtfhfs.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzdHZhZGl6dXp2d2hhYnRmaGZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NjI3NjAsImV4cCI6MjA3MjIzODc2MH0.6btNpJfUh6Fd5PfoivIvu-f31Fj5IXl1vxBLsHz5ISw';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         
         // Enhanced payment completion handler with order insertion
         async function handlePaymentCompletion(paymentId, orderId) {
@@ -444,79 +441,30 @@
                 
                 console.log('📦 Processing order with items:', orderItems.length, 'Total:', total);
                 
-                // Process the order and insert into Supabase
+                // Process the order and get the actual order_id from database
                 if (typeof processOrder === 'function') {
                     console.log('🔄 Calling processOrder function...');
-                    const result = await processOrder(total, 'razorpay', orderItems, isBuyNow);
-                    if (result) {
-                        console.log('✅ Order processed successfully');
-                        return; // processOrder will handle the confirmation popup
+                    const orderResult = await processOrder(total, 'razorpay', orderItems, isBuyNow, paymentId);
+                    if (orderResult && orderResult.id) {
+                        console.log('✅ Order processed successfully with ID:', orderResult.id);
+                        // Show confirmation with actual database order_id
+                        showOrderConfirmationWithId(orderResult.id, total);
+                    } else {
+                        console.warn('⚠️ processOrder did not return order ID');
+                        showSimpleSuccess(paymentId, total);
                     }
+                } else {
+                    console.warn('⚠️ processOrder function not available');
+                    showSimpleSuccess(paymentId, total);
                 }
-                
-                // Fallback if processOrder fails
-                console.warn('⚠️ Using fallback order creation');
-                await createFallbackOrder(paymentId, total, orderItems, isBuyNow);
-                
             } catch (error) {
                 console.error('❌ Error in handlePaymentCompletion:', error);
-                // Still show success to user but log the error
                 showSimpleSuccess(paymentId, total);
             }
         }
         
-        // Fallback order creation with proper order_id
-        async function createFallbackOrder(paymentId, total, orderItems, isBuyNow) {
-            try {
-                const userSession = JSON.parse(localStorage.getItem('userSession') || '{}');
-                const addressData = JSON.parse(localStorage.getItem('deliveryAddress') || '{}');
-                
-                const orderData = {
-                    user_id: userSession.id,
-                    items: orderItems,
-                    total_amount: total,
-                    shipping_addr: addressData,
-                    status: 'confirmed',
-                    payment_method: 'razorpay',
-                    payment_id: paymentId
-                };
-                
-                // Save to Supabase and get the generated UUID
-                const { data, error } = await supabase
-                    .from('orders')
-                    .insert([orderData])
-                    .select('id, created_at')
-                    .single();
-                
-                if (error) throw error;
-                
-                // Show confirmation with actual order_id
-                const order = {
-                    id: data.id,
-                    total_amount: total,
-                    created_at: data.created_at
-                };
-                
-                showOrderConfirmationPopup(order);
-                
-                // Clear cart/buy now item
-                if (isBuyNow) {
-                    localStorage.removeItem('buyNowItem');
-                } else {
-                    localStorage.setItem('cart', JSON.stringify([]));
-                }
-                
-            } catch (error) {
-                console.error('❌ Fallback order creation failed:', error);
-                showSimpleSuccess(paymentId, total);
-            }
-        }
-        
-        // Show order confirmation popup with actual order_id
-        function showOrderConfirmationPopup(order) {
-            const confirmationMessage = `Your order has been placed successfully. Your Order ID is: ${order.id}`;
-            
-            // Create custom popup
+        // Show order confirmation with actual order_id
+        function showOrderConfirmationWithId(orderId, total) {
             const popup = document.createElement('div');
             popup.style.cssText = `
                 position: fixed;
@@ -525,10 +473,10 @@
                 width: 100%;
                 height: 100%;
                 background: rgba(0,0,0,0.8);
+                z-index: 10000;
                 display: flex;
                 justify-content: center;
                 align-items: center;
-                z-index: 10000;
             `;
             
             popup.innerHTML = `
@@ -544,28 +492,32 @@
                     <div style="color: #28a745; font-size: 60px; margin-bottom: 20px;">
                         <i class="fas fa-check-circle"></i>
                     </div>
-                    <h2 style="color: #333; margin-bottom: 15px;">Order Confirmed!</h2>
-                    <p style="color: #666; font-size: 16px; margin-bottom: 20px;">${confirmationMessage}</p>
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
-                        <strong style="color: #333;">Order ID:</strong>
-                        <div style="font-family: monospace; font-size: 18px; color: #007bff; margin-top: 5px;">${order.id}</div>
+                    <h2 style="color: #333; margin-bottom: 15px;">Order Placed Successfully!</h2>
+                    <p style="color: #666; margin-bottom: 20px; font-size: 16px;">
+                        Your order has been placed successfully. Your Order ID is:
+                    </p>
+                    <div style="
+                        background: #f8f9fa;
+                        padding: 15px;
+                        border-radius: 8px;
+                        margin: 20px 0;
+                        border-left: 4px solid #28a745;
+                    ">
+                        <strong style="color: #333; font-size: 18px;">${orderId}</strong>
                     </div>
-                    <div style="color: #666; margin-bottom: 25px;">
-                        <strong>Total Amount:</strong> ₹${order.total_amount.toLocaleString()}
-                    </div>
+                    <p style="color: #666; margin-bottom: 25px;">
+                        Total Amount: <strong>₹${total.toLocaleString()}</strong>
+                    </p>
                     <button onclick="this.parentElement.parentElement.remove(); window.location.href='index.html';" 
                             style="
                                 background: #FF6B6B;
                                 color: white;
                                 border: none;
                                 padding: 12px 30px;
-                                border-radius: 5px;
+                                border-radius: 6px;
                                 font-size: 16px;
                                 cursor: pointer;
-                                transition: background 0.3s;
-                            "
-                            onmouseover="this.style.background='#ff5252'"
-                            onmouseout="this.style.background='#FF6B6B'">
+                            ">
                         Continue Shopping
                     </button>
                 </div>
@@ -575,7 +527,7 @@
             
             // Auto-close after 10 seconds
             setTimeout(() => {
-                if (popup.parentElement) {
+                if (popup.parentNode) {
                     popup.remove();
                     window.location.href = 'index.html';
                 }
