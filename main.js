@@ -16,12 +16,15 @@ function refreshCart() {
     }
 }
 
-// Supabase Configuration
-const SUPABASE_URL = 'https://jstvadizuzvwhabtfhfs.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzdHZhZGl6dXp2d2hhYnRmaGZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NjI3NjAsImV4cCI6MjA3MjIzODc2MH0.6btNpJfUh6Fd5PfoivIvu-f31Fj5IXl1vxBLsHz5ISw';
+// Supabase Configuration - Keys loaded from backend
+let supabase = null;
 
-// Initialize Supabase client
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Initialize Supabase client when keys are available
+function initializeSupabase(url, key) {
+    if (window.supabase && url && key) {
+        supabase = window.supabase.createClient(url, key);
+    }
+}
 
 // Products will be loaded from Supabase
 let products = [];
@@ -29,6 +32,11 @@ let products = [];
 // Fetch products from Supabase
 async function fetchProductsFromSupabase() {
     try {
+        if (!supabase) {
+            console.log('Supabase not initialized, using fallback products');
+            return null;
+        }
+        
         const { data, error } = await supabase
             .from('products')
             .select('*');
@@ -143,6 +151,10 @@ async function fetchProducts() {
 // Authentication functions
 async function loginUser(email, password) {
     try {
+        if (!supabase) {
+            throw new Error('Database connection not available');
+        }
+        
         const { data, error } = await supabase
             .from('users')
             .select('*')
@@ -170,6 +182,10 @@ async function loginUser(email, password) {
 
 async function signupUser(email, mobile, password) {
     try {
+        if (!supabase) {
+            throw new Error('Database connection not available');
+        }
+        
         const { data, error } = await supabase
             .from('users')
             .insert([{ email, mobile, password }])
@@ -921,6 +937,10 @@ function handlePlaceOrder() {
 async function saveOrderToDatabase(order) {
     try {
         console.log('💾 Saving order to Supabase:', order);
+        
+        if (!supabase) {
+            throw new Error('Database connection not available');
+        }
         
         // Prepare order data for Supabase (UUID will be auto-generated)
         const orderData = {
