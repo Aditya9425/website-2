@@ -13,9 +13,226 @@
     <link rel="stylesheet" href="mobile-fix.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        .collections-main {
+            padding: 40px 0;
+            background: #FFF0F4;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .page-header h1 {
+            font-size: 2.5rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .category-filters {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0 40px 0;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 12px 24px;
+            border: 2px solid #FC6C85;
+            background: transparent;
+            color: #FC6C85;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn.active,
+        .filter-btn:hover {
+            background: #FC6C85;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .products-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .sort-select {
+            padding: 8px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .product-card:hover .product-image {
+            transform: scale(1.05);
+        }
+
+        .product-info {
+            padding: 20px;
+        }
+
+        .product-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+
+        .product-price {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #FC6C85;
+            margin-bottom: 12px;
+        }
+
+        .product-rating {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .stars {
+            color: #FFD700;
+            font-size: 14px;
+        }
+
+        .rating-text {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .add-to-cart-btn {
+            flex: 1;
+            background: #FC6C85;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .add-to-cart-btn:hover {
+            background: #E85A75;
+            transform: translateY(-2px);
+        }
+
+        .buy-now-btn {
+            flex: 1;
+            background: #333;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .buy-now-btn:hover {
+            background: #555;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .page-header h1 {
+                font-size: 2rem;
+            }
+
+            .category-filters {
+                gap: 10px;
+            }
+
+            .filter-btn {
+                padding: 10px 18px;
+                font-size: 14px;
+            }
+
+            .products-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch;
+            }
+
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 20px;
+            }
+
+            .product-image {
+                height: 200px;
+            }
+
+            .product-actions {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 15px;
+            }
+
+            .product-image {
+                height: 180px;
+            }
+
+            .product-info {
+                padding: 15px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <!-- Header -->
     <header class="header">
         <nav class="navbar">
             <div class="nav-brand">
@@ -35,28 +252,29 @@
                 <i class="fas fa-bars"></i>
             </button>
             <div class="nav-actions">
-
                 <a href="cart.html" class="cart-container">
                     <i class="fas fa-shopping-bag"></i>
                     <span class="cart-count" id="cartCount">0</span>
                 </a>
-                <div class="user-container">
+                <a href="auth.html" id="loginLink">
                     <i class="fas fa-user"></i>
-                </div>
-                <button class="sign-out-btn">Sign Out</button>
+                    <span class="desktop-only">My Account</span>
+                </a>
+                <a href="profile.html" class="profile-link" id="profileLink" style="display: none;">
+                    <i class="fas fa-user-circle"></i>
+                    <span id="userName" class="desktop-only">Profile</span>
+                </a>
+                <button class="sign-out-btn" id="signOutBtn" onclick="logout()" style="display: none;">Sign Out</button>
             </div>
         </nav>
     </header>
 
-    <!-- Main Content -->
     <main class="collections-main">
         <div class="container">
-            <!-- Page Header -->
             <div class="page-header">
                 <h1>All Sarees</h1>
             </div>
             
-            <!-- Category Filter Buttons -->
             <div class="category-filters">
                 <button class="filter-btn active" data-category="all">All</button>
                 <button class="filter-btn" data-category="silk">Silk Sarees</button>
@@ -64,8 +282,21 @@
                 <button class="filter-btn" data-category="bridal">Wedding Sarees</button>
                 <button class="filter-btn" data-category="designer">Designer Sarees</button>
             </div>
+
+            <div class="products-header">
+                <div class="products-count">
+                    <span id="productsCount">Showing all sarees</span>
+                </div>
+                <div class="sort-container">
+                    <select class="sort-select" id="sortSelect">
+                        <option value="price-low">Price: Low to High</option>
+                        <option value="price-high">Price: High to Low</option>
+                        <option value="rating">Customer Rating</option>
+                        <option value="newest">Newest First</option>
+                    </select>
+                </div>
+            </div>
             
-            <!-- Products Grid -->
             <div class="products-grid" id="productsGrid">
                 <!-- Products will be loaded dynamically -->
             </div>
@@ -187,13 +418,101 @@
 
     <script src="main.js"></script>
     <script>
+        let currentProducts = [];
+        let filteredProducts = [];
+
+        // Enhanced product card creation
+        function createProductCard(product) {
+            return `
+                <div class="product-card" onclick="openProductModal(${product.id})">
+                    <img src="${product.image}" alt="${product.name}" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">${product.name}</h3>
+                        <div class="product-price">₹${product.price.toLocaleString()}</div>
+                        <div class="product-rating">
+                            <div class="stars">${generateStars(product.rating)}</div>
+                            <span class="rating-text">(${product.reviews || 0})</span>
+                        </div>
+                        <div class="product-actions">
+                            <button class="add-to-cart-btn" onclick="event.stopPropagation(); addToCart(${product.id})">
+                                Add to Cart
+                            </button>
+                            <button class="buy-now-btn" onclick="event.stopPropagation(); buyNow(${product.id})">
+                                Buy Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Buy now function
+        function buyNow(productId) {
+            addToCart(productId);
+            window.location.href = 'cart.html';
+        }
+
+        // Sort products function
+        function sortProducts(sortBy) {
+            let sortedProducts = [...filteredProducts];
+            
+            switch(sortBy) {
+                case 'price-low':
+                    sortedProducts.sort((a, b) => a.price - b.price);
+                    break;
+                case 'price-high':
+                    sortedProducts.sort((a, b) => b.price - a.price);
+                    break;
+                case 'rating':
+                    sortedProducts.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+                    break;
+                case 'newest':
+                    sortedProducts.sort((a, b) => b.id - a.id);
+                    break;
+            }
+            
+            displayProducts(sortedProducts);
+        }
+
+        // Display products function
+        function displayProducts(productsToShow) {
+            const grid = document.getElementById('productsGrid');
+            if (productsToShow.length === 0) {
+                grid.innerHTML = '<div style="text-align: center; padding: 40px; color: #666;">No products found</div>';
+                return;
+            }
+            
+            grid.innerHTML = productsToShow.map(product => createProductCard(product)).join('');
+            document.getElementById('productsCount').textContent = `Showing ${productsToShow.length} sarees`;
+        }
+
+        // Filter products function
+        function filterProducts(category) {
+            if (category === 'all') {
+                filteredProducts = [...currentProducts];
+            } else {
+                filteredProducts = currentProducts.filter(product => 
+                    product.category && product.category.toLowerCase() === category.toLowerCase()
+                );
+            }
+            displayProducts(filteredProducts);
+        }
+
+        // Load products function
+        function loadProducts() {
+            if (typeof products !== 'undefined' && products.length > 0) {
+                currentProducts = [...products];
+                filteredProducts = [...products];
+                displayProducts(filteredProducts);
+            }
+        }
+
         // Auto-filter based on URL parameter
         document.addEventListener('DOMContentLoaded', function() {
             const urlParams = new URLSearchParams(window.location.search);
             const category = urlParams.get('category');
             
             if (category) {
-                // Update page title
                 const categoryNames = {
                     'silk': 'Silk Sarees',
                     'cotton': 'Cotton Sarees', 
@@ -206,12 +525,11 @@
                     pageHeader.textContent = categoryNames[category];
                 }
                 
-                // Wait for products to load, then filter
                 const checkAndFilter = () => {
-                    if (typeof filterProducts === 'function' && products && products.length > 0) {
+                    if (typeof products !== 'undefined' && products.length > 0) {
+                        currentProducts = [...products];
                         filterProducts(category);
                         
-                        // Update active filter button
                         document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
                         const filterBtn = document.querySelector(`[data-category="${category}"]`);
                         if (filterBtn) {
@@ -223,7 +541,30 @@
                 };
                 
                 checkAndFilter();
+            } else {
+                // Load all products
+                setTimeout(() => {
+                    loadProducts();
+                }, 100);
             }
+
+            // Filter functionality
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const category = this.dataset.category;
+                    
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    filterProducts(category);
+                });
+            });
+
+            // Sort functionality
+            document.getElementById('sortSelect').addEventListener('change', function() {
+                const sortBy = this.value;
+                sortProducts(sortBy);
+            });
         });
     </script>
 </body>

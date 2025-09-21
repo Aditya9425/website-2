@@ -87,33 +87,14 @@ async function loadUserProfile() {
 async function loadUserOrders() {
     const container = document.getElementById('ordersContainer');
     
-    console.log('🔄 Loading user orders, currentUser:', currentUser);
-    
-    if (!currentUser) {
-        console.error('❌ No current user found');
+    if (!currentUser || !currentUser.id) {
+        console.error('No user ID found');
         container.innerHTML = `
             <div class="empty-state">
                 <i class="fas fa-exclamation-triangle"></i>
                 <h3>Unable to load orders</h3>
                 <p>Please login again to view your orders</p>
                 <a href="auth.html" class="btn-primary">Login</a>
-            </div>
-        `;
-        return;
-    }
-    
-    // Get user ID - try different properties
-    const userId = currentUser.id || currentUser.user_id || currentUser.email;
-    console.log('🔍 Using user identifier:', userId);
-    
-    if (!userId) {
-        console.error('❌ No user identifier found');
-        container.innerHTML = `
-            <div class="error-state">
-                <i class="fas fa-exclamation-triangle"></i>
-                <h3>Unable to identify user</h3>
-                <p>Please logout and login again</p>
-                <button class="btn-primary" onclick="logout()">Logout</button>
             </div>
         `;
         return;
@@ -128,40 +109,24 @@ async function loadUserOrders() {
     `;
     
     try {
-        console.log('🔍 Fetching orders for user:', userId);
+        console.log('🔍 Fetching orders for user:', currentUser.id);
         
-        // Try fetching by user_id first, then by email if no results
-        let { data: userOrders, error } = await supabase
+        // Fetch only current user's orders from Supabase
+        const { data: userOrders, error } = await supabase
             .from('orders')
             .select('*')
-            .eq('user_id', userId)
+            .eq('user_id', currentUser.id)
             .order('created_at', { ascending: false });
-        
-        // If no orders found by user_id and we have an email, try email-based lookup
-        if ((!userOrders || userOrders.length === 0) && currentUser.email) {
-            console.log('🔄 No orders found by user_id, trying email lookup...');
-            const emailResult = await supabase
-                .from('orders')
-                .select('*')
-                .contains('shipping_addr', { email: currentUser.email })
-                .order('created_at', { ascending: false });
-            
-            if (!emailResult.error && emailResult.data) {
-                userOrders = emailResult.data;
-                console.log('📧 Found orders by email:', userOrders.length);
-            }
-        }
         
         if (error) {
             console.error('❌ Supabase error:', error);
             throw error;
         }
         
-        console.log('✅ Orders fetched from Supabase:', userOrders?.length || 0, 'orders');
+        console.log('✅ Orders fetched from Supabase:', userOrders);
         
-        // Use Supabase orders
+        // Use only Supabase orders (no localStorage fallback for security)
         const allOrders = userOrders || [];
-        console.log('📊 Processing', allOrders.length, 'orders for display');
         
         if (allOrders.length === 0) {
             container.innerHTML = `
@@ -335,23 +300,15 @@ function switchSection(sectionName) {
 }
 
 // View order details
-async function viewOrderDetails(orderId) {
-    try {
-        const userId = currentUser.id || currentUser.user_id || currentUser.email;
-        
-        // Fetch specific order from Supabase
-        const { data: order, error } = await supabase
-            .from('orders')
-            .select('*')
-            .eq('id', orderId)
-            .eq('user_id', userId)
-            .single();
-        
-        if (error || !order) {
-            console.error('Order fetch error:', error);
-            alert('Order not found or access denied');
-            return;
-        }
+function viewOrderDetails(orderId) {
+    // Find order in database orders or localStorage
+    const localOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+    const order = localOrders.find(o => o.id === orderId);
+    
+    if (!order) {
+        alert('Order not found');
+        return;
+    }
     
     const orderDate = new Date(order.created_at || order.createdAt).toLocaleDateString();
     const orderTotal = order.total_amount || order.total;
@@ -448,11 +405,6 @@ async function viewOrderDetails(orderId) {
     
     document.body.appendChild(modalContainer);
     document.body.style.overflow = 'hidden';
-    
-    } catch (error) {
-        console.error('Error loading order details:', error);
-        alert('Failed to load order details. Please try again.');
-    }
 }
 
 // Close order details modal
@@ -467,8 +419,6 @@ function closeOrderDetails() {
 // Make functions globally available
 window.viewOrderDetails = viewOrderDetails;
 window.closeOrderDetails = closeOrderDetails;
-window.loadUserOrders = loadUserOrders;
-window.debugUser = () => console.log('Current user:', currentUser);
 
 // Initialize profile page
 document.addEventListener('DOMContentLoaded', function() {

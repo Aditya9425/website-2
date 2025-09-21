@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="navbar-styles.css">
     <link rel="stylesheet" href="mobile-responsive.css">
+    <link rel="stylesheet" href="address-mobile.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
@@ -35,7 +36,19 @@
                     <i class="fas fa-shopping-cart"></i>
                     <span class="cart-count" id="cartCount">0</span>
                 </a>
-                <button class="login-btn">Login</button>
+                <div id="profileLink" class="profile-link" style="display: block;">
+                    <div class="user-container">
+                        <i class="fas fa-user"></i>
+                        <span id="userName">User</span>
+                    </div>
+                    <div id="userMenu" class="user-menu" style="display: none;">
+                        <a href="profile.html" class="profile-link">
+                            <i class="fas fa-user"></i>
+                            <span>Profile</span>
+                        </a>
+                        <button id="signOutBtn" class="sign-out-btn" onclick="logout()">Sign Out</button>
+                    </div>
+                </div>
             </div>
         </nav>
     </header>
@@ -325,7 +338,33 @@
                     backBtn.onclick = () => window.location.href = 'cart.html';
                 }
             }
+            
+            // User menu toggle functionality
+            const userContainer = document.querySelector('.user-container');
+            const userMenu = document.getElementById('userMenu');
+            
+            if (userContainer && userMenu) {
+                userContainer.addEventListener('click', function() {
+                    userMenu.style.display = userMenu.style.display === 'block' ? 'none' : 'block';
+                });
+                
+                // Close menu when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!userContainer.contains(e.target) && !userMenu.contains(e.target)) {
+                        userMenu.style.display = 'none';
+                    }
+                });
+            }
         });
+        
+        // Logout function
+        function logout() {
+            // Clear any stored user data
+            localStorage.removeItem('user');
+            sessionStorage.removeItem('user');
+            // Redirect to home page
+            window.location.href = 'index.html';
+        }
     </script>
 </body>
 </html>

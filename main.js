@@ -1,29 +1,19 @@
 // Global Variables
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
-console.log('Initial cart loaded:', cart);
-console.log('Cart length:', cart.length);
-
 // Function to refresh cart from localStorage
 function refreshCart() {
     const storedCart = localStorage.getItem('cart');
-    console.log('Stored cart in localStorage:', storedCart);
     
     if (storedCart) {
         try {
             cart = JSON.parse(storedCart);
-            console.log('Cart refreshed from localStorage:', cart);
         } catch (error) {
-            console.error('Error parsing cart from localStorage:', error);
             cart = [];
         }
     } else {
-        console.log('No cart found in localStorage, using empty array');
         cart = [];
     }
-    
-    console.log('Final cart state:', cart);
-    console.log('Cart length:', cart.length);
 }
 
 // Supabase Configuration
@@ -39,28 +29,13 @@ let products = [];
 // Fetch products from Supabase
 async function fetchProductsFromSupabase() {
     try {
-        console.log('🔄 Fetching products from Supabase...');
-        console.log('Supabase URL:', SUPABASE_URL);
-        console.log('Supabase client:', supabase);
-        
         const { data, error } = await supabase
             .from('products')
             .select('*');
         
-        console.log('Supabase response - data:', data);
-        console.log('Supabase response - error:', error);
-        
-        if (error) {
-            console.error('❌ Supabase error:', error);
+        if (error || !data || data.length === 0) {
             return null;
         }
-        
-        if (!data || data.length === 0) {
-            console.warn('⚠️ No products found in Supabase');
-            return null;
-        }
-        
-        console.log('✅ Raw data from Supabase:', data);
         
         const mappedProducts = data.map(row => ({
             id: row.id,
@@ -79,33 +54,24 @@ async function fetchProductsFromSupabase() {
             reviews: row.reviews || 50
         }));
         
-        console.log('✅ Mapped products:', mappedProducts);
         return mappedProducts;
         
     } catch (error) {
-        console.error('❌ Error fetching from Supabase:', error);
         return null;
     }
 }
 
 // Main fetch products function with fallback
 async function fetchProducts() {
-    console.log('🚀 Starting fetchProducts...');
-    
     try {
-        console.log('🔍 Attempting to fetch from Supabase...');
         const supabaseProducts = await fetchProductsFromSupabase();
         
         if (supabaseProducts && supabaseProducts.length > 0) {
             products = supabaseProducts;
-            console.log('✅ Products loaded from Supabase:', products.length);
-            console.log('Products:', products);
         } else {
-            console.warn('⚠️ No products from Supabase, using fallback');
             throw new Error('No products from Supabase');
         }
     } catch (error) {
-        console.error('❌ Supabase failed, using fallback products:', error);
         products = [
             {
                 id: 1,
@@ -252,12 +218,7 @@ function logout() {
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async function() {
-    console.log('DOM loaded, initializing...');
-    
-    // Initialize mobile menu
     initializeMobileMenu();
-    
-    // Check user authentication
     checkUserAuth();
     
     await fetchProducts();
@@ -310,7 +271,6 @@ function addToCart(button) {
 }
 
 function removeFromCart(productId) {
-    console.log('Removing from cart:', productId);
     cart = cart.filter(item => item.id != productId);
     saveCart();
     updateCartCount();
@@ -319,7 +279,6 @@ function removeFromCart(productId) {
 }
 
 function updateCartItemQuantity(productId, newQuantity) {
-    console.log('Updating quantity:', productId, newQuantity);
     const item = cart.find(item => item.id == productId);
     if (item) {
         if (newQuantity <= 0) {
@@ -603,46 +562,31 @@ function displayCartItems() {
 }
 
 function updateOrderSummary() {
-    console.log('updateOrderSummary called with cart:', cart);
-    console.log('Cart length:', cart.length);
-    
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const deliveryCharges = 0; // Set to 0 for testing
+    const deliveryCharges = 0;
     const total = subtotal + deliveryCharges;
     
-    console.log('Calculated values - Subtotal:', subtotal, 'Delivery:', deliveryCharges, 'Total:', total);
-    
     const summaryElements = document.querySelectorAll('#subtotal, #deliveryCharges, #total');
-    console.log('Found summary elements:', summaryElements.length);
     
     if (summaryElements[0]) {
         summaryElements[0].textContent = `₹${subtotal.toLocaleString()}`;
-        console.log('Updated subtotal element');
     }
     if (summaryElements[1]) {
         summaryElements[1].textContent = `₹${deliveryCharges.toLocaleString()}`;
-        console.log('Updated delivery charges element');
     }
     if (summaryElements[2]) {
         summaryElements[2].textContent = `₹${total.toLocaleString()}`;
-        console.log('Updated total element');
     }
     
-    // Also update cart item count if present
     const cartItemCount = document.getElementById('cartItemCount');
     if (cartItemCount) {
         const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
         cartItemCount.textContent = totalItems;
-        console.log('Updated cart item count:', totalItems);
     }
     
     const checkoutBtn = document.getElementById('checkoutBtn');
     if (checkoutBtn) {
-        console.log('Checkout button found, cart length:', cart.length);
         checkoutBtn.disabled = cart.length === 0;
-        console.log('Checkout button disabled:', checkoutBtn.disabled);
-    } else {
-        console.log('Checkout button not found');
     }
 }
 
@@ -1407,78 +1351,9 @@ function displayOrderItems(isBuyNow = false) {
     console.log('Order items displayed:', items.length, 'items');
 }
 
-// Test function to debug order placement
-function testOrderPlacement() {
-    console.log('=== TESTING ORDER PLACEMENT ===');
-    console.log('Current cart:', cart);
-    console.log('Cart length:', cart.length);
-    
-    // Add a test item if cart is empty
-    if (cart.length === 0) {
-        console.log('Cart is empty, adding test item');
-        cart.push({
-            id: 'test-1',
-            name: 'Test Saree',
-            price: 1000,
-            image: 'test.jpg',
-            quantity: 1
-        });
-        saveCart();
-        console.log('Test item added to cart');
-    }
-    
-    // Test address
-    const addressData = {
-        firstName: 'Test',
-        lastName: 'User',
-        email: 'test@example.com',
-        mobile: '9999999999',
-        addressLine1: 'Test Address',
-        city: 'Test City',
-        state: 'Test State',
-        pincode: '123456'
-    };
-    localStorage.setItem('deliveryAddress', JSON.stringify(addressData));
-    console.log('Test address saved');
-    
-    // Test order placement
-    console.log('Testing order placement...');
-    const result = processOrder(1200, 'cod');
-    console.log('Order placement result:', result);
-    
-    return result;
-}
 
-// Make test function available globally
-window.testOrderPlacement = testOrderPlacement;
 
-// Test Supabase connection
-async function testSupabaseConnection() {
-    console.log('🧪 Testing Supabase connection...');
-    console.log('URL:', SUPABASE_URL);
-    console.log('Key:', SUPABASE_ANON_KEY ? 'Present' : 'Missing');
-    
-    try {
-        const { data, error } = await supabase
-            .from('products')
-            .select('count')
-            .limit(1);
-            
-        if (error) {
-            console.error('❌ Supabase test failed:', error);
-            return false;
-        }
-        
-        console.log('✅ Supabase connection successful');
-        return true;
-    } catch (err) {
-        console.error('❌ Supabase test error:', err);
-        return false;
-    }
-}
 
-// Make test function available globally
-window.testSupabaseConnection = testSupabaseConnection;
 
 // Product Detail Modal Functions
 let currentProduct = null;
@@ -1705,10 +1580,7 @@ function changeModalMainImage(imageUrl) {
 
 window.changeModalMainImage = changeModalMainImage;
 
-window.testModal = function() {
-    console.log('Testing modal...');
-    openProductDetail(1);
-};
+
 // Generate color palette for products
 function generateColorPalette(product) {
     if (!product.color_variants || product.color_variants.length === 0) {

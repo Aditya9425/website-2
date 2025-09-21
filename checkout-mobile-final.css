@@ -1,0 +1,699 @@
+/* ===== CHECKOUT PAGE MOBILE OPTIMIZATION ===== */
+
+@media (max-width: 768px) {
+    /* Main layout adjustments */
+    .checkout-main {
+        padding: 10px 0;
+        background: #f8f9fa;
+    }
+
+    .container {
+        padding: 0 15px;
+        max-width: 100%;
+    }
+
+    /* Breadcrumb mobile styling */
+    .breadcrumb {
+        font-size: 13px;
+        margin-bottom: 15px;
+        padding: 8px 0;
+        color: #666;
+    }
+
+    .breadcrumb a {
+        color: #FF6B6B;
+        text-decoration: none;
+    }
+
+    /* Page header mobile optimization */
+    .page-header {
+        text-align: center;
+        margin-bottom: 20px;
+        padding: 10px 0;
+    }
+
+    .page-header h1 {
+        font-size: 24px;
+        margin-bottom: 8px;
+        color: #333;
+        font-weight: 600;
+    }
+
+    .page-header p {
+        font-size: 14px;
+        color: #666;
+        margin: 0;
+    }
+
+    /* Checkout content */
+    .checkout-content {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    /* Checkout steps - keep horizontal on mobile as requested */
+    .checkout-steps {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: white;
+        padding: 15px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 15px;
+        position: relative;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+        text-align: center;
+        position: relative;
+        min-width: 70px;
+        padding: 5px;
+    }
+
+    .step:not(:last-child):after {
+        content: '';
+        position: absolute;
+        right: -50%;
+        top: 20px;
+        width: 100%;
+        height: 2px;
+        background: #e0e0e0;
+        z-index: 1;
+    }
+
+    .step.active:not(:last-child):after {
+        background: #FF6B6B;
+    }
+
+    .step-number {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #e0e0e0;
+        color: #666;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 14px;
+        z-index: 2;
+        position: relative;
+    }
+
+    .step.active .step-number {
+        background: #FF6B6B;
+        color: white;
+    }
+
+    .step-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .step-title {
+        font-weight: 600;
+        color: #333;
+        font-size: 12px;
+    }
+
+    .step-desc {
+        font-size: 10px;
+        color: #666;
+    }
+
+    /* Checkout forms */
+    .checkout-forms {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    /* Form cards */
+    .form-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 0;
+    }
+
+    .form-card h2 {
+        font-size: 18px;
+        margin-bottom: 15px;
+        color: #333;
+        font-weight: 600;
+        text-align: center;
+    }
+
+    /* Payment method section - remove excessive spacing */
+    .payment-method-section {
+        margin-bottom: 0;
+    }
+
+    .razorpay-info {
+        margin: 0;
+        padding: 0;
+    }
+
+    .payment-gateway {
+        text-align: center;
+        padding: 0;
+    }
+
+    .payment-gateway img {
+        height: 35px !important;
+        margin-bottom: 12px !important;
+    }
+
+    .payment-gateway h3 {
+        font-size: 16px;
+        margin-bottom: 8px;
+        color: #333;
+    }
+
+    .payment-gateway p {
+        font-size: 14px;
+        margin-bottom: 15px;
+        color: #666;
+    }
+
+    /* Payment options */
+    .payment-options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    .payment-badge {
+        background: #f8f9fa;
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        font-size: 13px;
+        color: #666;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .payment-badge i {
+        color: #FF6B6B;
+        font-size: 14px;
+    }
+
+    /* Security info */
+    .security-info {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        color: #28a745;
+        font-size: 13px;
+        margin: 0;
+        padding: 10px;
+        background: #e8f5e8;
+        border-radius: 8px;
+    }
+
+    .security-info i {
+        font-size: 14px;
+    }
+
+    /* Delivery address section */
+    .delivery-address-section {
+        margin-bottom: 0;
+    }
+
+    .address-display {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .address-actions {
+        text-align: center;
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+        background: #5a6268;
+        text-decoration: none;
+        color: white;
+    }
+
+    /* Order summary section */
+    .order-summary-section {
+        margin-bottom: 0;
+    }
+
+    .order-items {
+        margin-bottom: 15px;
+    }
+
+    .order-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        background: #fafafa;
+    }
+
+    .order-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .item-image {
+        width: 50px;
+        height: 50px;
+        flex-shrink: 0;
+    }
+
+    .item-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 6px;
+    }
+
+    .item-details {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .item-name {
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+        margin: 0 0 4px 0;
+        line-height: 1.3;
+    }
+
+    .item-meta {
+        display: flex;
+        gap: 12px;
+        color: #666;
+        font-size: 12px;
+    }
+
+    .item-price {
+        font-weight: 600;
+        color: #FF6B6B;
+    }
+
+    .item-total {
+        font-size: 16px;
+        font-weight: 700;
+        color: #333;
+        margin-left: 10px;
+    }
+
+    /* Order totals */
+    .order-totals {
+        border-top: 2px solid #e0e0e0;
+        padding-top: 15px;
+    }
+
+    .total-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-size: 14px;
+        color: #666;
+    }
+
+    .total-row.total-final {
+        font-size: 18px;
+        font-weight: 700;
+        color: #333;
+        border-top: 1px solid #e0e0e0;
+        padding-top: 10px;
+        margin-top: 10px;
+    }
+
+    /* Pay now section - remove excessive spacing */
+    .pay-now-section {
+        margin-bottom: 0;
+        margin-top: 0;
+    }
+
+    .pay-now-content {
+        text-align: center;
+        padding: 0;
+        margin: 0;
+    }
+
+    /* Pay now button - remove spacing around it */
+    .pay-now-btn {
+        width: 100%;
+        background: linear-gradient(135deg, #FF6B6B 0%, #E85A4F 100%);
+        color: white;
+        border: none;
+        padding: 16px 20px;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-height: 56px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        margin: 0;
+    }
+
+    .pay-now-btn:hover {
+        background: linear-gradient(135deg, #E85A4F 0%, #D44638 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+    }
+
+    .pay-now-btn:disabled {
+        background: #e0e0e0;
+        color: #999;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    /* Secure info - remove spacing */
+    .secure-info {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        color: #28a745;
+        font-size: 14px;
+        margin: 10px 0 0 0;
+        padding: 0;
+    }
+
+    .secure-info i {
+        font-size: 16px;
+    }
+
+    /* Security features - compact layout */
+    .security-features {
+        margin: 20px 0;
+    }
+
+    .security-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .security-item {
+        text-align: center;
+        padding: 20px 15px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .security-item i {
+        font-size: 2rem;
+        color: #FF6B6B;
+        margin-bottom: 12px;
+    }
+
+    .security-item h4 {
+        margin-bottom: 8px;
+        color: #333;
+        font-size: 16px;
+    }
+
+    .security-item p {
+        color: #666;
+        font-size: 14px;
+        margin: 0;
+    }
+
+    /* Footer mobile optimization */
+    footer {
+        padding: 30px 0 20px !important;
+        margin-top: 30px !important;
+    }
+
+    footer > div {
+        padding: 0 15px !important;
+    }
+
+    footer > div > div {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 25px !important;
+        margin-bottom: 25px !important;
+        text-align: center !important;
+    }
+
+    footer h3 {
+        font-size: 1.3rem !important;
+        margin-bottom: 15px !important;
+    }
+
+    footer h4 {
+        font-size: 1.1rem !important;
+        margin-bottom: 15px !important;
+    }
+
+    footer p {
+        font-size: 14px !important;
+        line-height: 1.6 !important;
+    }
+
+    footer a {
+        font-size: 14px !important;
+        padding: 8px 0 !important;
+        display: block !important;
+    }
+
+    footer > div > div > div {
+        padding: 20px 15px !important;
+        border-bottom: 1px solid #34495e;
+    }
+
+    footer > div > div > div:last-child {
+        border-bottom: none;
+    }
+
+    footer > div > div:last-child {
+        padding-top: 20px !important;
+        border-top: 1px solid #34495e !important;
+    }
+
+    footer > div > div:last-child p {
+        font-size: 13px !important;
+    }
+
+    /* Modal mobile optimization */
+    .modal-overlay {
+        padding: 20px;
+    }
+
+    .modal-content {
+        width: 95% !important;
+        max-width: 400px !important;
+        padding: 25px !important;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .modal-header h2 {
+        font-size: 20px;
+        margin-bottom: 15px;
+    }
+
+    .success-icon i {
+        font-size: 3rem;
+        color: #28a745;
+        margin-bottom: 15px;
+    }
+
+    .modal-body h3 {
+        font-size: 18px;
+        margin-bottom: 10px;
+    }
+
+    .modal-body p {
+        font-size: 14px;
+        margin-bottom: 20px;
+        line-height: 1.5;
+    }
+
+    .order-details {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 15px 0;
+        font-size: 14px;
+    }
+
+    .next-steps h4 {
+        font-size: 16px;
+        margin-bottom: 10px;
+    }
+
+    .next-steps ul {
+        text-align: left;
+        padding-left: 20px;
+    }
+
+    .next-steps li {
+        font-size: 13px;
+        margin-bottom: 5px;
+    }
+
+    .modal-footer {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .modal-footer .btn-primary,
+    .modal-footer .btn-secondary {
+        width: 100%;
+        padding: 12px 20px;
+        font-size: 14px;
+    }
+}
+
+/* Extra small screens */
+@media (max-width: 375px) {
+    .container {
+        padding: 0 10px;
+    }
+
+    .checkout-main {
+        padding: 8px 0;
+    }
+
+    .form-card {
+        padding: 15px;
+    }
+
+    .checkout-steps {
+        padding: 12px;
+    }
+
+    .step-number {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+    }
+
+    .step-title {
+        font-size: 11px;
+    }
+
+    .step-desc {
+        font-size: 9px;
+    }
+
+    .payment-options {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .pay-now-btn {
+        padding: 14px 18px;
+        font-size: 15px;
+        min-height: 52px;
+    }
+
+    .security-item {
+        padding: 15px 12px;
+    }
+
+    .security-item i {
+        font-size: 1.5rem;
+    }
+}
+
+/* Landscape orientation on mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+    .checkout-main {
+        padding: 8px 0;
+    }
+
+    .form-card {
+        padding: 18px;
+    }
+
+    .security-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+    }
+
+    .security-item {
+        padding: 15px 10px;
+    }
+
+    .security-item i {
+        font-size: 1.5rem;
+        margin-bottom: 8px;
+    }
+
+    .security-item h4 {
+        font-size: 14px;
+        margin-bottom: 6px;
+    }
+
+    .security-item p {
+        font-size: 12px;
+    }
+}
+
+/* Touch-friendly improvements */
+@media (hover: none) and (pointer: coarse) {
+    .pay-now-btn:hover {
+        transform: none;
+        background: linear-gradient(135deg, #FF6B6B 0%, #E85A4F 100%);
+    }
+
+    .btn-secondary:hover {
+        transform: none;
+        background: #6c757d;
+    }
+
+    /* Ensure all interactive elements are touch-friendly */
+    button,
+    .btn {
+        min-height: 44px;
+    }
+}
