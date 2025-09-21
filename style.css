@@ -5060,3 +5060,107 @@ button:focus,
     font-size: 0.8rem;
     font-weight: 500;
 }
+/* Sort Section Styles */
+.sort-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin: 20px 0 40px 0;
+}
+
+.sort-section label {
+    font-weight: 600;
+    color: #333;
+}
+
+.sort-select {
+    padding: 8px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 16px;
+    background: white;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+}
+
+.sort-select:focus {
+    outline: none;
+    border-color: #f76b6a;
+}
+
+/* Action Buttons for Collections */
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 15px;
+}
+
+.action-buttons .add-to-cart-btn,
+.action-buttons .buy-now-btn {
+    flex: 1;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.action-buttons .add-to-cart-btn {
+    background: #f76b6a;
+    color: white;
+    border: 2px solid #f76b6a;
+}
+
+.action-buttons .add-to-cart-btn:hover {
+    background: #e55555;
+    border-color: #e55555;
+    transform: translateY(-1px);
+}
+
+.action-buttons .buy-now-btn {
+    background: #333;
+    color: white;
+    border: 2px solid #333;
+}
+
+.action-buttons .buy-now-btn:hover {
+    background: #555;
+    border-color: #555;
+    transform: translateY(-1px);
+}
+
+/* Mobile Responsive for Sort and Buttons */
+@media (max-width: 768px) {
+    .sort-section {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .sort-select {
+        width: 200px;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .action-buttons .add-to-cart-btn,
+    .action-buttons .buy-now-btn {
+        width: 100%;
+        padding: 12px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .action-buttons .add-to-cart-btn,
+    .action-buttons .buy-now-btn {
+        padding: 10px;
+        font-size: 12px;
+    }
+}

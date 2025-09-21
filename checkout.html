@@ -409,7 +409,10 @@
     </script>
     
     <script>
-
+        // Initialize Supabase client for fallback order creation
+        const SUPABASE_URL = 'https://jstvadizuzvwhabtfhfs.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzdHZhZGl6dXp2d2hhYnRmaGZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NjI3NjAsImV4cCI6MjA3MjIzODc2MH0.6btNpJfUh6Fd5PfoivIvu-f31Fj5IXl1vxBLsHz5ISw';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         // Enhanced payment completion handler with order insertion
         async function handlePaymentCompletion(paymentId, orderId) {
@@ -428,14 +431,14 @@
                     if (buyNowItem) {
                         orderItems = [buyNowItem];
                         const subtotal = buyNowItem.price * buyNowItem.quantity;
-                        const deliveryCharges = 0; // Set to 0 for testing
+                        const deliveryCharges = 0;
                         total = subtotal + deliveryCharges;
                     }
                 } else {
                     const cart = JSON.parse(localStorage.getItem('cart') || '[]');
                     orderItems = cart;
                     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                    const deliveryCharges = 0; // Set to 0 for testing
+                    const deliveryCharges = 0;
                     total = subtotal + deliveryCharges;
                 }
                 
@@ -447,14 +450,14 @@
                     const result = await processOrder(total, 'razorpay', orderItems, isBuyNow);
                     if (result) {
                         console.log('✅ Order processed successfully');
-                    } else {
-                        console.warn('⚠️ processOrder returned false, showing fallback success');
-                        showSimpleSuccess(paymentId, total);
+                        return; // processOrder will handle the confirmation popup
                     }
-                } else {
-                    console.warn('⚠️ processOrder function not available, showing simple success');
-                    showSimpleSuccess(paymentId, total);
                 }
+                
+                // Fallback if processOrder fails
+                console.warn('⚠️ Using fallback order creation');
+                await createFallbackOrder(paymentId, total, orderItems, isBuyNow);
+                
             } catch (error) {
                 console.error('❌ Error in handlePaymentCompletion:', error);
                 // Still show success to user but log the error
@@ -462,25 +465,126 @@
             }
         }
         
-        function showSimpleSuccess(paymentId, total) {
-            const modal = document.getElementById('orderConfirmationModal');
-            if (modal) {
-                const orderNumber = document.getElementById('orderNumber');
-                const orderTotal = document.getElementById('orderTotal');
+        // Fallback order creation with proper order_id
+        async function createFallbackOrder(paymentId, total, orderItems, isBuyNow) {
+            try {
+                const userSession = JSON.parse(localStorage.getItem('userSession') || '{}');
+                const addressData = JSON.parse(localStorage.getItem('deliveryAddress') || '{}');
                 
-                if (orderNumber) orderNumber.textContent = `ORD${Date.now()}`;
-                if (orderTotal) orderTotal.textContent = `₹${total.toLocaleString()}`;
+                const orderData = {
+                    user_id: userSession.id,
+                    items: orderItems,
+                    total_amount: total,
+                    shipping_addr: addressData,
+                    status: 'confirmed',
+                    payment_method: 'razorpay',
+                    payment_id: paymentId
+                };
                 
-                modal.style.display = 'flex';
+                // Save to Supabase and get the generated UUID
+                const { data, error } = await supabase
+                    .from('orders')
+                    .insert([orderData])
+                    .select('id, created_at')
+                    .single();
                 
-                setTimeout(() => {
-                    modal.style.display = 'none';
-                    window.location.href = 'index.html';
-                }, 5000);
-            } else {
-                alert(`✅ Payment Successful!\n\nPayment ID: ${paymentId}\nAmount: ₹${total.toLocaleString()}\n\nThank you for your order!`);
-                setTimeout(() => window.location.href = 'index.html', 2000);
+                if (error) throw error;
+                
+                // Show confirmation with actual order_id
+                const order = {
+                    id: data.id,
+                    total_amount: total,
+                    created_at: data.created_at
+                };
+                
+                showOrderConfirmationPopup(order);
+                
+                // Clear cart/buy now item
+                if (isBuyNow) {
+                    localStorage.removeItem('buyNowItem');
+                } else {
+                    localStorage.setItem('cart', JSON.stringify([]));
+                }
+                
+            } catch (error) {
+                console.error('❌ Fallback order creation failed:', error);
+                showSimpleSuccess(paymentId, total);
             }
+        }
+        
+        // Show order confirmation popup with actual order_id
+        function showOrderConfirmationPopup(order) {
+            const confirmationMessage = `Your order has been placed successfully. Your Order ID is: ${order.id}`;
+            
+            // Create custom popup
+            const popup = document.createElement('div');
+            popup.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.8);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 10000;
+            `;
+            
+            popup.innerHTML = `
+                <div style="
+                    background: white;
+                    padding: 30px;
+                    border-radius: 10px;
+                    max-width: 500px;
+                    width: 90%;
+                    text-align: center;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                ">
+                    <div style="color: #28a745; font-size: 60px; margin-bottom: 20px;">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h2 style="color: #333; margin-bottom: 15px;">Order Confirmed!</h2>
+                    <p style="color: #666; font-size: 16px; margin-bottom: 20px;">${confirmationMessage}</p>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                        <strong style="color: #333;">Order ID:</strong>
+                        <div style="font-family: monospace; font-size: 18px; color: #007bff; margin-top: 5px;">${order.id}</div>
+                    </div>
+                    <div style="color: #666; margin-bottom: 25px;">
+                        <strong>Total Amount:</strong> ₹${order.total_amount.toLocaleString()}
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove(); window.location.href='index.html';" 
+                            style="
+                                background: #FF6B6B;
+                                color: white;
+                                border: none;
+                                padding: 12px 30px;
+                                border-radius: 5px;
+                                font-size: 16px;
+                                cursor: pointer;
+                                transition: background 0.3s;
+                            "
+                            onmouseover="this.style.background='#ff5252'"
+                            onmouseout="this.style.background='#FF6B6B'">
+                        Continue Shopping
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(popup);
+            
+            // Auto-close after 10 seconds
+            setTimeout(() => {
+                if (popup.parentElement) {
+                    popup.remove();
+                    window.location.href = 'index.html';
+                }
+            }, 10000);
+        }
+        
+        function showSimpleSuccess(paymentId, total) {
+            alert(`✅ Payment Successful!\n\nPayment ID: ${paymentId}\nAmount: ₹${total.toLocaleString()}\n\nThank you for your order!`);
+            setTimeout(() => window.location.href = 'index.html', 2000);
         }
         
         // Enhanced Razorpay payment integration

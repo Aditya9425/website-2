@@ -357,52 +357,7 @@ function showNotification(message, type = 'success') {
 
 // Load Products
 function loadProducts() {
-    const grid = document.getElementById('productsGrid');
-    if (grid) {
-        grid.innerHTML = products.map(product => {
-            let imageUrl;
-            if (product.image && product.image.startsWith('http')) {
-                imageUrl = product.image;
-            } else if (product.image) {
-                imageUrl = `https://jstvadizuzvwhabtfhfs.supabase.co/storage/v1/object/public/Sarees/${product.image}`;
-            } else {
-                imageUrl = `https://via.placeholder.com/300x400/FF6B6B/FFFFFF?text=${encodeURIComponent(product.name || 'Product')}`;
-            }
-            
-            const colorPalette = generateColorPalette(product);
-            
-            return `
-            <div class="product-card" data-product-id="${product.id}">
-                <img src="${imageUrl}" alt="${product.name}" class="product-image">
-                <div class="product-info">
-                    <h3 class="product-name">${product.name}</h3>
-                    <div class="product-price">₹${product.price.toLocaleString()}</div>
-                    <div class="product-rating">
-                        <div class="stars">
-                            ${generateStars(product.rating)}
-                        </div>
-                        <span>${product.rating} (${product.reviews})</span>
-                    </div>
-                    ${colorPalette}
-                    <button class="add-to-cart add-to-cart-btn" data-id="${product.id}" onclick="event.stopPropagation()">
-                        Add to Cart
-                    </button>
-                </div>
-            </div>
-            `;
-        }).join('');
-        
-        // Add click listeners
-        document.querySelectorAll('.product-card').forEach(card => {
-            card.addEventListener('click', (e) => {
-                if (!e.target.closest('.add-to-cart-btn') && !e.target.closest('.color-dot')) {
-                    const productId = card.dataset.productId;
-                    window.location.href = `product.html?id=${productId}`;
-                }
-            });
-        });
-        attachAddToCartListeners();
-    }
+    displayProducts(products);
 }
 
 function loadTrendingProducts() {
@@ -974,17 +929,16 @@ async function saveOrderToDatabase(order) {
             total_amount: order.total_amount,
             shipping_addr: order.shipping_addr,
             status: order.status || 'pending',
-            payment_method: order.payment_method || 'razorpay',
-            created_at: new Date().toISOString()
+            payment_method: order.payment_method || 'razorpay'
         };
         
         console.log('📤 Inserting order data:', orderData);
         
-        // Save to Supabase directly
+        // Save to Supabase and get the generated UUID
         const { data, error } = await supabase
             .from('orders')
             .insert([orderData])
-            .select()
+            .select('id, created_at')
             .single();
         
         if (error) {
@@ -992,7 +946,7 @@ async function saveOrderToDatabase(order) {
             throw error;
         }
         
-        console.log('✅ Order saved to Supabase successfully:', data);
+        console.log('✅ Order saved to Supabase with ID:', data.id);
         
         // Update the order object with the returned data
         order.id = data.id;
@@ -1003,14 +957,12 @@ async function saveOrderToDatabase(order) {
         orders.push(order);
         localStorage.setItem('orders', JSON.stringify(orders));
         
-        showNotification('Order saved successfully!', 'success');
-        
         return data;
         
     } catch (error) {
         console.error('❌ Error saving order to Supabase:', error);
         
-        // Fallback to localStorage only
+        // Fallback to localStorage only with temporary ID
         try {
             const orders = JSON.parse(localStorage.getItem('orders') || '[]');
             // Generate a temporary ID for localStorage
@@ -1028,42 +980,86 @@ async function saveOrderToDatabase(order) {
     }
 }
 
-// Show order confirmation modal
+// Show order confirmation popup with order_id
 function showOrderConfirmation(order) {
     console.log('✅ Showing order confirmation for order:', order.id);
     
     try {
-        // Show success notification first
-        showNotification('🎉 Order placed successfully!', 'success');
+        // Create and show confirmation popup with order_id
+        const confirmationMessage = `Your order has been placed successfully. Your Order ID is: ${order.id}`;
         
-        // Update modal content
-        const orderNumber = document.getElementById('orderNumber');
-        const orderTotal = document.getElementById('orderTotal');
+        // Create custom popup
+        const popup = document.createElement('div');
+        popup.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        `;
         
-        if (orderNumber) orderNumber.textContent = order.id || 'N/A';
-        if (orderTotal) orderTotal.textContent = `₹${(order.total_amount || order.total || 0).toLocaleString()}`;
+        popup.innerHTML = `
+            <div style="
+                background: white;
+                padding: 30px;
+                border-radius: 10px;
+                max-width: 500px;
+                width: 90%;
+                text-align: center;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            ">
+                <div style="color: #28a745; font-size: 60px; margin-bottom: 20px;">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h2 style="color: #333; margin-bottom: 15px;">Order Confirmed!</h2>
+                <p style="color: #666; font-size: 16px; margin-bottom: 20px;">${confirmationMessage}</p>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                    <strong style="color: #333;">Order ID:</strong>
+                    <div style="font-family: monospace; font-size: 18px; color: #007bff; margin-top: 5px;">${order.id}</div>
+                </div>
+                <div style="color: #666; margin-bottom: 25px;">
+                    <strong>Total Amount:</strong> ₹${(order.total_amount || order.total || 0).toLocaleString()}
+                </div>
+                <button onclick="this.parentElement.parentElement.remove(); window.location.href='index.html';" 
+                        style="
+                            background: #FF6B6B;
+                            color: white;
+                            border: none;
+                            padding: 12px 30px;
+                            border-radius: 5px;
+                            font-size: 16px;
+                            cursor: pointer;
+                            transition: background 0.3s;
+                        "
+                        onmouseover="this.style.background='#ff5252'"
+                        onmouseout="this.style.background='#FF6B6B'">
+                    Continue Shopping
+                </button>
+            </div>
+        `;
         
-        // Show modal
-        const modal = document.getElementById('orderConfirmationModal');
-        if (modal) {
-            modal.style.display = 'flex';
-            
-            // Auto-hide modal after 8 seconds and redirect to home
-            setTimeout(() => {
-                modal.style.display = 'none';
-                window.location.href = 'index.html';
-            }, 8000);
-        } else {
-            // Fallback if modal doesn't exist
-            const result = confirm(`🎉 Order placed successfully!\n\nOrder ID: ${order.id || 'Generated'}\nTotal Amount: ₹${(order.total_amount || order.total || 0).toLocaleString()}\n\nClick OK to continue shopping or Cancel to stay here.`);
-            if (result) {
+        document.body.appendChild(popup);
+        
+        // Auto-close after 10 seconds
+        setTimeout(() => {
+            if (popup.parentElement) {
+                popup.remove();
                 window.location.href = 'index.html';
             }
-        }
+        }, 10000);
+        
+        // Also show notification
+        showNotification('🎉 Order placed successfully!', 'success');
+        
     } catch (error) {
         console.error('❌ Error showing order confirmation:', error);
         // Fallback confirmation
-        showNotification('✅ Order placed successfully! Redirecting...', 'success');
+        alert(`Your order has been placed successfully. Your Order ID is: ${order.id}`);
         setTimeout(() => {
             window.location.href = 'index.html';
         }, 2000);
@@ -1801,6 +1797,7 @@ window.toggleMobileMenu = toggleMobileMenu;
 function setupCategoryFilters() {
     const filterBtns = document.querySelectorAll('.filter-btn');
     const productsGrid = document.getElementById('productsGrid');
+    const sortSelect = document.getElementById('sortSelect');
     
     if (!filterBtns.length || !productsGrid) return;
     
@@ -1815,6 +1812,55 @@ function setupCategoryFilters() {
             filterProducts(category);
         });
     });
+    
+    // Setup sort functionality
+    if (sortSelect) {
+        sortSelect.addEventListener('change', (e) => {
+            const sortValue = e.target.value;
+            sortProducts(sortValue);
+        });
+    }
+}
+
+// Sort products function
+function sortProducts(sortBy) {
+    let sortedProducts = [...products];
+    
+    switch (sortBy) {
+        case 'price-low-high':
+            sortedProducts.sort((a, b) => a.price - b.price);
+            break;
+        case 'price-high-low':
+            sortedProducts.sort((a, b) => b.price - a.price);
+            break;
+        case 'rating':
+            sortedProducts.sort((a, b) => b.rating - a.rating);
+            break;
+        case 'newest':
+            sortedProducts.sort((a, b) => b.id - a.id);
+            break;
+        default:
+            // Featured - keep original order
+            break;
+    }
+    
+    // Apply current category filter if any
+    const activeFilter = document.querySelector('.filter-btn.active');
+    if (activeFilter && activeFilter.dataset.category !== 'all') {
+        const category = activeFilter.dataset.category;
+        sortedProducts = sortedProducts.filter(p => {
+            const productCategory = p.category ? p.category.toLowerCase() : '';
+            const filterCategory = category.toLowerCase();
+            
+            if (filterCategory === 'bridal' || filterCategory === 'wedding') {
+                return productCategory === 'bridal' || productCategory === 'wedding';
+            }
+            
+            return productCategory === filterCategory || productCategory.includes(filterCategory);
+        });
+    }
+    
+    displayProducts(sortedProducts);
 }
 
 function filterProducts(category) {
@@ -1839,9 +1885,14 @@ function filterProducts(category) {
     console.log('All products:', products);
     console.log('Filtered products:', filteredProducts);
     
+    displayProducts(filteredProducts);
+}
+
+// New function to display products with Buy Now button
+function displayProducts(productsToShow) {
     const grid = document.getElementById('productsGrid');
     if (grid) {
-        grid.innerHTML = filteredProducts.map(product => {
+        grid.innerHTML = productsToShow.map(product => {
             let imageUrl;
             if (product.image && product.image.startsWith('http')) {
                 imageUrl = product.image;
@@ -1866,9 +1917,14 @@ function filterProducts(category) {
                         <span>${product.rating} (${product.reviews})</span>
                     </div>
                     ${colorPalette}
-                    <button class="add-to-cart add-to-cart-btn" data-id="${product.id}" onclick="event.stopPropagation()">
-                        Add to Cart
-                    </button>
+                    <div class="action-buttons">
+                        <button class="add-to-cart add-to-cart-btn" data-id="${product.id}" onclick="event.stopPropagation()">
+                            Add to Cart
+                        </button>
+                        <button class="buy-now-btn" data-id="${product.id}" onclick="event.stopPropagation(); buyNow('${product.id}')">
+                            Buy Now
+                        </button>
+                    </div>
                 </div>
             </div>
             `;
@@ -1877,7 +1933,7 @@ function filterProducts(category) {
         // Re-attach event listeners
         document.querySelectorAll('.product-card').forEach(card => {
             card.addEventListener('click', (e) => {
-                if (!e.target.closest('.add-to-cart-btn') && !e.target.closest('.color-dot')) {
+                if (!e.target.closest('.add-to-cart-btn') && !e.target.closest('.buy-now-btn') && !e.target.closest('.color-dot')) {
                     const productId = card.dataset.productId;
                     window.location.href = `product.html?id=${productId}`;
                 }
