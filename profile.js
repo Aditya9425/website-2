@@ -83,7 +83,7 @@ async function loadUserProfile() {
     }
 }
 
-// Load user orders from database
+// Load user orders from Supabase (user-specific)
 async function loadUserOrders() {
     const container = document.getElementById('ordersContainer');
     
@@ -109,40 +109,24 @@ async function loadUserOrders() {
     `;
     
     try {
-        // Fetch orders from database
-        const backendUrl = window.CONFIG ? window.CONFIG.getBackendUrl() : 'http://localhost:5000';
-        const response = await fetch(`${backendUrl}/api/get-orders?user_id=${currentUser.id}`);
+        console.log('🔍 Fetching orders for user:', currentUser.id);
         
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        // Fetch only current user's orders from Supabase
+        const { data: userOrders, error } = await supabase
+            .from('orders')
+            .select('*')
+            .eq('user_id', currentUser.id)
+            .order('created_at', { ascending: false });
+        
+        if (error) {
+            console.error('❌ Supabase error:', error);
+            throw error;
         }
         
-        const result = await response.json();
+        console.log('✅ Orders fetched from Supabase:', userOrders);
         
-        if (!result.success) {
-            throw new Error(result.error || 'Failed to fetch orders');
-        }
-        
-        const userOrders = result.orders || [];
-        console.log('Orders fetched from database:', userOrders);
-        
-        // Also get orders from localStorage as fallback
-        const localOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-        const userLocalOrders = localOrders.filter(order => 
-            (order.user_id === currentUser.id) || 
-            (order.address && order.address.email === currentUser.email)
-        );
-        
-        // Combine database and local orders (remove duplicates)
-        const allOrders = [...userOrders];
-        userLocalOrders.forEach(localOrder => {
-            if (!allOrders.find(dbOrder => dbOrder.id === localOrder.id)) {
-                allOrders.push(localOrder);
-            }
-        });
-        
-        // Sort by creation date (newest first)
-        allOrders.sort((a, b) => new Date(b.created_at || b.createdAt) - new Date(a.created_at || a.createdAt));
+        // Use only Supabase orders (no localStorage fallback for security)
+        const allOrders = userOrders || [];
         
         if (allOrders.length === 0) {
             container.innerHTML = `
@@ -156,122 +140,67 @@ async function loadUserOrders() {
             return;
         }
         
+        // Display user's orders in card layout
         container.innerHTML = allOrders.map(order => {
-            const orderDate = new Date(order.created_at || order.createdAt).toLocaleDateString();
-            const orderTotal = order.total_amount || order.total;
+            const orderDate = new Date(order.created_at).toLocaleDateString();
             const orderItems = order.items || [];
+            const itemsCount = orderItems.length;
+            const firstItem = orderItems[0];
             
             return `
                 <div class="order-card">
                     <div class="order-header">
                         <div class="order-info">
-                            <h4>Order #${order.id}</h4>
-                            <p>Placed on ${orderDate}</p>
+                            <h4>Order #${order.id.toString().slice(-8)}</h4>
+                            <p class="order-date">${orderDate}</p>
                         </div>
                         <div class="order-status">
-                            <span class="status-badge ${order.status}">${order.status}</span>
+                            <span class="status-badge status-${order.status}">${order.status}</span>
                         </div>
                     </div>
                     
-                    <div class="order-items">
-                        ${orderItems.map(item => {
-                            let imageUrl = item.image;
-                            if (imageUrl && !imageUrl.startsWith('http')) {
-                                imageUrl = `https://jstvadizuzvwhabtfhfs.supabase.co/storage/v1/object/public/Sarees/${imageUrl}`;
-                            }
-                            if (!imageUrl || imageUrl === 'undefined') {
-                                imageUrl = `https://via.placeholder.com/60x80/FF6B6B/FFFFFF?text=${encodeURIComponent(item.name || 'Product')}`;
-                            }
-                            
-                            return `
-                                <div class="order-item">
-                                    <img src="${imageUrl}" alt="${item.name}" onerror="this.src='https://via.placeholder.com/60x80/FF6B6B/FFFFFF?text=Product'">
-                                    <div class="item-details">
-                                        <h5>${item.name}</h5>
-                                        <p>Qty: ${item.quantity} | ₹${item.price.toLocaleString()}</p>
+                    <div class="order-content">
+                        <div class="order-items-preview">
+                            ${firstItem ? `
+                                <div class="item-preview">
+                                    <img src="${firstItem.image || 'https://via.placeholder.com/60x80/FF6B6B/FFFFFF?text=Product'}" 
+                                         alt="${firstItem.name}" 
+                                         onerror="this.src='https://via.placeholder.com/60x80/FF6B6B/FFFFFF?text=Product'">
+                                    <div class="item-info">
+                                        <h5>${firstItem.name}</h5>
+                                        <p>${itemsCount} item${itemsCount > 1 ? 's' : ''}</p>
                                     </div>
                                 </div>
-                            `;
-                        }).join('')}
+                            ` : '<p>No items</p>'}
+                        </div>
+                        
+                        <div class="order-summary">
+                            <div class="order-total">
+                                <span class="total-label">Total Amount</span>
+                                <span class="total-amount">₹${order.total_amount.toLocaleString()}</span>
+                            </div>
+                        </div>
                     </div>
                     
-                    <div class="order-footer">
-                        <div class="order-total">
-                            <strong>Total: ₹${orderTotal.toLocaleString()}</strong>
-                        </div>
-                        <div class="order-actions">
-                            <button class="btn-secondary" onclick="viewOrderDetails('${order.id}')">
-                                <i class="fas fa-eye"></i> View Details
-                            </button>
-                        </div>
+                    <div class="order-actions">
+                        <button class="btn-outline" onclick="viewOrderDetails('${order.id}')">
+                            <i class="fas fa-eye"></i> View Details
+                        </button>
                     </div>
                 </div>
             `;
         }).join('');
         
     } catch (error) {
-        console.error('Error loading orders:', error);
-        
-        // Fallback to localStorage orders
-        const localOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-        const userLocalOrders = localOrders.filter(order => 
-            (order.user_id === currentUser.id) || 
-            (order.address && order.address.email === currentUser.email)
-        );
-        
-        if (userLocalOrders.length > 0) {
-            container.innerHTML = `
-                <div class="warning-message">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <p>Showing local orders only. Database connection failed.</p>
-                </div>
-            ` + userLocalOrders.map(order => {
-                const orderDate = new Date(order.created_at || order.createdAt).toLocaleDateString();
-                const orderTotal = order.total_amount || order.total;
-                const orderItems = order.items || [];
-                
-                return `
-                    <div class="order-card">
-                        <div class="order-header">
-                            <div class="order-info">
-                                <h4>Order #${order.id}</h4>
-                                <p>Placed on ${orderDate}</p>
-                            </div>
-                            <div class="order-status">
-                                <span class="status-badge ${order.status}">${order.status}</span>
-                            </div>
-                        </div>
-                        
-                        <div class="order-items">
-                            ${orderItems.map(item => `
-                                <div class="order-item">
-                                    <img src="${item.image}" alt="${item.name}">
-                                    <div class="item-details">
-                                        <h5>${item.name}</h5>
-                                        <p>Qty: ${item.quantity} | ₹${item.price.toLocaleString()}</p>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                        
-                        <div class="order-footer">
-                            <div class="order-total">
-                                <strong>Total: ₹${orderTotal.toLocaleString()}</strong>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        } else {
-            container.innerHTML = `
-                <div class="error-state">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <h3>Unable to load orders</h3>
-                    <p>There was an error loading your orders. Please try again later.</p>
-                    <button class="btn-primary" onclick="loadUserOrders()">Retry</button>
-                </div>
-            `;
-        }
+        console.error('❌ Error loading orders:', error);
+        container.innerHTML = `
+            <div class="error-state">
+                <i class="fas fa-exclamation-circle"></i>
+                <h3>Unable to load orders</h3>
+                <p>There was an error loading your orders. Please try again later.</p>
+                <button class="btn-primary" onclick="loadUserOrders()">Retry</button>
+            </div>
+        `;
     }
 }
 
@@ -371,15 +300,20 @@ function switchSection(sectionName) {
 }
 
 // View order details
-function viewOrderDetails(orderId) {
-    // Find order in database orders or localStorage
-    const localOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-    const order = localOrders.find(o => o.id === orderId);
-    
-    if (!order) {
-        alert('Order not found');
-        return;
-    }
+async function viewOrderDetails(orderId) {
+    try {
+        // Fetch specific order from Supabase
+        const { data: order, error } = await supabase
+            .from('orders')
+            .select('*')
+            .eq('id', orderId)
+            .eq('user_id', currentUser.id)
+            .single();
+        
+        if (error || !order) {
+            alert('Order not found or access denied');
+            return;
+        }
     
     const orderDate = new Date(order.created_at || order.createdAt).toLocaleDateString();
     const orderTotal = order.total_amount || order.total;
@@ -476,6 +410,11 @@ function viewOrderDetails(orderId) {
     
     document.body.appendChild(modalContainer);
     document.body.style.overflow = 'hidden';
+    
+    } catch (error) {
+        console.error('Error loading order details:', error);
+        alert('Failed to load order details. Please try again.');
+    }
 }
 
 // Close order details modal

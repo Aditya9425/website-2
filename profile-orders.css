@@ -1,0 +1,233 @@
+/* Order Cards Styling */
+.orders-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px 0;
+}
+
+.order-card {
+    background: white;
+    border: 1px solid #e1e5e9;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.order-card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+}
+
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.order-info h4 {
+    margin: 0 0 4px 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.order-date {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+.status-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-confirmed {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-shipped {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.status-delivered {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.status-cancelled {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.order-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.item-preview {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.item-preview img {
+    width: 60px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #e1e5e9;
+}
+
+.item-info h5 {
+    margin: 0 0 4px 0;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #333;
+}
+
+.item-info p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.order-summary {
+    text-align: right;
+}
+
+.total-label {
+    display: block;
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.total-amount {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #FF6B6B;
+}
+
+.order-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.btn-outline {
+    padding: 8px 16px;
+    border: 1px solid #FF6B6B;
+    background: transparent;
+    color: #FF6B6B;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-outline:hover {
+    background: #FF6B6B;
+    color: white;
+}
+
+/* Empty and Loading States */
+.empty-state, .loading-state, .error-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+}
+
+.empty-state i, .loading-state i, .error-state i {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    color: #ccc;
+}
+
+.loading-state i {
+    color: #FF6B6B;
+}
+
+.error-state i {
+    color: #dc3545;
+}
+
+.empty-state h3, .error-state h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.3rem;
+    color: #333;
+}
+
+.empty-state p, .loading-state p, .error-state p {
+    margin: 0 0 20px 0;
+    font-size: 1rem;
+}
+
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: #FF6B6B;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-primary:hover {
+    background: #ff5252;
+    transform: translateY(-1px);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .order-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .order-summary {
+        text-align: left;
+        width: 100%;
+    }
+    
+    .order-header {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .order-actions {
+        justify-content: center;
+    }
+    
+    .item-preview {
+        width: 100%;
+    }
+}
