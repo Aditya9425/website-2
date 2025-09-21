@@ -1,8 +1,11 @@
 // Supabase Configuration
 const SUPABASE_CONFIG = {
     url: 'https://jstvadizuzvwhabtfhfs.supabase.co', 
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzdHZhZGl6dXp2d2hhYnRmaGZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NjI3NjAsImV4cCI6MjA3MjIzODc2MH0.6btNpJfUh6Fd5PfoivIvu-f31Fj5IXl1vxBLsHz5ISw' // 
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzdHZhZGl6dXp2d2hhYnRmaGZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NjI3NjAsImV4cCI6MjA3MjIzODc2MH0.6btNpJfUh6Fd5PfoivIvu-f31Fj5IXl1vxBLsHz5ISw'
 };
+
+// Initialize Supabase client for admin panel
+const supabase = window.supabase ? window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey) : null;
 
 // Upload image to Supabase Storage
 async function uploadImageToSupabase(file, productName) {
@@ -36,6 +39,14 @@ class AdminPanel {
         this.orders = [];
         this.customers = [];
         this.charts = {};
+        
+        // Check if Supabase is available
+        if (!supabase) {
+            console.error('❌ Supabase client not initialized');
+            this.showMessage('Supabase connection failed. Please refresh the page.', 'error');
+        } else {
+            console.log('✅ Supabase client initialized for admin panel');
+        }
         
         this.init();
     }
@@ -163,15 +174,14 @@ class AdminPanel {
     async checkAuthState() {
         try {
             const { auth } = window.firebaseServices;
-            auth.onAuthStateChanged((user) => {
-                if (user) {
-                    this.currentUser = user;
-                    this.showDashboard();
-                    this.loadDashboardData();
-                } else {
-                    this.showLogin();
-                }
-            });
+            const user = auth.getCurrentUser();
+            if (user) {
+                this.currentUser = user;
+                this.showDashboard();
+                this.loadDashboardData();
+            } else {
+                this.showLogin();
+            }
         } catch (error) {
             console.error('Auth state check error:', error);
             this.showLogin();
@@ -183,22 +193,21 @@ class AdminPanel {
         const password = document.getElementById('password').value;
         const loginError = document.getElementById('loginError');
 
-        console.log('AdminPanel: Attempting login with:', email, password);
+        console.log('AdminPanel: Attempting login with:', email);
 
         try {
             const { auth } = window.firebaseServices;
-            console.log('AdminPanel: Got auth service, calling signInWithEmailAndPassword');
-            await auth.signInWithEmailAndPassword(email, password);
-            console.log('AdminPanel: Login successful, hiding error');
+            const result = await auth.signInWithEmailAndPassword(email, password);
+            console.log('AdminPanel: Login successful');
             loginError.style.display = 'none';
+            
+            // Set current user and show dashboard
+            this.currentUser = result.user;
+            this.showDashboard();
+            this.loadDashboardData();
         } catch (error) {
             console.error('AdminPanel: Login error:', error);
-            // Handle both Firebase error codes and generic errors
-            if (error.code) {
-                loginError.textContent = this.getErrorMessage(error.code);
-            } else {
-                loginError.textContent = error.message || 'An error occurred during login.';
-            }
+            loginError.textContent = error.message || 'Invalid email or password';
             loginError.style.display = 'block';
         }
     }
@@ -211,6 +220,9 @@ class AdminPanel {
             this.showLogin();
         } catch (error) {
             console.error('Logout error:', error);
+            // Force logout even if there's an error
+            this.currentUser = null;
+            this.showLogin();
         }
     }
 
@@ -351,31 +363,44 @@ class AdminPanel {
     }
 
     async getDashboardStats() {
-        const { db } = window.firebaseServices;
-        
         try {
-            const [ordersSnapshot, productsSnapshot, customersSnapshot] = await Promise.all([
-                db.collection('orders').get(),
-                db.collection('products').get(),
-                db.collection('customers').get()
+            console.log('📊 Loading dashboard stats from Supabase...');
+            
+            // Fetch data from Supabase
+            const [ordersResponse, productsResponse, usersResponse] = await Promise.all([
+                supabase.from('orders').select('total_amount, status'),
+                supabase.from('products').select('id'),
+                supabase.from('users').select('id')
             ]);
-
+            
             let totalRevenue = 0;
-            ordersSnapshot.forEach(doc => {
-                const order = doc.data();
-                if (order.status !== 'cancelled') {
-                    totalRevenue += order.total || 0;
-                }
+            let totalOrders = 0;
+            
+            if (ordersResponse.data) {
+                totalOrders = ordersResponse.data.length;
+                totalRevenue = ordersResponse.data
+                    .filter(order => order.status !== 'cancelled')
+                    .reduce((sum, order) => sum + (order.total_amount || 0), 0);
+            }
+            
+            const totalProducts = productsResponse.data ? productsResponse.data.length : 0;
+            const totalCustomers = usersResponse.data ? usersResponse.data.length : 0;
+            
+            console.log('✅ Dashboard stats loaded:', {
+                totalOrders,
+                totalRevenue,
+                totalProducts,
+                totalCustomers
             });
-
+            
             return {
-                totalOrders: ordersSnapshot.size,
-                totalRevenue: totalRevenue,
-                totalProducts: productsSnapshot.size,
-                totalCustomers: customersSnapshot.size
+                totalOrders,
+                totalRevenue,
+                totalProducts,
+                totalCustomers
             };
         } catch (error) {
-            console.error('Error getting dashboard stats:', error);
+            console.error('❌ Error getting dashboard stats:', error);
             return { totalOrders: 0, totalRevenue: 0, totalProducts: 0, totalCustomers: 0 };
         }
     }
@@ -389,20 +414,28 @@ class AdminPanel {
 
     async loadRecentOrders() {
         try {
-            const { db } = window.firebaseServices;
-            const snapshot = await db.collection('orders')
-                .orderBy('createdAt', 'desc')
-                .limit(5)
-                .get();
-
-            const orders = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-
-            this.displayRecentOrders(orders);
+            console.log('🔄 Loading recent orders from Supabase...');
+            
+            const { data, error } = await supabase
+                .from('orders')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(5);
+            
+            if (error) {
+                console.error('❌ Error loading recent orders:', error);
+                throw error;
+            }
+            
+            console.log('✅ Recent orders loaded:', data);
+            this.displayRecentOrders(data || []);
         } catch (error) {
-            console.error('Error loading recent orders:', error);
+            console.error('❌ Error loading recent orders:', error);
+            // Show empty state
+            const table = document.getElementById('recentOrdersTable');
+            if (table) {
+                table.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><h3>Error loading orders</h3><p>Please check your connection.</p></div>';
+            }
         }
     }
 
@@ -414,17 +447,31 @@ class AdminPanel {
             return;
         }
 
-        const ordersHTML = orders.map(order => `
-            <div class="order-row">
-                <div class="order-id">#${order.id.slice(-8)}</div>
-                <div class="order-customer">${order.customerName || 'N/A'}</div>
-                <div class="order-total">₹${order.total?.toLocaleString() || '0'}</div>
-                <div class="order-status">
-                    <span class="status-badge status-${order.status || 'pending'}">${order.status || 'pending'}</span>
+        const ordersHTML = orders.map(order => {
+            // Get customer name from shipping address
+            let customerName = 'N/A';
+            if (order.shipping_addr) {
+                customerName = `${order.shipping_addr.firstName || ''} ${order.shipping_addr.lastName || ''}`.trim();
+            }
+            
+            // Format date
+            let orderDate = 'N/A';
+            if (order.created_at) {
+                orderDate = new Date(order.created_at).toLocaleDateString();
+            }
+            
+            return `
+                <div class="order-row">
+                    <div class="order-id">#${order.id.toString().slice(-8)}</div>
+                    <div class="order-customer">${customerName}</div>
+                    <div class="order-total">₹${(order.total_amount || 0).toLocaleString()}</div>
+                    <div class="order-status">
+                        <span class="status-badge status-${order.status || 'pending'}">${order.status || 'pending'}</span>
+                    </div>
+                    <div class="order-date">${orderDate}</div>
                 </div>
-                <div class="order-date">${new Date(order.createdAt?.toDate()).toLocaleDateString()}</div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
 
         table.innerHTML = ordersHTML;
     }
@@ -972,34 +1019,42 @@ class AdminPanel {
     // Order Management Methods
     async loadOrders() {
         try {
-            // Try to fetch from backend API first
-            const backendUrl = 'http://localhost:5000'; // Adjust as needed
-            const response = await fetch(`${backendUrl}/api/admin-orders`);
+            console.log('🔄 Loading orders from Supabase...');
             
-            if (response.ok) {
-                const result = await response.json();
-                if (result.success) {
-                    this.orders = result.orders;
+            // Fetch orders directly from Supabase
+            const { data, error } = await supabase
+                .from('orders')
+                .select('*')
+                .order('created_at', { ascending: false });
+            
+            if (error) {
+                console.error('❌ Supabase error loading orders:', error);
+                throw error;
+            }
+            
+            console.log('✅ Orders loaded from Supabase:', data);
+            this.orders = data || [];
+            this.displayOrders(this.orders);
+            
+        } catch (error) {
+            console.error('❌ Error loading orders:', error);
+            
+            // Try fallback to localStorage
+            try {
+                const localOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+                if (localOrders.length > 0) {
+                    console.log('📱 Using orders from localStorage as fallback');
+                    this.orders = localOrders;
                     this.displayOrders(this.orders);
                     return;
                 }
+            } catch (localError) {
+                console.error('❌ Error loading from localStorage:', localError);
             }
             
-            // Fallback to Firebase if backend is not available
-            const { db } = window.firebaseServices;
-            const snapshot = await db.collection('orders').orderBy('createdAt', 'desc').get();
-            
-            this.orders = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-
-            this.displayOrders(this.orders);
-        } catch (error) {
-            console.error('Error loading orders:', error);
             // Show empty state with error message
             const tbody = document.getElementById('ordersTableBody');
-            tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><i class="fas fa-exclamation-triangle"></i><h3>Error loading orders</h3><p>Please check your connection and try again.</p></td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><i class="fas fa-exclamation-triangle"></i><h3>Error loading orders</h3><p>Please check your connection and try again.</p></td></tr>';
         }
     }
 
@@ -1007,7 +1062,7 @@ class AdminPanel {
         const tbody = document.getElementById('ordersTableBody');
         
         if (orders.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><i class="fas fa-shopping-bag"></i><h3>No orders found</h3><p>Orders will appear here once customers start placing them.</p></td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><i class="fas fa-shopping-bag"></i><h3>No orders found</h3><p>Orders will appear here once customers start placing them.</p></td></tr>';
             return;
         }
 
@@ -1034,6 +1089,8 @@ class AdminPanel {
             
             const totalAmount = order.total_amount || order.total || 0;
             const itemsCount = order.items ? order.items.length : 0;
+            const paymentMethod = order.payment_method || 'N/A';
+            const paymentId = order.payment_id || order.razorpay_payment_id || 'N/A';
             
             return `
                 <tr>
@@ -1044,16 +1101,17 @@ class AdminPanel {
                     <td>
                         <span class="status-badge status-${order.status || 'pending'}">${order.status || 'pending'}</span>
                     </td>
+                    <td>${paymentMethod}</td>
                     <td>${orderDate}</td>
                     <td>
                         <div class="action-buttons">
-                            <button class="btn-primary btn-small" onclick="adminPanel.viewOrder('${order.id}')">
+                            <button class="btn-primary btn-small" onclick="adminPanel.viewOrder('${order.id}')" title="View Details">
                                 <i class="fas fa-eye"></i>
                             </button>
-                            <button class="btn-success btn-small" onclick="adminPanel.updateOrderStatus('${order.id}', 'confirmed')">
+                            <button class="btn-success btn-small" onclick="adminPanel.updateOrderStatus('${order.id}', 'confirmed')" title="Confirm Order">
                                 <i class="fas fa-check"></i>
                             </button>
-                            <button class="btn-warning btn-small" onclick="adminPanel.updateOrderStatus('${order.id}', 'shipped')">
+                            <button class="btn-warning btn-small" onclick="adminPanel.updateOrderStatus('${order.id}', 'shipped')" title="Mark as Shipped">
                                 <i class="fas fa-shipping-fast"></i>
                             </button>
                         </div>
@@ -1067,16 +1125,38 @@ class AdminPanel {
 
     async updateOrderStatus(orderId, status) {
         try {
-            // For now, just update locally and show message
-            // In a full implementation, you'd update the database
+            console.log(`🔄 Updating order ${orderId} status to ${status}`);
+            
+            // Update in Supabase
+            const { data, error } = await supabase
+                .from('orders')
+                .update({ status: status })
+                .eq('id', orderId)
+                .select();
+            
+            if (error) {
+                console.error('❌ Error updating order status in Supabase:', error);
+                throw error;
+            }
+            
+            console.log('✅ Order status updated in Supabase:', data);
+            
+            // Update local data
             const order = this.orders.find(o => o.id === orderId);
             if (order) {
                 order.status = status;
                 this.displayOrders(this.orders);
-                this.showMessage(`Order status updated to ${status}`, 'success');
             }
+            
+            this.showMessage(`Order status updated to ${status}`, 'success');
+            
+            // Reload orders to ensure consistency
+            setTimeout(() => {
+                this.loadOrders();
+            }, 1000);
+            
         } catch (error) {
-            console.error('Error updating order status:', error);
+            console.error('❌ Error updating order status:', error);
             this.showMessage('Error updating order status', 'error');
         }
     }

@@ -350,19 +350,42 @@ function saveCart() {
     localStorage.setItem('cart', JSON.stringify(cart));
 }
 
-function showNotification(message) {
-    // Create a simple notification
+function showNotification(message, type = 'success') {
+    // Create a notification with different types
     const notification = document.createElement('div');
     notification.textContent = message;
+    
+    let backgroundColor;
+    switch (type) {
+        case 'success':
+            backgroundColor = '#28a745';
+            break;
+        case 'error':
+            backgroundColor = '#dc3545';
+            break;
+        case 'warning':
+            backgroundColor = '#ffc107';
+            break;
+        case 'info':
+            backgroundColor = '#17a2b8';
+            break;
+        default:
+            backgroundColor = '#28a745';
+    }
+    
     notification.style.cssText = `
         position: fixed;
         top: 20px;
         right: 20px;
-        background: #28a745;
+        background: ${backgroundColor};
         color: white;
         padding: 15px 25px;
         border-radius: 8px;
         z-index: 10000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        font-weight: 500;
+        max-width: 400px;
+        word-wrap: break-word;
     `;
     document.body.appendChild(notification);
     
@@ -370,7 +393,7 @@ function showNotification(message) {
         if (notification.parentNode) {
             notification.parentNode.removeChild(notification);
         }
-    }, 3000);
+    }, type === 'error' ? 5000 : 3000); // Show errors longer
 }
 
 // Load Products
@@ -584,7 +607,7 @@ function updateOrderSummary() {
     console.log('Cart length:', cart.length);
     
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const deliveryCharges = subtotal > 999 ? 0 : 200;
+    const deliveryCharges = 0; // Set to 0 for testing
     const total = subtotal + deliveryCharges;
     
     console.log('Calculated values - Subtotal:', subtotal, 'Delivery:', deliveryCharges, 'Total:', total);
@@ -998,19 +1021,38 @@ function handlePlaceOrder() {
 // Save order to database
 async function saveOrderToDatabase(order) {
     try {
+        console.log('💾 Saving order to Supabase:', order);
+        
+        // Prepare order data for Supabase
+        const orderData = {
+            user_id: order.user_id,
+            items: order.items,
+            total_amount: order.total_amount,
+            shipping_addr: order.shipping_addr,
+            status: order.status || 'pending',
+            payment_method: order.payment_method || 'razorpay',
+            created_at: new Date().toISOString()
+        };
+        
+        console.log('📤 Inserting order data:', orderData);
+        
         // Save to Supabase directly
         const { data, error } = await supabase
             .from('orders')
-            .insert([order])
+            .insert([orderData])
             .select()
             .single();
         
         if (error) {
-            console.error('Supabase error:', error);
+            console.error('❌ Supabase insert error:', error);
             throw error;
         }
         
-        console.log('Order saved to Supabase successfully:', data);
+        console.log('✅ Order saved to Supabase successfully:', data);
+        
+        // Update the order object with the returned data
+        order.id = data.id;
+        order.created_at = data.created_at;
         
         // Also save to localStorage as backup
         const orders = JSON.parse(localStorage.getItem('orders') || '[]');
@@ -1019,17 +1061,23 @@ async function saveOrderToDatabase(order) {
         
         showNotification('Order saved successfully!', 'success');
         
+        return data;
+        
     } catch (error) {
-        console.error('Error saving order to Supabase:', error);
+        console.error('❌ Error saving order to Supabase:', error);
         
         // Fallback to localStorage only
         try {
             const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            // Generate a temporary ID for localStorage
+            order.id = 'temp_' + Date.now();
+            order.created_at = new Date().toISOString();
             orders.push(order);
             localStorage.setItem('orders', JSON.stringify(orders));
             showNotification('Order saved locally. Database sync may be delayed.', 'warning');
+            return order;
         } catch (localError) {
-            console.error('Failed to save order even locally:', localError);
+            console.error('❌ Failed to save order even locally:', localError);
             showNotification('Failed to save order. Please contact support immediately.', 'error');
             throw localError;
         }
@@ -1038,42 +1086,43 @@ async function saveOrderToDatabase(order) {
 
 // Show order confirmation modal
 function showOrderConfirmation(order) {
-    console.log('Showing order confirmation for order:', order.id);
+    console.log('✅ Showing order confirmation for order:', order.id);
     
     try {
+        // Show success notification first
+        showNotification('🎉 Order placed successfully!', 'success');
+        
         // Update modal content
         const orderNumber = document.getElementById('orderNumber');
         const orderTotal = document.getElementById('orderTotal');
         
-        if (orderNumber) orderNumber.textContent = order.id;
-        if (orderTotal) orderTotal.textContent = `₹${(order.total_amount || order.total).toLocaleString()}`;
+        if (orderNumber) orderNumber.textContent = order.id || 'N/A';
+        if (orderTotal) orderTotal.textContent = `₹${(order.total_amount || order.total || 0).toLocaleString()}`;
         
         // Show modal
         const modal = document.getElementById('orderConfirmationModal');
         if (modal) {
             modal.style.display = 'flex';
             
-            // Auto-hide modal after 8 seconds and redirect to profile
+            // Auto-hide modal after 8 seconds and redirect to home
             setTimeout(() => {
                 modal.style.display = 'none';
-                window.location.href = 'profile.html';
+                window.location.href = 'index.html';
             }, 8000);
         } else {
             // Fallback if modal doesn't exist
-            const result = confirm(`Order placed successfully!\n\nOrder ID: ${order.id}\nTotal Amount: ₹${(order.total_amount || order.total).toLocaleString()}\n\nClick OK to view your orders or Cancel to go to home page.`);
+            const result = confirm(`🎉 Order placed successfully!\n\nOrder ID: ${order.id || 'Generated'}\nTotal Amount: ₹${(order.total_amount || order.total || 0).toLocaleString()}\n\nClick OK to continue shopping or Cancel to stay here.`);
             if (result) {
-                window.location.href = 'profile.html';
-            } else {
                 window.location.href = 'index.html';
             }
         }
     } catch (error) {
-        console.error('Error showing order confirmation:', error);
+        console.error('❌ Error showing order confirmation:', error);
         // Fallback confirmation
-        const result = confirm(`Order placed successfully!\n\nOrder ID: ${order.id}\nTotal Amount: ₹${(order.total_amount || order.total).toLocaleString()}\n\nClick OK to view your orders.`);
-        if (result) {
-            window.location.href = 'profile.html';
-        }
+        showNotification('✅ Order placed successfully! Redirecting...', 'success');
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 2000);
     }
 }
 
@@ -1132,7 +1181,7 @@ function handlePlaceOrderWithPayment(isBuyNow = false) {
         }
         orderItems = [buyNowItem];
         const subtotal = buyNowItem.price * buyNowItem.quantity;
-        const deliveryCharges = subtotal > 999 ? 0 : 200;
+        const deliveryCharges = 0; // Set to 0 for testing
         total = subtotal + deliveryCharges;
     } else {
         // Regular cart flow
@@ -1145,7 +1194,7 @@ function handlePlaceOrderWithPayment(isBuyNow = false) {
         }
         orderItems = [...cart];
         const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const deliveryCharges = subtotal > 999 ? 0 : 200;
+        const deliveryCharges = 0; // Set to 0 for testing
         total = subtotal + deliveryCharges;
     }
     
@@ -1200,7 +1249,7 @@ async function processOrder(total, paymentMethod, orderItems = null, isBuyNow = 
     const userId = userSession.id;
     
     if (!userId) {
-        console.error('No user ID found, cannot save order to database');
+        console.error('❌ No user ID found, cannot save order to database');
         alert('Please login to place an order.');
         window.location.href = 'auth.html';
         return false;
@@ -1211,7 +1260,7 @@ async function processOrder(total, paymentMethod, orderItems = null, isBuyNow = 
     if (isBuyNow) {
         const buyNowItem = orderItems || JSON.parse(localStorage.getItem('buyNowItem') || 'null');
         if (!buyNowItem) {
-            console.error('Buy now item is missing');
+            console.error('❌ Buy now item is missing');
             alert('No item selected for purchase.');
             return false;
         }
@@ -1219,20 +1268,20 @@ async function processOrder(total, paymentMethod, orderItems = null, isBuyNow = 
     } else {
         // Regular cart flow
         if (!cart || cart.length === 0) {
-            console.error('Cart is empty, cannot process order');
+            console.error('❌ Cart is empty, cannot process order');
             alert('Your cart is empty. Please add items before placing an order.');
             return false;
         }
         items = [...cart];
     }
     
-    console.log('Order items:', items);
+    console.log('📦 Order items:', items);
     
     const addressData = JSON.parse(localStorage.getItem('deliveryAddress') || '{}');
     
     // Validate address data
     if (!addressData.firstName) {
-        console.error('Address data is missing');
+        console.error('❌ Address data is missing');
         alert('Delivery address is required. Please provide your address.');
         const addressUrl = isBuyNow ? 'address.html?buyNow=true' : 'address.html';
         window.location.href = addressUrl;
@@ -1241,47 +1290,71 @@ async function processOrder(total, paymentMethod, orderItems = null, isBuyNow = 
     
     // Calculate totals
     const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const deliveryCharges = subtotal > 999 ? 0 : 200;
+    const deliveryCharges = 0; // Set to 0 for testing
     const calculatedTotal = subtotal + deliveryCharges;
     
-    // Create order object
+    // Create order object with proper structure for Supabase
     const order = {
         user_id: userId,
-        items: [...items],
+        items: items.map(item => ({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            image: item.image,
+            category: item.category
+        })),
         total_amount: calculatedTotal,
-        shipping_addr: { ...addressData },
-        status: paymentMethod === 'cod' ? 'pending' : 'confirmed'
+        shipping_addr: {
+            firstName: addressData.firstName,
+            lastName: addressData.lastName,
+            email: addressData.email,
+            mobile: addressData.mobile,
+            addressLine1: addressData.addressLine1,
+            addressLine2: addressData.addressLine2 || '',
+            city: addressData.city,
+            state: addressData.state,
+            pincode: addressData.pincode
+        },
+        status: paymentMethod === 'cod' ? 'pending' : 'confirmed',
+        payment_method: paymentMethod
     };
     
-    console.log('Order created:', order);
+    console.log('📋 Order created:', order);
     
     try {
         // Validate order data before saving
-        if (!order.id || !order.items || order.items.length === 0 || !order.total_amount) {
-            throw new Error('Invalid order data');
+        if (!order.items || order.items.length === 0 || !order.total_amount) {
+            throw new Error('Invalid order data - missing items or total amount');
         }
         
         // Save order to database
-        await saveOrderToDatabase(order);
+        const savedOrder = await saveOrderToDatabase(order);
+        
+        // Update order with saved data
+        if (savedOrder) {
+            order.id = savedOrder.id;
+            order.created_at = savedOrder.created_at;
+        }
         
         // Clear appropriate storage after successful order
         if (isBuyNow) {
             localStorage.removeItem('buyNowItem');
-            console.log('Buy now item cleared');
+            console.log('✅ Buy now item cleared');
         } else {
             cart = [];
             localStorage.setItem('cart', JSON.stringify(cart));
             updateCartCount();
-            console.log('Cart cleared');
+            console.log('✅ Cart cleared');
         }
         
         // Show order confirmation
         showOrderConfirmation(order);
-        console.log('Order confirmation shown');
+        console.log('✅ Order confirmation shown');
         
         return true;
     } catch (error) {
-        console.error('Error processing order:', error);
+        console.error('❌ Error processing order:', error);
         alert('There was an error processing your order. Please try again.');
         return false;
     }
@@ -1749,7 +1822,7 @@ function updateBuyNowOrderSummary() {
     }
     
     const subtotal = buyNowItem.price * buyNowItem.quantity;
-    const deliveryCharges = subtotal > 999 ? 0 : 200;
+    const deliveryCharges = 0; // Set to 0 for testing
     const total = subtotal + deliveryCharges;
     
     console.log('Buy Now calculated values - Subtotal:', subtotal, 'Delivery:', deliveryCharges, 'Total:', total);

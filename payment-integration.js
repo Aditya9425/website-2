@@ -155,19 +155,22 @@ class PaymentManager {
             return;
         }
 
-        // Create order object
+        // Create order object with proper structure
         const order = {
             user_id: userId,
-            razorpay_payment_id: razorpayResponse.razorpay_payment_id,
+            payment_id: razorpayResponse.razorpay_payment_id,
             razorpay_order_id: razorpayResponse.razorpay_order_id,
             items: orderData.items,
             total_amount: orderData.amount,
             shipping_addr: orderData.address,
-            status: 'confirmed'
+            status: 'confirmed',
+            payment_method: 'razorpay'
         };
 
+        console.log('💾 Saving order with payment details:', order);
+
         // Save order to database and localStorage
-        await this.saveOrder(order);
+        const savedOrder = await this.saveOrder(order);
 
         // Clear cart/buy now item
         if (orderData.isBuyNow) {
@@ -180,7 +183,7 @@ class PaymentManager {
         }
 
         // Show success message
-        this.showOrderConfirmation(order);
+        this.showOrderConfirmation(savedOrder || order);
     }
 
     // Save order to database and localStorage

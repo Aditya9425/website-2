@@ -410,41 +410,53 @@
     <script>
 
         
-        // Simple payment completion handler
-        function handlePaymentCompletion(paymentId, orderId) {
-            console.log('Payment completed:', paymentId, orderId);
+        // Enhanced payment completion handler with order insertion
+        async function handlePaymentCompletion(paymentId, orderId) {
+            console.log('💳 Payment completed:', paymentId, orderId);
             
-            // Get order data
-            const urlParams = new URLSearchParams(window.location.search);
-            const isBuyNow = urlParams.get('buyNow') === 'true';
-            
-            let orderItems = [];
-            let total = 0;
-            
-            if (isBuyNow) {
-                const buyNowItem = JSON.parse(localStorage.getItem('buyNowItem') || 'null');
-                if (buyNowItem) {
-                    orderItems = [buyNowItem];
-                    const subtotal = buyNowItem.price * buyNowItem.quantity;
-                    const deliveryCharges = subtotal > 999 ? 0 : 200;
+            try {
+                // Get order data
+                const urlParams = new URLSearchParams(window.location.search);
+                const isBuyNow = urlParams.get('buyNow') === 'true';
+                
+                let orderItems = [];
+                let total = 0;
+                
+                if (isBuyNow) {
+                    const buyNowItem = JSON.parse(localStorage.getItem('buyNowItem') || 'null');
+                    if (buyNowItem) {
+                        orderItems = [buyNowItem];
+                        const subtotal = buyNowItem.price * buyNowItem.quantity;
+                        const deliveryCharges = 0; // Set to 0 for testing
+                        total = subtotal + deliveryCharges;
+                    }
+                } else {
+                    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+                    orderItems = cart;
+                    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                    const deliveryCharges = 0; // Set to 0 for testing
                     total = subtotal + deliveryCharges;
                 }
-            } else {
-                const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-                orderItems = cart;
-                const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                const deliveryCharges = subtotal > 999 ? 0 : 200;
-                total = subtotal + deliveryCharges;
-            }
-            
-            // Process the order
-            if (typeof processOrder === 'function') {
-                const result = processOrder(total, 'razorpay', orderItems, isBuyNow);
-                if (!result) {
-                    // Fallback if processOrder fails
+                
+                console.log('📦 Processing order with items:', orderItems.length, 'Total:', total);
+                
+                // Process the order and insert into Supabase
+                if (typeof processOrder === 'function') {
+                    console.log('🔄 Calling processOrder function...');
+                    const result = await processOrder(total, 'razorpay', orderItems, isBuyNow);
+                    if (result) {
+                        console.log('✅ Order processed successfully');
+                    } else {
+                        console.warn('⚠️ processOrder returned false, showing fallback success');
+                        showSimpleSuccess(paymentId, total);
+                    }
+                } else {
+                    console.warn('⚠️ processOrder function not available, showing simple success');
                     showSimpleSuccess(paymentId, total);
                 }
-            } else {
+            } catch (error) {
+                console.error('❌ Error in handlePaymentCompletion:', error);
+                // Still show success to user but log the error
                 showSimpleSuccess(paymentId, total);
             }
         }
@@ -496,7 +508,7 @@
                 }
                 orderItems = [buyNowItem];
                 const subtotal = buyNowItem.price * buyNowItem.quantity;
-                const deliveryCharges = subtotal > 999 ? 0 : 200;
+                const deliveryCharges = 0; // Set to 0 for testing
                 total = subtotal + deliveryCharges;
             } else {
                 const cart = JSON.parse(localStorage.getItem('cart') || '[]');
@@ -506,7 +518,7 @@
                 }
                 orderItems = cart;
                 const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                const deliveryCharges = subtotal > 999 ? 0 : 200;
+                const deliveryCharges = 0; // Set to 0 for testing
                 total = subtotal + deliveryCharges;
             }
             
