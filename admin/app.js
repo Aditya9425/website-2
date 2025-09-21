@@ -1,30 +1,5 @@
-// Supabase Configuration - Now loaded from secure environment
-let SUPABASE_CONFIG = {};
-let supabase = null;
-
-// Initialize Supabase client after config is loaded
-async function initializeSupabase() {
-    if (window.envConfig) {
-        // Wait for config to load if it's still loading
-        let attempts = 0;
-        while (!window.envConfig.isConfigured() && attempts < 10) {
-            await new Promise(resolve => setTimeout(resolve, 100));
-            attempts++;
-        }
-        
-        SUPABASE_CONFIG = window.envConfig.getSupabaseConfig();
-        
-        if (window.supabase && SUPABASE_CONFIG.url && SUPABASE_CONFIG.anonKey) {
-            supabase = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
-            console.log('✅ Supabase client initialized securely');
-        } else {
-            console.error('❌ Failed to initialize Supabase client - missing configuration');
-        }
-    }
-}
-
-// Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', initializeSupabase);
+// Initialize Supabase client using config
+const supabase = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
 
 // Upload image to Supabase Storage
 async function uploadImageToSupabase(file, productName) {
@@ -59,13 +34,7 @@ class AdminPanel {
         this.customers = [];
         this.charts = {};
         
-        // Check if Supabase is available
-        if (!supabase) {
-            console.error('❌ Supabase client not initialized');
-            this.showMessage('Supabase connection failed. Please refresh the page.', 'error');
-        } else {
-            console.log('✅ Supabase client initialized for admin panel');
-        }
+        console.log('✅ Supabase client initialized for admin panel');
         
         this.init();
     }
@@ -76,42 +45,7 @@ class AdminPanel {
         // this.initializeCharts(); // Commented out for testing without Chart.js
     }
 
-    // Supabase helper method
-    async supabaseRequest(endpoint, method = 'GET', data = null) {
-        const url = `${SUPABASE_CONFIG.url}/rest/v1/${endpoint}`;
-        const options = {
-            method,
-            mode: 'cors',
-            headers: {
-                'apikey': SUPABASE_CONFIG.anonKey,
-                'Authorization': `Bearer ${SUPABASE_CONFIG.anonKey}`,
-                'Content-Type': 'application/json'
-            }
-        };
-        
-        if (method === 'POST' || method === 'PUT' || method === 'PATCH') {
-            options.headers['Prefer'] = 'return=representation';
-        }
-        
-        if (data) {
-            options.body = JSON.stringify(data);
-        }
-        
-        const response = await fetch(url, options);
-        
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Supabase error details:', errorText);
-            throw new Error(`Supabase ${method} failed: ${response.status} ${response.statusText} - ${errorText}`);
-        }
-        
-        // DELETE requests often return 204 No Content with no JSON
-        if (method === 'DELETE' || response.status === 204) {
-            return null;
-        }
-        
-        return await response.json();
-    }
+
 
     setupEventListeners() {
         // Login form
