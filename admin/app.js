@@ -1,11 +1,30 @@
-// Supabase Configuration
-const SUPABASE_CONFIG = {
-    url: 'https://jstvadizuzvwhabtfhfs.supabase.co', 
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzdHZhZGl6dXp2d2hhYnRmaGZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NjI3NjAsImV4cCI6MjA3MjIzODc2MH0.6btNpJfUh6Fd5PfoivIvu-f31Fj5IXl1vxBLsHz5ISw'
-};
+// Supabase Configuration - Now loaded from secure environment
+let SUPABASE_CONFIG = {};
+let supabase = null;
 
-// Initialize Supabase client for admin panel
-const supabase = window.supabase ? window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey) : null;
+// Initialize Supabase client after config is loaded
+async function initializeSupabase() {
+    if (window.envConfig) {
+        // Wait for config to load if it's still loading
+        let attempts = 0;
+        while (!window.envConfig.isConfigured() && attempts < 10) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+        }
+        
+        SUPABASE_CONFIG = window.envConfig.getSupabaseConfig();
+        
+        if (window.supabase && SUPABASE_CONFIG.url && SUPABASE_CONFIG.anonKey) {
+            supabase = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+            console.log('✅ Supabase client initialized securely');
+        } else {
+            console.error('❌ Failed to initialize Supabase client - missing configuration');
+        }
+    }
+}
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', initializeSupabase);
 
 // Upload image to Supabase Storage
 async function uploadImageToSupabase(file, productName) {
@@ -1243,17 +1262,66 @@ class AdminPanel {
     // Customer Management Methods
     async loadCustomers() {
         try {
-            const { db } = window.firebaseServices;
-            const snapshot = await db.collection('customers').get();
+            console.log('🔄 Loading customers from orders...');
             
-            this.customers = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-
+            // Fetch all orders to extract customer information
+            const { data: orders, error } = await supabase
+                .from('orders')
+                .select('*')
+                .order('created_at', { ascending: false });
+            
+            if (error) {
+                console.error('❌ Error loading orders for customers:', error);
+                throw error;
+            }
+            
+            // Extract unique customers from orders
+            const customerMap = new Map();
+            
+            orders.forEach(order => {
+                if (order.shipping_addr && order.user_id) {
+                    const customerId = order.user_id;
+                    const customerData = order.shipping_addr;
+                    
+                    if (!customerMap.has(customerId)) {
+                        customerMap.set(customerId, {
+                            id: customerId,
+                            name: `${customerData.firstName || ''} ${customerData.lastName || ''}`.trim(),
+                            email: customerData.email || 'N/A',
+                            phone: customerData.mobile || 'N/A',
+                            address: {
+                                line1: customerData.addressLine1 || '',
+                                line2: customerData.addressLine2 || '',
+                                city: customerData.city || '',
+                                state: customerData.state || '',
+                                pincode: customerData.pincode || ''
+                            },
+                            orderCount: 0,
+                            totalSpent: 0,
+                            firstOrderDate: order.created_at,
+                            lastOrderDate: order.created_at
+                        });
+                    }
+                    
+                    const customer = customerMap.get(customerId);
+                    customer.orderCount += 1;
+                    customer.totalSpent += order.total_amount || 0;
+                    
+                    // Update last order date if this order is more recent
+                    if (new Date(order.created_at) > new Date(customer.lastOrderDate)) {
+                        customer.lastOrderDate = order.created_at;
+                    }
+                }
+            });
+            
+            this.customers = Array.from(customerMap.values());
+            console.log('✅ Customers loaded:', this.customers.length);
             this.displayCustomers(this.customers);
+            
         } catch (error) {
-            console.error('Error loading customers:', error);
+            console.error('❌ Error loading customers:', error);
+            const tbody = document.getElementById('customersTableBody');
+            tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><i class="fas fa-exclamation-triangle"></i><h3>Error loading customers</h3><p>Please check your connection and try again.</p></td></tr>';
         }
     }
 
@@ -1265,25 +1333,115 @@ class AdminPanel {
             return;
         }
 
-        const customersHTML = customers.map(customer => `
-            <tr>
-                <td>${customer.name || 'N/A'}</td>
-                <td>${customer.email || 'N/A'}</td>
-                <td>${customer.phone || 'N/A'}</td>
-                <td>${customer.orderCount || 0}</td>
-                <td>₹${customer.totalSpent?.toLocaleString() || '0'}</td>
-                <td>${new Date(customer.joinedAt?.toDate()).toLocaleDateString()}</td>
-                <td>
-                    <div class="action-buttons">
-                        <button class="btn-primary btn-small">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        `).join('');
+        const customersHTML = customers.map(customer => {
+            const joinedDate = customer.firstOrderDate ? new Date(customer.firstOrderDate).toLocaleDateString() : 'N/A';
+            
+            return `
+                <tr>
+                    <td>${customer.name || 'N/A'}</td>
+                    <td>${customer.email || 'N/A'}</td>
+                    <td>${customer.phone || 'N/A'}</td>
+                    <td>${customer.orderCount || 0}</td>
+                    <td>₹${customer.totalSpent?.toLocaleString() || '0'}</td>
+                    <td>${joinedDate}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-primary btn-small" onclick="adminPanel.viewCustomerDetails('${customer.id}')" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
 
         tbody.innerHTML = customersHTML;
+    }
+
+    // View customer details
+    viewCustomerDetails(customerId) {
+        const customer = this.customers.find(c => c.id === customerId);
+        if (!customer) {
+            this.showMessage('Customer not found', 'error');
+            return;
+        }
+        
+        // Create customer details modal
+        const modal = document.createElement('div');
+        modal.id = 'customerDetailsModal';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 10000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        `;
+        
+        const fullAddress = `${customer.address.line1}${customer.address.line2 ? ', ' + customer.address.line2 : ''}, ${customer.address.city}, ${customer.address.state} - ${customer.address.pincode}`;
+        
+        modal.innerHTML = `
+            <div style="background: white; padding: 30px; border-radius: 10px; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2>Customer Details</h2>
+                    <button onclick="this.closest('#customerDetailsModal').remove()" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div>
+                        <h3>Personal Information</h3>
+                        <p><strong>Name:</strong> ${customer.name}</p>
+                        <p><strong>Email:</strong> ${customer.email}</p>
+                        <p><strong>Phone:</strong> ${customer.phone}</p>
+                        <p><strong>Customer ID:</strong> ${customer.id}</p>
+                    </div>
+                    
+                    <div>
+                        <h3>Order Statistics</h3>
+                        <p><strong>Total Orders:</strong> ${customer.orderCount}</p>
+                        <p><strong>Total Spent:</strong> ₹${customer.totalSpent.toLocaleString()}</p>
+                        <p><strong>First Order:</strong> ${new Date(customer.firstOrderDate).toLocaleDateString()}</p>
+                        <p><strong>Last Order:</strong> ${new Date(customer.lastOrderDate).toLocaleDateString()}</p>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3>Address Information</h3>
+                    <p>${fullAddress}</p>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <button onclick="adminPanel.viewCustomerOrders('${customer.id}')" style="background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                        View Customer Orders
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+    }
+    
+    // View customer orders
+    viewCustomerOrders(customerId) {
+        // Close customer details modal
+        const customerModal = document.getElementById('customerDetailsModal');
+        if (customerModal) customerModal.remove();
+        
+        // Switch to orders section and filter by customer
+        this.navigateToSection('orders');
+        
+        // Filter orders by customer ID
+        const customerOrders = this.orders.filter(order => order.user_id === customerId);
+        this.displayOrders(customerOrders);
+        
+        // Show filter info
+        const customer = this.customers.find(c => c.id === customerId);
+        this.showMessage(`Showing ${customerOrders.length} orders for ${customer?.name || 'customer'}`, 'info');
     }
 
     // Analytics Methods

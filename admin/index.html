@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel - Shagun Saree Baran</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="enhanced-ui.css">
+    <link rel="stylesheet" href="enhanced-ui-v2.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <!-- Login Screen -->
@@ -290,24 +293,144 @@
                 <section id="analyticsSection" class="content-section">
                     <div class="section-header">
                         <h2>Analytics & Reports</h2>
+                        <div class="analytics-filters">
+                            <select id="analyticsTimeRange" class="filter-select">
+                                <option value="7">Last 7 days</option>
+                                <option value="30" selected>Last 30 days</option>
+                                <option value="90">Last 90 days</option>
+                                <option value="365">Last year</option>
+                            </select>
+                        </div>
                     </div>
                     
-                    <div class="analytics-grid">
-                        <div class="analytics-card">
-                            <h3>Inventory Status</h3>
-                            <div id="inventoryStatus" class="inventory-status">
-                                <div class="inventory-item">
-                                    <div class="inventory-label">Total Products</div>
-                                    <div class="inventory-value">0</div>
-                                </div>
-                                <div class="inventory-item">
-                                    <div class="inventory-label">Low Stock (< 10)</div>
-                                    <div class="inventory-value warning">0</div>
-                                </div>
-                                <div class="inventory-item">
-                                    <div class="inventory-label">Out of Stock</div>
-                                    <div class="inventory-value danger">0</div>
-                                </div>
+                    <!-- Sales Analytics -->
+                    <div class="analytics-section">
+                        <h3><i class="fas fa-chart-line"></i> Sales Analytics</h3>
+                        <div class="analytics-grid">
+                            <div class="chart-card">
+                                <h4>Revenue Over Time</h4>
+                                <canvas id="revenueChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>Orders Per Day</h4>
+                                <canvas id="ordersChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="table-card">
+                            <h4>Detailed Orders</h4>
+                            <div class="table-container">
+                                <table class="analytics-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Order ID</th>
+                                            <th>Customer</th>
+                                            <th>Products</th>
+                                            <th>Quantity</th>
+                                            <th>Total</th>
+                                            <th>Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="detailedOrdersTable"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Customer Analytics -->
+                    <div class="analytics-section">
+                        <h3><i class="fas fa-users"></i> Customer Analytics</h3>
+                        <div class="analytics-grid">
+                            <div class="chart-card">
+                                <h4>Customer Types</h4>
+                                <canvas id="customerTypeChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>Top 10 Customers</h4>
+                                <canvas id="topCustomersChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="table-card">
+                            <h4>Customer Details</h4>
+                            <div class="table-container">
+                                <table class="analytics-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Phone</th>
+                                            <th>Orders</th>
+                                            <th>Total Spent</th>
+                                            <th>Last Order</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="customerDetailsTable"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Product Analytics -->
+                    <div class="analytics-section">
+                        <h3><i class="fas fa-tshirt"></i> Product Analytics</h3>
+                        <div class="analytics-grid">
+                            <div class="chart-card">
+                                <h4>Top Selling Products</h4>
+                                <canvas id="topProductsChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>Color Preferences</h4>
+                                <canvas id="colorPreferenceChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="table-card">
+                            <h4>Product Performance</h4>
+                            <div class="table-container">
+                                <table class="analytics-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Product</th>
+                                            <th>Category</th>
+                                            <th>Sold</th>
+                                            <th>Revenue</th>
+                                            <th>Stock Left</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="productPerformanceTable"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Marketing Analytics -->
+                    <div class="analytics-section">
+                        <h3><i class="fas fa-bullhorn"></i> Marketing & Engagement</h3>
+                        <div class="analytics-grid">
+                            <div class="chart-card">
+                                <h4>Promo Code Usage</h4>
+                                <canvas id="promoCodeChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h4>Traffic Sources</h4>
+                                <canvas id="trafficSourceChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="table-card">
+                            <h4>Campaign Performance</h4>
+                            <div class="table-container">
+                                <table class="analytics-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Campaign</th>
+                                            <th>Type</th>
+                                            <th>Clicks</th>
+                                            <th>Conversions</th>
+                                            <th>Revenue</th>
+                                            <th>ROI</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="campaignPerformanceTable"></tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -493,7 +616,12 @@
 
     <!-- Admin Scripts -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="env-config.js"></script>
     <script src="config.js"></script>
     <script src="app.js"></script>
+    <script src="analytics.js"></script>
+    <script src="ui-animations.js"></script>
+    <script src="enhanced-orders.js"></script>
 </body>
 </html>
