@@ -191,58 +191,46 @@ class AdminPanel {
     }
 
     async checkAuthState() {
-        try {
-            const { auth } = window.firebaseServices;
-            const user = auth.getCurrentUser();
-            if (user) {
-                this.currentUser = user;
-                this.showDashboard();
-                this.loadDashboardData();
-            } else {
-                this.showLogin();
-            }
-        } catch (error) {
-            console.error('Auth state check error:', error);
-            this.showLogin();
-        }
+        // For admin panel, always show login first
+        this.showLogin();
     }
 
     async handleLogin() {
-        const email = document.getElementById('email').value;
+        const username = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         const loginError = document.getElementById('loginError');
 
-        console.log('AdminPanel: Attempting login with:', email);
+        console.log('AdminPanel: Attempting admin login with:', username);
 
         try {
-            const { auth } = window.firebaseServices;
-            const result = await auth.signInWithEmailAndPassword(email, password);
-            console.log('AdminPanel: Login successful');
+            const { data, error } = await supabase
+                .from('admin')
+                .select('*')
+                .eq('username', username)
+                .eq('password', password)
+                .single();
+            
+            if (error || !data) {
+                throw new Error('Invalid username or password');
+            }
+            
+            console.log('AdminPanel: Admin login successful');
             loginError.style.display = 'none';
             
             // Set current user and show dashboard
-            this.currentUser = result.user;
+            this.currentUser = { id: data.id, email: data.username };
             this.showDashboard();
             this.loadDashboardData();
         } catch (error) {
             console.error('AdminPanel: Login error:', error);
-            loginError.textContent = error.message || 'Invalid email or password';
+            loginError.textContent = error.message || 'Invalid username or password';
             loginError.style.display = 'block';
         }
     }
 
     async handleLogout() {
-        try {
-            const { auth } = window.firebaseServices;
-            await auth.signOut();
-            this.currentUser = null;
-            this.showLogin();
-        } catch (error) {
-            console.error('Logout error:', error);
-            // Force logout even if there's an error
-            this.currentUser = null;
-            this.showLogin();
-        }
+        this.currentUser = null;
+        this.showLogin();
     }
 
     getErrorMessage(errorCode) {
@@ -264,7 +252,7 @@ class AdminPanel {
     showDashboard() {
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('adminDashboard').style.display = 'flex';
-        document.getElementById('adminEmail').textContent = this.currentUser.email;
+        document.getElementById('adminEmail').textContent = this.currentUser.email || 'Admin';
     }
 
     toggleSidebar() {
