@@ -1,5 +1,9 @@
-// Initialize Supabase client using config
-const supabase = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+// Hardcoded Supabase configuration for admin panel
+const SUPABASE_URL = 'https://jstvadizuzvwhabtfhfs.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzdHZhZGl6dXp2d2hhYnRmaGZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NjI3NjAsImV4cCI6MjA3MjIzODc2MH0.6btNpJfUh6Fd5PfoivIvu-f31Fj5IXl1vxBLsHz5ISw';
+
+// Initialize Supabase client
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Upload image to Supabase Storage
 async function uploadImageToSupabase(file, productName) {
@@ -9,11 +13,11 @@ async function uploadImageToSupabase(file, productName) {
     const formData = new FormData();
     formData.append('file', file);
     
-    const response = await fetch(`${SUPABASE_CONFIG.url}/storage/v1/object/Sarees/${fileName}`, {
+    const response = await fetch(`${SUPABASE_URL}/storage/v1/object/Sarees/${fileName}`, {
         method: 'POST',
         headers: {
-            'Authorization': `Bearer ${SUPABASE_CONFIG.anonKey}`,
-            'apikey': SUPABASE_CONFIG.anonKey
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+            'apikey': SUPABASE_ANON_KEY
         },
         body: formData
     });
@@ -22,7 +26,7 @@ async function uploadImageToSupabase(file, productName) {
         throw new Error('Failed to upload image');
     }
     
-    return `${SUPABASE_CONFIG.url}/storage/v1/object/public/Sarees/${fileName}`;
+    return `${SUPABASE_URL}/storage/v1/object/public/Sarees/${fileName}`;
 }
 
 // Admin Panel Application
@@ -34,15 +38,13 @@ class AdminPanel {
         this.customers = [];
         this.charts = {};
         
-        console.log('✅ Supabase client initialized for admin panel');
-        
+        console.log('✅ Supabase client ready for admin panel');
         this.init();
     }
 
     init() {
         this.setupEventListeners();
         this.checkAuthState();
-        // this.initializeCharts(); // Commented out for testing without Chart.js
     }
 
 
@@ -438,8 +440,9 @@ class AdminPanel {
                 console.warn('Flask backend unavailable, trying direct Supabase:', flaskError);
                 
                 // Direct Supabase fetch
-                const supabaseData = await this.supabaseRequest('products?select=*');
-                this.products = supabaseData;
+                const { data, error } = await supabase.from('products').select('*');
+                if (error) throw error;
+                this.products = data || [];
                 this.displayProducts(this.products);
                 return;
             }
@@ -829,10 +832,12 @@ class AdminPanel {
                 // Direct Supabase request
                 if (isEdit) {
                     console.log('Updating product with data:', productData);
-                    const supabaseResult = await this.supabaseRequest(`products?id=eq.${productId}`, 'PATCH', productData);
-                    console.log('Update result:', supabaseResult);
+                    const { data, error } = await supabase.from('products').update(productData).eq('id', productId);
+                    if (error) throw error;
+                    console.log('Update result:', data);
                 } else {
-                    const supabaseResult = await this.supabaseRequest('products', 'POST', productData);
+                    const { data, error } = await supabase.from('products').insert(productData);
+                    if (error) throw error;
                 }
                 this.showMessage(`Product ${isEdit ? 'updated' : 'added'} successfully via Supabase!`, 'success');
                 this.closeProductModal();
@@ -946,7 +951,8 @@ class AdminPanel {
                 console.warn('Flask backend unavailable, trying Supabase:', flaskError);
                 
                 // Direct Supabase delete
-                await this.supabaseRequest(`products?id=eq.${productId}`, 'DELETE');
+                const { error } = await supabase.from('products').delete().eq('id', productId);
+                if (error) throw error;
                 this.showMessage('Product deleted successfully!', 'success');
                 this.loadProducts();
                 return;
@@ -1368,46 +1374,292 @@ class AdminPanel {
 
     // Analytics Methods
     async loadAnalytics() {
-        // Load basic analytics data
-        this.loadInventoryStatus();
+        console.log('📊 Loading analytics data...');
+        try {
+            await this.loadSalesAnalytics();
+            await this.loadCustomerAnalytics();
+            await this.loadProductAnalytics();
+            await this.loadMarketingAnalytics();
+            this.initializeCharts();
+        } catch (error) {
+            console.error('❌ Error loading analytics:', error);
+        }
     }
 
-    async loadInventoryStatus() {
-        const inventoryStatus = document.getElementById('inventoryStatus');
-        
-        try {
-            const { db } = window.firebaseServices;
-            const snapshot = await db.collection('products').get();
-            
-            let lowStock = 0;
-            let outOfStock = 0;
-            let totalProducts = snapshot.size;
-            
-            snapshot.forEach(doc => {
-                const product = doc.data();
-                if (product.stock === 0) {
-                    outOfStock++;
-                } else if (product.stock < 10) {
-                    lowStock++;
-                }
-            });
+    initializeCharts() {
+        this.createRevenueChart();
+        this.createOrdersChart();
+        this.createCustomerTypeChart();
+        this.createTopCustomersChart();
+        this.createTopProductsChart();
+        this.createColorPreferenceChart();
+        this.createPromoCodeChart();
+        this.createTrafficSourceChart();
+    }
 
-            inventoryStatus.innerHTML = `
-                <div class="inventory-item">
-                    <div class="inventory-label">Total Products</div>
-                    <div class="inventory-value">${totalProducts}</div>
-                </div>
-                <div class="inventory-item">
-                    <div class="inventory-label">Low Stock (< 10)</div>
-                    <div class="inventory-value warning">${lowStock}</div>
-                </div>
-                <div class="inventory-item">
-                    <div class="inventory-label">Out of Stock</div>
-                    <div class="inventory-value danger">${outOfStock}</div>
-                </div>
-            `;
+    createRevenueChart() {
+        const ctx = document.getElementById('revenueChart');
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Revenue (₹)',
+                        data: [25000, 35000, 28000, 45000, 52000, 38000],
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+    }
+
+    createOrdersChart() {
+        const ctx = document.getElementById('ordersChart');
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Orders',
+                        data: [12, 8, 15, 10, 18, 25, 20],
+                        backgroundColor: '#4ECDC4'
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+    }
+
+    createCustomerTypeChart() {
+        const ctx = document.getElementById('customerTypeChart');
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['New Customers', 'Returning Customers', 'VIP Customers'],
+                    datasets: [{
+                        data: [45, 35, 20],
+                        backgroundColor: ['#FF6B6B', '#4ECDC4', '#FFD700']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+    }
+
+    createTopCustomersChart() {
+        const ctx = document.getElementById('topCustomersChart');
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Priya S.', 'Anita M.', 'Sunita K.', 'Meera P.', 'Kavya R.'],
+                    datasets: [{
+                        label: 'Total Spent (₹)',
+                        data: [25000, 18000, 15000, 12000, 10000],
+                        backgroundColor: '#667eea'
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+    }
+
+    createTopProductsChart() {
+        const ctx = document.getElementById('topProductsChart');
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Silk Saree', 'Cotton Saree', 'Designer Saree', 'Wedding Saree'],
+                    datasets: [{
+                        label: 'Units Sold',
+                        data: [45, 38, 25, 20],
+                        backgroundColor: ['#FF6B6B', '#4ECDC4', '#FFD700', '#98D8C8']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+    }
+
+    createColorPreferenceChart() {
+        const ctx = document.getElementById('colorPreferenceChart');
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Red', 'Blue', 'Green', 'Pink', 'Yellow', 'Others'],
+                    datasets: [{
+                        data: [25, 20, 15, 12, 8, 20],
+                        backgroundColor: ['#FF0000', '#0000FF', '#008000', '#FFC0CB', '#FFFF00', '#808080']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+    }
+
+    createPromoCodeChart() {
+        const ctx = document.getElementById('promoCodeChart');
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['WELCOME10', 'FIRST20', 'FREEDEL', 'No Promo'],
+                    datasets: [{
+                        data: [30, 25, 15, 30],
+                        backgroundColor: ['#FF6B6B', '#4ECDC4', '#FFD700', '#E0E0E0']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+    }
+
+    createTrafficSourceChart() {
+        const ctx = document.getElementById('trafficSourceChart');
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Direct', 'Social Media', 'Search Engine', 'Referral'],
+                    datasets: [{
+                        data: [40, 30, 20, 10],
+                        backgroundColor: ['#667eea', '#f093fb', '#4facfe', '#43e97b']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+    }
+
+    async loadSalesAnalytics() {
+        try {
+            // Load orders for sales analytics
+            const { data: orders, error } = await supabase
+                .from('orders')
+                .select('*')
+                .order('created_at', { ascending: false });
+            
+            if (error) throw error;
+            
+            // Populate detailed orders table
+            const detailedOrdersTable = document.getElementById('detailedOrdersTable');
+            if (detailedOrdersTable && orders) {
+                detailedOrdersTable.innerHTML = orders.slice(0, 20).map(order => {
+                    const customerName = order.shipping_addr ? 
+                        `${order.shipping_addr.firstName || ''} ${order.shipping_addr.lastName || ''}`.trim() : 'N/A';
+                    const itemsCount = order.items ? order.items.length : 0;
+                    const totalQuantity = order.items ? order.items.reduce((sum, item) => sum + item.quantity, 0) : 0;
+                    const orderDate = order.created_at ? new Date(order.created_at).toLocaleDateString() : 'N/A';
+                    
+                    return `
+                        <tr>
+                            <td>#${order.id.toString().slice(-8)}</td>
+                            <td>${customerName}</td>
+                            <td>${itemsCount}</td>
+                            <td>${totalQuantity}</td>
+                            <td>₹${(order.total_amount || 0).toLocaleString()}</td>
+                            <td>${orderDate}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
         } catch (error) {
-            inventoryStatus.innerHTML = '<p>Error loading inventory status</p>';
+            console.error('Error loading sales analytics:', error);
+        }
+    }
+
+    async loadCustomerAnalytics() {
+        try {
+            // Use existing customers data
+            const customerDetailsTable = document.getElementById('customerDetailsTable');
+            if (customerDetailsTable && this.customers) {
+                customerDetailsTable.innerHTML = this.customers.slice(0, 15).map(customer => {
+                    const lastOrderDate = customer.lastOrderDate ? new Date(customer.lastOrderDate).toLocaleDateString() : 'N/A';
+                    
+                    return `
+                        <tr>
+                            <td>${customer.name || 'N/A'}</td>
+                            <td>${customer.email || 'N/A'}</td>
+                            <td>${customer.phone || 'N/A'}</td>
+                            <td>${customer.orderCount || 0}</td>
+                            <td>₹${(customer.totalSpent || 0).toLocaleString()}</td>
+                            <td>${lastOrderDate}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        } catch (error) {
+            console.error('Error loading customer analytics:', error);
+        }
+    }
+
+    async loadProductAnalytics() {
+        try {
+            // Load products for analytics
+            const { data: products, error } = await supabase
+                .from('products')
+                .select('*');
+            
+            if (error) throw error;
+            
+            // Populate product performance table
+            const productPerformanceTable = document.getElementById('productPerformanceTable');
+            if (productPerformanceTable && products) {
+                productPerformanceTable.innerHTML = products.slice(0, 15).map(product => {
+                    const stockStatus = (product.stock || 0) > 10 ? 'In Stock' : 
+                                       (product.stock || 0) > 0 ? 'Low Stock' : 'Out of Stock';
+                    const statusClass = (product.stock || 0) > 10 ? 'status-delivered' : 
+                                       (product.stock || 0) > 0 ? 'status-pending' : 'status-cancelled';
+                    
+                    return `
+                        <tr>
+                            <td>${product.name || 'N/A'}</td>
+                            <td>${product.category || 'N/A'}</td>
+                            <td>0</td>
+                            <td>₹0</td>
+                            <td>${product.stock || 0}</td>
+                            <td><span class="status-badge ${statusClass}">${stockStatus}</span></td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        } catch (error) {
+            console.error('Error loading product analytics:', error);
+        }
+    }
+
+    async loadMarketingAnalytics() {
+        try {
+            // Populate campaign performance table with sample data
+            const campaignPerformanceTable = document.getElementById('campaignPerformanceTable');
+            if (campaignPerformanceTable) {
+                const sampleCampaigns = [
+                    { name: 'Festival Sale', type: 'Discount', clicks: 1250, conversions: 85, revenue: 42500, roi: '240%' },
+                    { name: 'New Collection', type: 'Product Launch', clicks: 890, conversions: 45, revenue: 22500, roi: '180%' },
+                    { name: 'Social Media', type: 'Brand Awareness', clicks: 2100, conversions: 120, revenue: 60000, roi: '320%' }
+                ];
+                
+                campaignPerformanceTable.innerHTML = sampleCampaigns.map(campaign => `
+                    <tr>
+                        <td>${campaign.name}</td>
+                        <td>${campaign.type}</td>
+                        <td>${campaign.clicks.toLocaleString()}</td>
+                        <td>${campaign.conversions}</td>
+                        <td>₹${campaign.revenue.toLocaleString()}</td>
+                        <td>${campaign.roi}</td>
+                    </tr>
+                `).join('');
+            }
+        } catch (error) {
+            console.error('Error loading marketing analytics:', error);
         }
     }
 
