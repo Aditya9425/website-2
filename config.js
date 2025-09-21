@@ -1,23 +1,5 @@
-// Configuration for frontend
-const CONFIG = {
-    // Backend URLs
-    BACKEND_URL: {
-        development: 'http://localhost:5000',
-        production: window.location.origin
-    },
-    
-    // Get current backend URL based on environment
-    getBackendUrl() {
-        // Auto-detect if running locally or on production
-        const isLocal = window.location.hostname === 'localhost' || 
-                       window.location.hostname === '127.0.0.1' ||
-                       window.location.hostname.includes('127.0.0.1') ||
-                       window.location.hostname.includes('5500') ||
-                       window.location.hostname.includes('5502');
-        
-        return isLocal ? this.BACKEND_URL.development : this.BACKEND_URL.production;
-    }
+// Supabase Configuration
+const SUPABASE_CONFIG = {
+    url: 'https://jstvadizuzvwhabtfhfs.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzdHZhZGl6dXp2d2hhYnRmaGZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NjI3NjAsImV4cCI6MjA3MjIzODc2MH0.6btNpJfUh6Fd5PfoivIvu-f31Fj5IXl1vxBLsHz5ISw'
 };
-
-// Make config globally available
-window.CONFIG = CONFIG;
