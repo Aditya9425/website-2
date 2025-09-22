@@ -69,21 +69,62 @@ window.testStockDeduction = async function(orderId) {
     }
 };
 
-// Hook into payment success to trigger stock deduction
-setTimeout(() => {
-    const originalConsoleLog = console.log;
-    console.log = function(...args) {
-        originalConsoleLog.apply(console, args);
+// Direct trigger - run this in console after order
+window.deductStockForLastOrder = async function() {
+    try {
+        const { data: orders } = await stockSupabase
+            .from('orders')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(1);
         
-        // Check if this is the order saved log
-        if (args[0] === 'Order saved to Supabase successfully:' && args[1] && args[1].id) {
-            console.log('🎯 Detected order save, triggering stock deduction...');
-            setTimeout(() => {
-                window.testStockDeduction(args[1].id);
-            }, 1000);
+        if (orders && orders[0]) {
+            const order = orders[0];
+            console.log('🔄 Deducting stock for latest order:', order.id);
+            
+            if (order.items) {
+                for (const item of order.items) {
+                    await window.deductStock(item.id, item.quantity);
+                }
+            }
         }
-    };
-}, 1000);
+    } catch (error) {
+        console.error('Error deducting stock for last order:', error);
+    }
+};
+
+// Auto-trigger every 5 seconds to check for new orders
+setInterval(async () => {
+    try {
+        const { data: orders } = await stockSupabase
+            .from('orders')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(1);
+        
+        if (orders && orders[0]) {
+            const order = orders[0];
+            const orderTime = new Date(order.created_at).getTime();
+            const now = new Date().getTime();
+            
+            // If order is less than 10 seconds old and not processed
+            if (now - orderTime < 10000 && !window.processedOrders?.includes(order.id)) {
+                console.log('🆕 Auto-detected new order, deducting stock:', order.id);
+                
+                if (!window.processedOrders) window.processedOrders = [];
+                window.processedOrders.push(order.id);
+                
+                if (order.items) {
+                    for (const item of order.items) {
+                        await window.deductStock(item.id, item.quantity);
+                    }
+                }
+            }
+        }
+    } catch (error) {
+        // Silent fail
+    }
+}, 5000);
 
 // Update UI for out of stock products
 window.updateStockUI = async function() {
