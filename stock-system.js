@@ -49,6 +49,42 @@ stockSupabase
     )
     .subscribe();
 
+// Manual trigger function for testing
+window.testStockDeduction = async function(orderId) {
+    try {
+        const { data: order } = await stockSupabase
+            .from('orders')
+            .select('*')
+            .eq('id', orderId)
+            .single();
+        
+        if (order && order.items) {
+            console.log('🧪 Manual stock deduction for order:', order.id);
+            for (const item of order.items) {
+                await window.deductStock(item.id, item.quantity);
+            }
+        }
+    } catch (error) {
+        console.error('Error in manual stock deduction:', error);
+    }
+};
+
+// Hook into payment success to trigger stock deduction
+setTimeout(() => {
+    const originalConsoleLog = console.log;
+    console.log = function(...args) {
+        originalConsoleLog.apply(console, args);
+        
+        // Check if this is the order saved log
+        if (args[0] === 'Order saved to Supabase successfully:' && args[1] && args[1].id) {
+            console.log('🎯 Detected order save, triggering stock deduction...');
+            setTimeout(() => {
+                window.testStockDeduction(args[1].id);
+            }, 1000);
+        }
+    };
+}, 1000);
+
 // Update UI for out of stock products
 window.updateStockUI = async function() {
     try {
