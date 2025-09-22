@@ -12,9 +12,11 @@
     <link rel="stylesheet" href="product-modal-layout.css">
     <link rel="stylesheet" href="dark-friendly-theme.css">
     <link rel="stylesheet" href="table-styling.css">
+    <link rel="stylesheet" href="feedback-styles.css">
     <link rel="stylesheet" href="../color-variants.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <!-- Login Screen -->
@@ -80,6 +82,10 @@
                 <a href="#" class="nav-link" data-section="analytics">
                     <i class="fas fa-chart-bar"></i>
                     <span>Analytics</span>
+                </a>
+                <a href="#" class="nav-link" data-section="feedback">
+                    <i class="fas fa-comments"></i>
+                    <span>Feedback</span>
                 </a>
             </nav>
             
@@ -439,6 +445,63 @@
                                 </table>
                             </div>
                         </div>
+                    </div>
+                </section>
+
+                <!-- Feedback Section -->
+                <section id="feedbackSection" class="content-section">
+                    <div class="section-header">
+                        <h2>Customer Feedback</h2>
+                        <div class="feedback-actions">
+                            <button id="refreshFeedback" class="btn-refresh">
+                                <i class="fas fa-sync-alt"></i>
+                                Refresh
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="feedback-stats">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-comments"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="totalFeedback">0</h3>
+                                <p>Total Feedback</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="recentFeedback">0</h3>
+                                <p>Last 7 Days</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table class="data-table feedback-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Message</th>
+                                    <th>Submitted At</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="feedbackTableBody">
+                                <tr>
+                                    <td colspan="4" class="loading-row">
+                                        <div class="loading-spinner">
+                                            <i class="fas fa-spinner fa-spin"></i>
+                                            Loading feedback...
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </section>
             </div>

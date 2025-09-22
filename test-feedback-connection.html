@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Feedback Connection</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>Feedback Database Connection Test</h1>
+    <button onclick="testConnection()">Test Supabase Connection</button>
+    <button onclick="testFeedbackInsert()">Test Feedback Insert</button>
+    <div id="result"></div>
+
+    <script>
+        // Supabase Configuration
+        const SUPABASE_URL = 'https://jstvadizuzvwhabtfhfs.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzdHZhZGl6dXp2d2hhYnRmaGZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NjI3NjAsImV4cCI6MjA3MjIzODc2MH0.6btNpJfUh6Fd5PfoivIvu-f31Fj5IXl1vxBLsHz5ISw';
+
+        // Initialize Supabase client
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function testConnection() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing connection...';
+            
+            try {
+                // Test basic connection
+                const { data, error } = await supabase
+                    .from('feedbacks')
+                    .select('count')
+                    .limit(1);
+                
+                if (error) {
+                    resultDiv.innerHTML = `<p style="color: red;">Connection Error: ${error.message}</p>`;
+                } else {
+                    resultDiv.innerHTML = '<p style="color: green;">✅ Connection successful!</p>';
+                }
+            } catch (err) {
+                resultDiv.innerHTML = `<p style="color: red;">Connection Error: ${err.message}</p>`;
+            }
+        }
+
+        async function testFeedbackInsert() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing feedback insert...';
+            
+            try {
+                const testMessage = `Test feedback from ${new Date().toISOString()}`;
+                
+                const { data, error } = await supabase
+                    .from('feedbacks')
+                    .insert([
+                        { message: testMessage }
+                    ]);
+                
+                if (error) {
+                    resultDiv.innerHTML = `<p style="color: red;">Insert Error: ${error.message}</p>`;
+                } else {
+                    resultDiv.innerHTML = '<p style="color: green;">✅ Feedback insert successful!</p>';
+                }
+            } catch (err) {
+                resultDiv.innerHTML = `<p style="color: red;">Insert Error: ${err.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

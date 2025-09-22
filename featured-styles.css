@@ -27,13 +27,43 @@
     line-height: 1.6;
 }
 
-.featured-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 40px;
+/* Carousel Container */
+.carousel-container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 20px;
+    overflow: hidden;
+    position: relative;
+}
+
+.carousel-track {
+    display: flex;
+    gap: 30px;
+    animation: scroll-horizontal 30s linear infinite;
+    width: max-content;
+}
+
+.carousel-track:hover {
+    animation-play-state: paused;
+}
+
+@keyframes scroll-horizontal {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+/* Infinite scroll effect */
+.carousel-track {
+    will-change: transform;
+}
+
+.carousel-track::after {
+    content: '';
+    flex: 0 0 100px;
 }
 
 .featured-card {
@@ -44,6 +74,8 @@
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
     border: 1px solid rgba(0, 0, 0, 0.05);
+    flex: 0 0 350px;
+    width: 350px;
 }
 
 .featured-card:hover {
@@ -132,12 +164,38 @@
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
+/* Touch Support for Mobile */
+.carousel-container {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+}
+
+@media (hover: none) and (pointer: coarse) {
+    .carousel-container {
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    
+    .carousel-container::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .carousel-track {
+        animation-play-state: running;
+    }
+}
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
-    .featured-grid {
-        grid-template-columns: 1fr;
-        gap: 30px;
+    .carousel-container {
         padding: 0 15px;
+    }
+    
+    .featured-card {
+        flex: 0 0 280px;
+        width: 280px;
     }
     
     .section-title {
@@ -150,6 +208,10 @@
     
     .featured-image {
         height: 250px;
+    }
+    
+    .carousel-track {
+        gap: 20px;
     }
 }
 
@@ -169,5 +231,14 @@
     .featured-buttons {
         flex-direction: column;
         gap: 8px;
+    }
+    
+    .featured-card {
+        flex: 0 0 250px;
+        width: 250px;
+    }
+    
+    .carousel-track {
+        gap: 15px;
     }
 }
