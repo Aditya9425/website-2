@@ -51,34 +51,13 @@ async function fetchProductsFromSupabase() {
             color_variants: row.color_variants || [],
             sizes: row.sizes || ['Free Size'],
             fabric: row.fabric,
-            reviews: row.reviews || 50,
-            stock: row.stock || 0
+            reviews: row.reviews || 50
         }));
         
         return mappedProducts;
         
     } catch (error) {
         return null;
-    }
-}
-
-// Check stock before adding to cart
-async function checkProductStock(productId) {
-    try {
-        const { data, error } = await supabase
-            .from('products')
-            .select('stock')
-            .eq('id', productId)
-            .single();
-        
-        if (error || !data) {
-            return 0;
-        }
-        
-        return data.stock || 0;
-    } catch (error) {
-        console.error('Error checking stock:', error);
-        return 0;
     }
 }
 
@@ -112,8 +91,7 @@ async function fetchProducts() {
                 colors: ["Red", "Green", "Blue"],
                 color_variants: [],
                 sizes: ["Free Size"],
-                fabric: "Silk",
-                stock: 5
+                fabric: "Silk"
             },
             {
                 id: 2,
@@ -132,8 +110,7 @@ async function fetchProducts() {
                 colors: ["White", "Beige", "Pink"],
                 color_variants: [],
                 sizes: ["Free Size"],
-                fabric: "Cotton",
-                stock: 0
+                fabric: "Cotton"
             },
             {
                 id: 3,
@@ -154,8 +131,7 @@ async function fetchProducts() {
                 colors: ["Purple", "Teal", "Maroon"],
                 color_variants: [],
                 sizes: ["Free Size"],
-                fabric: "Georgette",
-                stock: 3
+                fabric: "Georgette"
             }
         ];
     }
@@ -250,9 +226,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     loadTrendingProducts();
     loadFeaturedProducts();
     
-    // Setup realtime stock updates
-    setupRealtimeStockUpdates();
-    
     const currentPage = window.location.pathname.split('/').pop();
     
     if (currentPage === 'collections.html') {
@@ -266,49 +239,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 });
 
-// Setup Supabase Realtime for stock updates
-function setupRealtimeStockUpdates() {
-    try {
-        const channel = supabase
-            .channel('products-stock-changes')
-            .on(
-                'postgres_changes',
-                {
-                    event: 'UPDATE',
-                    schema: 'public',
-                    table: 'products',
-                    filter: 'stock=neq.null'
-                },
-                (payload) => {
-                    console.log('Stock update received:', payload);
-                    handleStockUpdate(payload.new);
-                }
-            )
-            .subscribe();
-        
-        console.log('Realtime stock updates enabled');
-    } catch (error) {
-        console.error('Error setting up realtime stock updates:', error);
-    }
-}
-
-// Handle realtime stock updates
-function handleStockUpdate(updatedProduct) {
-    // Update product in memory
-    const product = products.find(p => p.id == updatedProduct.id);
-    if (product) {
-        product.stock = updatedProduct.stock;
-    }
-    
-    // Update UI
-    updateProductStockDisplay(updatedProduct.id, updatedProduct.stock);
-    
-    // Show notification if product becomes out of stock
-    if (updatedProduct.stock <= 0) {
-        showNotification(`${updatedProduct.name} is now out of stock!`, 'warning');
-    }
-}
-
 // Attach event listeners to Add to Cart buttons
 function attachAddToCartListeners() {
     document.querySelectorAll('.add-to-cart').forEach(button => {
@@ -317,41 +247,27 @@ function attachAddToCartListeners() {
 }
 
 // Cart Functions
-async function addToCart(button) {
+function addToCart(button) {
     const productId = button.getAttribute('data-id');
     console.log('🛒 Adding to cart - productId:', productId);
+    console.log('🛒 Available products:', products);
     
     const product = products.find(p => p.id.toString() === productId);
-    if (!product) {
-        console.error('❌ Product not found for ID:', productId);
-        return;
-    }
+    console.log('🛒 Found product:', product);
     
-    // Check current stock
-    const currentStock = await checkProductStock(productId);
-    if (currentStock <= 0) {
-        showNotification('Sorry, this product is out of stock!', 'error');
-        updateProductStockDisplay(productId, 0);
-        return;
-    }
-    
-    const existingItem = cart.find(item => item.id.toString() === productId);
-    const currentCartQuantity = existingItem ? existingItem.quantity : 0;
-    
-    if (currentCartQuantity >= currentStock) {
-        showNotification(`Only ${currentStock} items available in stock!`, 'warning');
-        return;
-    }
-    
-    if (existingItem) {
-        existingItem.quantity += 1;
+    if (product) {
+        const existingItem = cart.find(item => item.id.toString() === productId);
+        if (existingItem) {
+            existingItem.quantity += 1;
+        } else {
+            cart.push({ ...product, quantity: 1 });
+        }
+        saveCart();
+        updateCartCount();
+        showNotification('Added to cart!');
     } else {
-        cart.push({ ...product, quantity: 1 });
+        console.error('❌ Product not found for ID:', productId);
     }
-    
-    saveCart();
-    updateCartCount();
-    showNotification('Added to cart!');
 }
 
 function removeFromCart(productId) {
@@ -459,16 +375,10 @@ function loadTrendingProducts() {
             }
             
             const colorPalette = generateColorPalette(product);
-            const isOutOfStock = (product.stock || 0) <= 0;
-            const stockBadge = isOutOfStock ? '<div class="stock-badge out-of-stock">Out of Stock</div>' : '';
-            const cardClass = isOutOfStock ? 'product-card out-of-stock' : 'product-card';
             
             return `
-            <div class="${cardClass}" data-product-id="${product.id}">
-                <div class="product-image-container">
-                    <img src="${imageUrl}" alt="${product.name}" class="product-image">
-                    ${stockBadge}
-                </div>
+            <div class="product-card" data-product-id="${product.id}">
+                <img src="${imageUrl}" alt="${product.name}" class="product-image">
                 <div class="product-info">
                     <h3 class="product-name">${product.name}</h3>
                     <div class="product-price">₹${product.price.toLocaleString()}</div>
@@ -479,8 +389,8 @@ function loadTrendingProducts() {
                         <span>${product.rating} (${product.reviews})</span>
                     </div>
                     ${colorPalette}
-                    <button class="add-to-cart add-to-cart-btn" data-id="${product.id}" onclick="event.stopPropagation()" ${isOutOfStock ? 'disabled' : ''}>
-                        ${isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
+                    <button class="add-to-cart add-to-cart-btn" data-id="${product.id}" onclick="event.stopPropagation()">
+                        Add to Cart
                     </button>
                 </div>
             </div>
@@ -1493,27 +1403,11 @@ function decreaseQuantity() {
     }
 }
 
-async function addToCartFromModal() {
+function addToCartFromModal() {
     if (!currentProduct) return;
     
     const quantity = parseInt(document.getElementById('modalQuantity').value);
-    
-    // Check current stock
-    const currentStock = await checkProductStock(currentProduct.id);
-    if (currentStock <= 0) {
-        showNotification('Sorry, this product is out of stock!', 'error');
-        updateProductStockDisplay(currentProduct.id, 0);
-        closeProductModal();
-        return;
-    }
-    
     const existingItem = cart.find(item => item.id == currentProduct.id);
-    const currentCartQuantity = existingItem ? existingItem.quantity : 0;
-    
-    if (currentCartQuantity + quantity > currentStock) {
-        showNotification(`Only ${currentStock} items available in stock!`, 'warning');
-        return;
-    }
     
     if (existingItem) {
         existingItem.quantity += quantity;
@@ -1527,7 +1421,7 @@ async function addToCartFromModal() {
     closeProductModal();
 }
 
-async function buyNowFromModal() {
+function buyNowFromModal() {
     // Check if user is logged in
     const userSession = localStorage.getItem('userSession');
     if (!userSession) {
@@ -1538,15 +1432,6 @@ async function buyNowFromModal() {
     
     if (!currentProduct) return;
     
-    // Check current stock
-    const currentStock = await checkProductStock(currentProduct.id);
-    if (currentStock <= 0) {
-        showNotification('Sorry, this product is out of stock!', 'error');
-        updateProductStockDisplay(currentProduct.id, 0);
-        closeProductModal();
-        return;
-    }
-    
     const quantity = parseInt(document.getElementById('modalQuantity').value);
     // Store buy now item separately (don't add to cart)
     const buyNowItem = { ...currentProduct, quantity };
@@ -1556,7 +1441,7 @@ async function buyNowFromModal() {
     window.location.href = 'address.html?buyNow=true';
 }
 
-async function buyNow(productId) {
+function buyNow(productId) {
     // Check if user is logged in
     const userSession = localStorage.getItem('userSession');
     if (!userSession) {
@@ -1567,14 +1452,6 @@ async function buyNow(productId) {
     
     const product = products.find(p => p.id == productId);
     if (!product) return;
-    
-    // Check current stock
-    const currentStock = await checkProductStock(productId);
-    if (currentStock <= 0) {
-        showNotification('Sorry, this product is out of stock!', 'error');
-        updateProductStockDisplay(productId, 0);
-        return;
-    }
     
     // Store buy now item separately (don't add to cart)
     const buyNowItem = { ...product, quantity: 1 };
@@ -1613,26 +1490,22 @@ function loadFeaturedProducts() {
             }
             
             const colorPalette = generateColorPalette(product);
-            const isOutOfStock = (product.stock || 0) <= 0;
-            const stockBadge = isOutOfStock ? '<div class="stock-badge out-of-stock">Out of Stock</div>' : '';
-            const cardClass = isOutOfStock ? 'featured-card out-of-stock' : 'featured-card';
             
             return `
-            <div class="${cardClass}" data-product-id="${product.id}">
-                <div class="featured-image" onclick="${isOutOfStock ? '' : `window.location.href='product.html?id=${product.id}'`}">
+            <div class="featured-card" data-product-id="${product.id}">
+                <div class="featured-image" onclick="window.location.href='product.html?id=${product.id}'">
                     <img src="${imageUrl}" alt="${product.name}" loading="lazy">
-                    ${stockBadge}
                 </div>
                 <div class="featured-info">
                     <h3 class="featured-title">${product.name}</h3>
                     <div class="featured-price">₹${product.price.toLocaleString()}</div>
                     ${colorPalette}
                     <div class="featured-buttons">
-                        <button class="add-to-cart-btn" data-id="${product.id}" onclick="event.stopPropagation(); addToCart(this)" ${isOutOfStock ? 'disabled' : ''}>
-                            ${isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
+                        <button class="add-to-cart-btn" data-id="${product.id}" onclick="event.stopPropagation(); addToCart(this)">
+                            Add to Cart
                         </button>
-                        <button class="buy-now-btn" onclick="event.stopPropagation(); buyNow('${product.id}')" ${isOutOfStock ? 'disabled' : ''}>
-                            ${isOutOfStock ? 'Out of Stock' : 'Buy Now'}
+                        <button class="buy-now-btn" onclick="event.stopPropagation(); buyNow('${product.id}')">
+                            Buy Now
                         </button>
                     </div>
                 </div>
@@ -1921,8 +1794,6 @@ function updateBuyNowOrderSummary() {
 window.logout = logout;
 window.openColorVariant = openColorVariant;
 window.initializeCarousel = initializeCarousel;
-window.updateProductStockDisplay = updateProductStockDisplay;
-window.checkProductStock = checkProductStock;
 
 // Mobile Menu Toggle Functionality
 function toggleMobileMenu() {
@@ -2101,16 +1972,10 @@ function displayProducts(productsToShow) {
             }
             
             const colorPalette = generateColorPalette(product);
-            const isOutOfStock = (product.stock || 0) <= 0;
-            const stockBadge = isOutOfStock ? '<div class="stock-badge out-of-stock">Out of Stock</div>' : '';
-            const cardClass = isOutOfStock ? 'product-card out-of-stock' : 'product-card';
             
             return `
-            <div class="${cardClass}" data-product-id="${product.id}">
-                <div class="product-image-container">
-                    <img src="${imageUrl}" alt="${product.name}" class="product-image">
-                    ${stockBadge}
-                </div>
+            <div class="product-card" data-product-id="${product.id}">
+                <img src="${imageUrl}" alt="${product.name}" class="product-image">
                 <div class="product-info">
                     <h3 class="product-name">${product.name}</h3>
                     <div class="product-price">₹${product.price.toLocaleString()}</div>
@@ -2122,11 +1987,11 @@ function displayProducts(productsToShow) {
                     </div>
                     ${colorPalette}
                     <div class="action-buttons">
-                        <button class="add-to-cart add-to-cart-btn" data-id="${product.id}" onclick="event.stopPropagation()" ${isOutOfStock ? 'disabled' : ''}>
-                            ${isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
+                        <button class="add-to-cart add-to-cart-btn" data-id="${product.id}" onclick="event.stopPropagation()">
+                            Add to Cart
                         </button>
-                        <button class="buy-now-btn" data-id="${product.id}" onclick="event.stopPropagation(); buyNow('${product.id}')" ${isOutOfStock ? 'disabled' : ''}>
-                            ${isOutOfStock ? 'Out of Stock' : 'Buy Now'}
+                        <button class="buy-now-btn" data-id="${product.id}" onclick="event.stopPropagation(); buyNow('${product.id}')">
+                            Buy Now
                         </button>
                     </div>
                 </div>
@@ -2145,63 +2010,4 @@ function displayProducts(productsToShow) {
         });
         attachAddToCartListeners();
     }
-}
-
-// Update product stock display
-function updateProductStockDisplay(productId, stock) {
-    // Update product in memory
-    const product = products.find(p => p.id == productId);
-    if (product) {
-        product.stock = stock;
-    }
-    
-    // Update UI elements
-    const productCards = document.querySelectorAll(`[data-product-id="${productId}"]`);
-    productCards.forEach(card => {
-        const addToCartBtn = card.querySelector('.add-to-cart-btn');
-        const buyNowBtn = card.querySelector('.buy-now-btn');
-        const stockBadge = card.querySelector('.stock-badge');
-        
-        if (stock <= 0) {
-            // Add out of stock styling
-            card.classList.add('out-of-stock');
-            
-            // Add stock badge if not exists
-            if (!stockBadge) {
-                const imageContainer = card.querySelector('.product-image-container') || card.querySelector('.product-image').parentNode;
-                const badge = document.createElement('div');
-                badge.className = 'stock-badge out-of-stock';
-                badge.textContent = 'Out of Stock';
-                imageContainer.appendChild(badge);
-            }
-            
-            // Disable buttons
-            if (addToCartBtn) {
-                addToCartBtn.disabled = true;
-                addToCartBtn.textContent = 'Out of Stock';
-            }
-            if (buyNowBtn) {
-                buyNowBtn.disabled = true;
-                buyNowBtn.textContent = 'Out of Stock';
-            }
-        } else {
-            // Remove out of stock styling
-            card.classList.remove('out-of-stock');
-            
-            // Remove stock badge
-            if (stockBadge) {
-                stockBadge.remove();
-            }
-            
-            // Enable buttons
-            if (addToCartBtn) {
-                addToCartBtn.disabled = false;
-                addToCartBtn.textContent = 'Add to Cart';
-            }
-            if (buyNowBtn) {
-                buyNowBtn.disabled = false;
-                buyNowBtn.textContent = 'Buy Now';
-            }
-        }
-    });
 }

@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="color-variants.css">
     <link rel="stylesheet" href="product-mobile-optimized.css">
     <link rel="stylesheet" href="footer-mobile.css">
-    <link rel="stylesheet" href="stock-management.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
@@ -306,8 +305,7 @@
                     color_variants: data.color_variants || [],
                     sizes: data.sizes || ['Free Size'],
                     fabric: data.fabric,
-                    reviews: data.reviews || 50,
-                    stock: data.stock || 0
+                    reviews: data.reviews || 50
                 };
                 
                 displayProductDetails(product, selectedColor);
@@ -388,10 +386,6 @@
             
 
             
-            // Check stock and update buttons
-            const isOutOfStock = (product.stock || 0) <= 0;
-            updateProductButtons(product.id, isOutOfStock);
-            
             // Update page title
             document.title = `${product.name} - Shagun Saree Baran`;
         }
@@ -455,23 +449,9 @@
             });
         }
         
-        async function addProductToCart(product, quantity) {
-            // Check current stock
-            const currentStock = await checkProductStock(product.id);
-            if (currentStock <= 0) {
-                alert('Sorry, this product is out of stock!');
-                updateProductButtons(product.id, true);
-                return;
-            }
-            
+        function addProductToCart(product, quantity) {
             let cart = JSON.parse(localStorage.getItem('cart')) || [];
             const existingItem = cart.find(item => item.id === product.id);
-            const currentCartQuantity = existingItem ? existingItem.quantity : 0;
-            
-            if (currentCartQuantity + quantity > currentStock) {
-                alert(`Only ${currentStock} items available in stock!`);
-                return;
-            }
             
             if (existingItem) {
                 existingItem.quantity += quantity;
@@ -489,56 +469,12 @@
             alert(`Added ${quantity} item(s) to cart!`);
         }
         
-        async function checkProductStock(productId) {
-            try {
-                const { data, error } = await supabase
-                    .from('products')
-                    .select('stock')
-                    .eq('id', productId)
-                    .single();
-                
-                if (error || !data) {
-                    return 0;
-                }
-                
-                return data.stock || 0;
-            } catch (error) {
-                console.error('Error checking stock:', error);
-                return 0;
-            }
-        }
-        
-        function updateProductButtons(productId, isOutOfStock) {
-            const addToCartBtn = document.getElementById('addToCartBtn');
-            const buyNowBtn = document.getElementById('buyNowBtn');
-            
-            if (isOutOfStock) {
-                addToCartBtn.disabled = true;
-                addToCartBtn.innerHTML = '<i class="fas fa-times"></i> Out of Stock';
-                buyNowBtn.disabled = true;
-                buyNowBtn.innerHTML = '<i class="fas fa-times"></i> Out of Stock';
-            } else {
-                addToCartBtn.disabled = false;
-                addToCartBtn.innerHTML = '<i class="fas fa-shopping-cart"></i> Add to Cart';
-                buyNowBtn.disabled = false;
-                buyNowBtn.innerHTML = '<i class="fas fa-bolt"></i> Buy Now';
-            }
-        }
-        
-        async function buyNowProduct(product, quantity) {
+        function buyNowProduct(product, quantity) {
             // Check if user is logged in
             const userSession = localStorage.getItem('userSession');
             if (!userSession) {
                 alert('Please login to buy now.');
                 window.location.href = 'auth.html';
-                return;
-            }
-            
-            // Check current stock
-            const currentStock = await checkProductStock(product.id);
-            if (currentStock <= 0) {
-                alert('Sorry, this product is out of stock!');
-                updateProductButtons(product.id, true);
                 return;
             }
             
@@ -586,5 +522,6 @@
         // Make changeMainImage globally available
         window.changeMainImage = changeMainImage;
     </script>
+    <script src="stock-manager.js"></script>
 </body>
 </html>
