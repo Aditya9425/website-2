@@ -1,9 +1,15 @@
-// Simple stock deduction function
+// Initialize Supabase for stock management
+const stockSupabase = window.supabase.createClient(
+    'https://jstvadizuzvwhabtfhfs.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzdHZhZGl6dXp2d2hhYnRmaGZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NjI3NjAsImV4cCI6MjA3MjIzODc2MH0.6btNpJfUh6Fd5PfoivIvu-f31Fj5IXl1vxBLsHz5ISw'
+);
+
+// Direct stock deduction function
 window.deductStock = async function(productId, quantity) {
     try {
         console.log(`🔄 Deducting stock: Product ${productId}, Quantity ${quantity}`);
         
-        const { data: current } = await supabase
+        const { data: current } = await stockSupabase
             .from('products')
             .select('stock')
             .eq('id', productId)
@@ -11,7 +17,7 @@ window.deductStock = async function(productId, quantity) {
         
         const newStock = Math.max(0, (current?.stock || 0) - quantity);
         
-        const { error } = await supabase
+        const { error } = await stockSupabase
             .from('products')
             .update({ stock: newStock })
             .eq('id', productId);
@@ -26,10 +32,27 @@ window.deductStock = async function(productId, quantity) {
     }
 };
 
+// Listen for new orders in database and deduct stock
+stockSupabase
+    .channel('order-stock-updates')
+    .on('postgres_changes', 
+        { event: 'INSERT', schema: 'public', table: 'orders' },
+        async (payload) => {
+            console.log('🆕 New order detected, deducting stock:', payload.new);
+            const order = payload.new;
+            if (order.items) {
+                for (const item of order.items) {
+                    await window.deductStock(item.id, item.quantity);
+                }
+            }
+        }
+    )
+    .subscribe();
+
 // Update UI for out of stock products
 window.updateStockUI = async function() {
     try {
-        const { data } = await supabase.from('products').select('id, stock');
+        const { data } = await stockSupabase.from('products').select('id, stock');
         
         data?.forEach(product => {
             const cards = document.querySelectorAll(`[data-product-id="${product.id}"]`);
@@ -56,65 +79,7 @@ window.updateStockUI = async function() {
     }
 };
 
-// Hook into processOrder function directly
-if (typeof window.processOrder === 'function') {
-    const originalProcessOrder = window.processOrder;
-    window.processOrder = async function(total, paymentMethod, orderItems = null, isBuyNow = false, paymentId = null) {
-        console.log('🛒 Processing order with stock deduction...');
-        
-        const result = await originalProcessOrder(total, paymentMethod, orderItems, isBuyNow, paymentId);
-        
-        if (result && result.items) {
-            console.log('📦 Deducting stock for order items:', result.items);
-            for (const item of result.items) {
-                await window.deductStock(item.id, item.quantity);
-            }
-        }
-        
-        return result;
-    };
-}
 
-// Hook into payment integration saveOrder function
-setTimeout(() => {
-    // Check if payment-integration.js has loaded
-    if (typeof window.saveOrder === 'function') {
-        const originalSaveOrder = window.saveOrder;
-        window.saveOrder = async function(orderData) {
-            console.log('💾 Payment integration - saving order with stock deduction...');
-            
-            const savedOrder = await originalSaveOrder(orderData);
-            
-            if (savedOrder && orderData.items) {
-                console.log('📦 Deducting stock for payment order:', orderData.items);
-                for (const item of orderData.items) {
-                    await window.deductStock(item.id, item.quantity);
-                }
-            }
-            
-            return savedOrder;
-        };
-    }
-    
-    // Also try the main.js saveOrderToDatabase
-    if (typeof window.saveOrderToDatabase === 'function') {
-        const originalSaveOrder = window.saveOrderToDatabase;
-        window.saveOrderToDatabase = async function(order) {
-            console.log('💾 Main.js - saving order with stock deduction...');
-            
-            const savedOrder = await originalSaveOrder(order);
-            
-            if (savedOrder && order.items) {
-                console.log('📦 Deducting stock after main save:', order.items);
-                for (const item of order.items) {
-                    await window.deductStock(item.id, item.quantity);
-                }
-            }
-            
-            return savedOrder;
-        };
-    }
-}, 2000);
 
 // Load stock UI when page loads
 document.addEventListener('DOMContentLoaded', () => {
