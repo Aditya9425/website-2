@@ -1,143 +1,144 @@
-// Stock Management Module - Minimal Implementation
+// Stock Management - Minimal Implementation
 
-// Check product stock from Supabase
+// Check stock from Supabase
 async function checkStock(productId) {
     try {
-        const { data, error } = await supabase
-            .from('products')
-            .select('stock')
-            .eq('id', productId)
-            .single();
-        return error ? 0 : (data?.stock || 0);
-    } catch {
-        return 0;
-    }
+        const { data } = await supabase.from('products').select('stock').eq('id', productId).single();
+        return data?.stock || 0;
+    } catch { return 0; }
 }
 
-// Deduct stock on purchase
+// Deduct stock after successful order
 async function deductStock(productId) {
     try {
-        const { data, error } = await supabase.rpc('deduct_stock', { product_id: productId });
-        if (!error && data) {
+        const { data } = await supabase.rpc('deduct_stock', { product_id: productId });
+        if (data?.success) {
             updateStockUI(productId, data.new_stock);
+            return true;
         }
-        return !error;
-    } catch {
-        return false;
-    }
+    } catch {}
+    return false;
 }
 
-// Update stock UI elements
+// Update UI based on stock
 function updateStockUI(productId, stock) {
-    const isOutOfStock = stock <= 0;
-    
-    // Update all product cards with this ID
     document.querySelectorAll(`[data-product-id="${productId}"]`).forEach(card => {
-        const buyBtn = card.querySelector('.buy-now-btn, .btn-buy-now');
-        const addBtn = card.querySelector('.add-to-cart-btn, .btn-add-cart');
+        const buyBtn = card.querySelector('.buy-now-btn, .btn-buy-now, #buyNowBtn');
+        const addBtn = card.querySelector('.add-to-cart-btn, .btn-add-cart, #addToCartBtn');
+        const badge = card.querySelector('.stock-badge');
         
-        if (isOutOfStock) {
+        if (stock <= 0) {
             // Add out of stock badge
-            if (!card.querySelector('.stock-badge')) {
-                const badge = document.createElement('div');
-                badge.className = 'stock-badge';
-                badge.textContent = 'Out of Stock';
-                badge.style.cssText = 'position:absolute;top:10px;right:10px;background:#dc3545;color:white;padding:4px 8px;border-radius:4px;font-size:12px;z-index:2;';
-                const imgContainer = card.querySelector('.product-image, .featured-image') || card;
-                if (imgContainer.style.position !== 'relative') imgContainer.style.position = 'relative';
-                imgContainer.appendChild(badge);
+            if (!badge) {
+                const newBadge = document.createElement('div');
+                newBadge.className = 'stock-badge';
+                newBadge.textContent = 'Out of Stock';
+                newBadge.style.cssText = 'position:absolute;top:8px;right:8px;background:#dc3545;color:white;padding:3px 6px;border-radius:3px;font-size:11px;z-index:10;font-weight:bold;';
+                
+                const container = card.querySelector('.product-image, .featured-image, .main-image-container') || card;
+                container.style.position = 'relative';
+                container.appendChild(newBadge);
             }
             
             // Disable buttons
-            if (buyBtn) {
-                buyBtn.disabled = true;
-                buyBtn.textContent = 'Out of Stock';
-                buyBtn.style.backgroundColor = '#6c757d';
-                buyBtn.style.cursor = 'not-allowed';
-            }
-            if (addBtn) {
-                addBtn.disabled = true;
-                addBtn.textContent = 'Out of Stock';
-                addBtn.style.backgroundColor = '#6c757d';
-                addBtn.style.cursor = 'not-allowed';
-            }
+            [buyBtn, addBtn].forEach(btn => {
+                if (btn) {
+                    btn.disabled = true;
+                    btn.textContent = 'Out of Stock';
+                    btn.style.cssText += 'background:#6c757d!important;cursor:not-allowed!important;';
+                }
+            });
         } else {
-            // Remove out of stock badge
-            const badge = card.querySelector('.stock-badge');
+            // Remove badge and enable buttons
             if (badge) badge.remove();
             
-            // Enable buttons
             if (buyBtn) {
                 buyBtn.disabled = false;
-                buyBtn.textContent = 'Buy Now';
-                buyBtn.style.backgroundColor = '';
-                buyBtn.style.cursor = '';
+                buyBtn.innerHTML = '<i class="fas fa-bolt"></i> Buy Now';
+                buyBtn.style.cssText = buyBtn.style.cssText.replace(/background:[^;]*;?/g, '').replace(/cursor:[^;]*;?/g, '');
             }
             if (addBtn) {
                 addBtn.disabled = false;
-                addBtn.textContent = 'Add to Cart';
-                addBtn.style.backgroundColor = '';
-                addBtn.style.cursor = '';
+                addBtn.innerHTML = '<i class="fas fa-shopping-cart"></i> Add to Cart';
+                addBtn.style.cssText = addBtn.style.cssText.replace(/background:[^;]*;?/g, '').replace(/cursor:[^;]*;?/g, '');
             }
         }
     });
 }
 
-// Setup realtime stock updates
+// Setup realtime updates
 function setupStockRealtime() {
     if (typeof supabase === 'undefined') return;
     
-    supabase
-        .channel('stock-updates')
-        .on('postgres_changes', {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'products'
-        }, (payload) => {
-            if (payload.new.stock !== undefined) {
-                updateStockUI(payload.new.id, payload.new.stock);
-            }
-        })
+    supabase.channel('stock-channel')
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'products' }, 
+            payload => updateStockUI(payload.new.id, payload.new.stock))
         .subscribe();
 }
 
-// Initialize stock management
-function initStockManager() {
+// Hook into existing processOrder function
+const originalProcessOrder = window.processOrder;
+if (originalProcessOrder) {
+    window.processOrder = async function(...args) {
+        const result = await originalProcessOrder.apply(this, args);
+        
+        // If order successful, deduct stock for each item
+        if (result && result.id) {
+            const orderItems = args[2] || (args[4] ? [JSON.parse(localStorage.getItem('buyNowItem'))] : JSON.parse(localStorage.getItem('cart') || '[]'));
+            
+            for (const item of orderItems || []) {
+                if (item.id) {
+                    await deductStock(item.id);
+                }
+            }
+        }
+        
+        return result;
+    };
+}
+
+// Pre-checkout stock validation
+const originalHandlePlaceOrderWithPayment = window.handlePlaceOrderWithPayment;
+if (originalHandlePlaceOrderWithPayment) {
+    window.handlePlaceOrderWithPayment = async function(isBuyNow) {
+        // Check stock before proceeding
+        const items = isBuyNow ? [JSON.parse(localStorage.getItem('buyNowItem') || '{}')] : JSON.parse(localStorage.getItem('cart') || '[]');
+        
+        for (const item of items) {
+            if (item.id) {
+                const stock = await checkStock(item.id);
+                if (stock <= 0) {
+                    alert(`${item.name || 'This product'} is currently out of stock.`);
+                    return false;
+                }
+            }
+        }
+        
+        return originalHandlePlaceOrderWithPayment.call(this, isBuyNow);
+    };
+}
+
+// Initialize
+function initStock() {
     setupStockRealtime();
     
-    // Check stock for all visible products
-    document.querySelectorAll('[data-product-id]').forEach(async (card) => {
-        const productId = card.dataset.productId;
-        if (productId) {
-            const stock = await checkStock(productId);
-            updateStockUI(productId, stock);
-        }
-    });
+    // Check initial stock for visible products
+    setTimeout(() => {
+        document.querySelectorAll('[data-product-id]').forEach(async card => {
+            const id = card.dataset.productId;
+            if (id) updateStockUI(id, await checkStock(id));
+        });
+    }, 1000);
 }
 
-// Override existing buyNow function to include stock deduction
-const originalBuyNow = window.buyNow;
-window.buyNow = async function(productId) {
-    const stock = await checkStock(productId);
-    if (stock <= 0) {
-        alert('Sorry, this product is out of stock!');
-        return;
-    }
-    
-    // Proceed with original buy now logic
-    if (originalBuyNow) {
-        const result = await originalBuyNow(productId);
-        // Deduct stock after successful purchase
-        if (result !== false) {
-            await deductStock(productId);
-        }
-        return result;
-    }
-};
-
-// Initialize when DOM is ready
+// Auto-initialize
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initStockManager);
+    document.addEventListener('DOMContentLoaded', initStock);
 } else {
-    initStockManager();
+    initStock();
 }
+
+// Make functions global
+window.checkStock = checkStock;
+window.deductStock = deductStock;
+window.updateStockUI = updateStockUI;
