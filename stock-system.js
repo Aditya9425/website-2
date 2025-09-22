@@ -121,6 +121,23 @@ window.addEventListener('orderPlaced', () => {
     }, 2000);
 });
 
+// Debug: Log when the event listener is set up
+console.log('🔍 Stock system loaded - listening for orderPlaced events');
+
+// Additional trigger - check for order success in console logs
+const originalLog = console.log;
+console.log = function(...args) {
+    originalLog.apply(console, args);
+    
+    // Check if this is the order saved log
+    if (args[0] === 'Order saved to Supabase successfully:' && args[1] && args[1].id) {
+        console.log('🎯 Detected order save in console, triggering stock deduction...');
+        setTimeout(() => {
+            window.deductStockForLastOrder();
+        }, 1000);
+    }
+};
+
 // Update UI for out of stock products
 window.updateStockUI = async function() {
     try {
