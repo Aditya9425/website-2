@@ -56,28 +56,45 @@ window.updateStockUI = async function() {
     }
 };
 
-// Override saveOrderToDatabase to include stock deduction
-const originalSaveOrder = window.saveOrderToDatabase;
-window.saveOrderToDatabase = async function(order) {
-    try {
-        console.log('💾 Saving order and deducting stock...');
+// Hook into processOrder function directly
+if (typeof window.processOrder === 'function') {
+    const originalProcessOrder = window.processOrder;
+    window.processOrder = async function(total, paymentMethod, orderItems = null, isBuyNow = false, paymentId = null) {
+        console.log('🛒 Processing order with stock deduction...');
         
-        // Save order first
-        const savedOrder = await originalSaveOrder(order);
+        const result = await originalProcessOrder(total, paymentMethod, orderItems, isBuyNow, paymentId);
         
-        // Deduct stock for each item
-        if (savedOrder && order.items) {
-            for (const item of order.items) {
+        if (result && result.items) {
+            console.log('📦 Deducting stock for order items:', result.items);
+            for (const item of result.items) {
                 await window.deductStock(item.id, item.quantity);
             }
         }
         
-        return savedOrder;
-    } catch (error) {
-        console.error('Error in enhanced saveOrderToDatabase:', error);
-        throw error;
+        return result;
+    };
+}
+
+// Also hook into saveOrderToDatabase as backup
+setTimeout(() => {
+    if (typeof window.saveOrderToDatabase === 'function') {
+        const originalSaveOrder = window.saveOrderToDatabase;
+        window.saveOrderToDatabase = async function(order) {
+            console.log('💾 Saving order with stock deduction...');
+            
+            const savedOrder = await originalSaveOrder(order);
+            
+            if (savedOrder && order.items) {
+                console.log('📦 Deducting stock after save:', order.items);
+                for (const item of order.items) {
+                    await window.deductStock(item.id, item.quantity);
+                }
+            }
+            
+            return savedOrder;
+        };
     }
-};
+}, 1000);
 
 // Load stock UI when page loads
 document.addEventListener('DOMContentLoaded', () => {
