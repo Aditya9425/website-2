@@ -1,0 +1,168 @@
+/* Mobile Navigation Fix for All Pages */
+
+/* Desktop - hide mobile menu toggle */
+@media (min-width: 769px) {
+    .mobile-menu-toggle {
+        display: none !important;
+    }
+    
+    .nav-links {
+        display: flex !important;
+    }
+}
+
+/* Mobile Navigation Fixes */
+@media (max-width: 768px) {
+    /* Ensure hamburger menu is closed by default on mobile */
+    .nav-links {
+        display: none !important; /* Closed by default */
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border-top: 1px solid #eee;
+        z-index: 999;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        border-radius: 0 0 12px 12px;
+    }
+    
+    /* Show navigation when active */
+    .nav-links.active {
+        display: flex !important;
+        flex-direction: column;
+        padding: 15px 0;
+        gap: 5px;
+    }
+    
+    /* Style nav links for mobile */
+    .nav-links .nav-link {
+        padding: 12px 20px;
+        border-radius: 8px;
+        margin: 0 10px;
+        text-align: center;
+        font-size: 14px;
+        color: #666;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+    
+    .nav-links .nav-link:hover {
+        background: rgba(255,107,107,0.1);
+        color: #FF6B6B;
+    }
+    
+    /* Add hamburger menu toggle button */
+    .mobile-menu-toggle {
+        display: block !important;
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        color: #333;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+        order: 3;
+    }
+    
+    .mobile-menu-toggle:hover {
+        background: rgba(255,107,107,0.1);
+        color: #FF6B6B;
+    }
+    
+    /* Prevent menu from overlapping with content */
+    .profile-main-content,
+    .main-content,
+    .cart-main,
+    .collections-main,
+    .product-main,
+    .address-main,
+    .checkout-main {
+        margin-top: 20px;
+        position: relative;
+        z-index: 1;
+    }
+    
+    /* Ensure proper stacking order */
+    .header {
+        z-index: 1000;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+    }
+    
+    .nav-links.active {
+        z-index: 999;
+    }
+    
+    /* Fix navbar layout on mobile */
+    .navbar {
+        flex-wrap: wrap;
+        position: relative;
+        padding: 12px 15px;
+    }
+    
+    .nav-brand {
+        order: 1;
+        flex: 1;
+    }
+    
+    .nav-actions {
+        order: 2;
+        gap: 10px;
+        flex-shrink: 0;
+    }
+    
+    .mobile-menu-toggle {
+        order: 3;
+        flex-shrink: 0;
+    }
+    
+    .nav-links {
+        order: 4;
+        width: 100%;
+        margin-top: 10px;
+    }
+    
+    /* Adjust body padding for fixed header */
+    body {
+        padding-top: 80px;
+    }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+    .navbar {
+        padding: 10px 12px;
+    }
+    
+    .nav-links {
+        padding: 10px 0;
+    }
+    
+    .nav-links .nav-link {
+        padding: 10px 15px;
+        font-size: 14px;
+    }
+    
+    .mobile-menu-toggle {
+        font-size: 1.3rem;
+        padding: 6px;
+    }
+    
+    .logo-text {
+        font-size: 1rem;
+    }
+    
+    .logo-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 0.9rem;
+    }
+    
+    body {
+        padding-top: 70px;
+    }
+}

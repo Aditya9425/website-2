@@ -632,10 +632,11 @@ body {
     height: 100%;
     background: rgba(0, 0, 0, 0.5);
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     z-index: 2000;
     padding: 20px;
+    overflow-y: auto;
 }
 
 .modal-content {
@@ -646,11 +647,12 @@ body {
     max-height: 90vh;
     overflow-y: auto;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    margin: 20px auto;
 }
 
 .product-modal {
-    max-width: 800px;
-    max-height: 95vh;
+    max-width: 700px;
+    max-height: 85vh;
 }
 
 .modal-header {
@@ -683,7 +685,9 @@ body {
 
 /* Product Form */
 .product-form {
-    padding: 30px;
+    padding: 0;
+    max-height: 70vh;
+    overflow-y: auto;
 }
 
 .form-row {
@@ -1967,4 +1971,49 @@ body {
     .analytics-table {
         font-size: 0.75rem;
     }
+}
+/* Form Section Styles */
+.form-section {
+    padding: 20px 25px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.form-section:last-child {
+    border-bottom: none;
+}
+
+.section-header {
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f8f9fa;
+}
+
+.section-header h4 {
+    margin: 0 0 5px 0;
+    color: #333;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.section-header h4 i {
+    color: #3498db;
+}
+
+.section-header small {
+    color: #666;
+    font-size: 0.85rem;
+}
+
+/* Modal Actions Fixed */
+.modal-actions {
+    position: sticky;
+    bottom: 0;
+    background: #f8f9fa;
+    padding: 20px 25px;
+    border-top: 1px solid #e1e5e9;
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
 }

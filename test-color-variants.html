@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Color Variants</title>
+    <link rel="stylesheet" href="color-variants.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body style="padding: 20px; font-family: Arial, sans-serif;">
+    <h1>Color Variants Test</h1>
+    
+    <h2>Test Product with Color Variants</h2>
+    <div style="border: 1px solid #ddd; padding: 20px; margin: 20px 0; border-radius: 8px;">
+        <h3>Silk Banarasi Saree</h3>
+        <p>Price: ₹15,000</p>
+        
+        <!-- Test Color Palette -->
+        <div class="color-palette">
+            <span class="color-label">Colors:</span>
+            <div class="color-dots">
+                <div class="color-dot" 
+                     style="background-color: #FF0000; cursor: pointer; border: 2px solid #ddd; border-radius: 50%; width: 20px; height: 20px; display: inline-block; margin: 2px;" 
+                     title="Red"
+                     onclick="alert('Red variant clicked!')">
+                </div>
+                <div class="color-dot" 
+                     style="background-color: #0000FF; cursor: pointer; border: 2px solid #ddd; border-radius: 50%; width: 20px; height: 20px; display: inline-block; margin: 2px;" 
+                     title="Blue"
+                     onclick="alert('Blue variant clicked!')">
+                </div>
+                <div class="color-dot" 
+                     style="background-color: #008000; cursor: pointer; border: 2px solid #ddd; border-radius: 50%; width: 20px; height: 20px; display: inline-block; margin: 2px;" 
+                     title="Green"
+                     onclick="alert('Green variant clicked!')">
+                </div>
+            </div>
+        </div>
+        
+        <button onclick="alert('Add to Cart clicked!')" style="background: #FF6B6B; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin-top: 10px;">
+            Add to Cart
+        </button>
+    </div>
+    
+    <h2>Admin Panel Color Variant Form Test</h2>
+    <div style="border: 1px solid #ddd; padding: 20px; margin: 20px 0; border-radius: 8px;">
+        <div class="color-variant-card">
+            <div class="variant-header">
+                <div class="variant-title">
+                    <i class="fas fa-circle" style="color: #FF0000;"></i>
+                    <span>Color Variant 1 - Red</span>
+                </div>
+                <button type="button" class="remove-variant-btn" onclick="alert('Remove variant clicked!')">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+            <div class="variant-content">
+                <div class="variant-basic-info">
+                    <div class="form-group">
+                        <label>Color Name</label>
+                        <input type="text" placeholder="e.g., Red, Blue, Green" class="color-name" value="Red" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Color Code</label>
+                        <input type="color" class="color-picker" value="#FF0000">
+                    </div>
+                </div>
+                <div class="variant-images">
+                    <label style="font-weight: 600; margin-bottom: 10px; display: block;">Images for this color variant</label>
+                    <div class="color-image-inputs">
+                        <label style="font-weight: 500; margin-bottom: 8px; display: block; color: #666;">Add new images:</label>
+                        <div class="color-image-input-item">
+                            <div class="file-input-wrapper">
+                                <input type="file" accept="image/*" class="color-image-input">
+                                <div class="file-input-label">
+                                    <i class="fas fa-image"></i>
+                                    <span>Choose Image</span>
+                                </div>
+                            </div>
+                            <button type="button" class="remove-color-image-btn" onclick="alert('Remove image clicked!')" style="display: none;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="button" class="add-color-image-btn" onclick="alert('Add image clicked!')" style="margin-top: 10px;">
+                        <i class="fas fa-plus"></i> Add Another Image
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <p><strong>Instructions:</strong></p>
+    <ul>
+        <li>Click on the color dots to test color variant functionality</li>
+        <li>Hover over color dots to see hover effects</li>
+        <li>Test the admin panel form elements</li>
+        <li>Check if file input styling works properly</li>
+    </ul>
+</body>
+</html>

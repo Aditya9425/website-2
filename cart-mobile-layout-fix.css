@@ -1,66 +1,47 @@
-/* Cart Mobile Optimization - UI Only */
+/* Cart Mobile Layout Fix - Specific Requirements */
 
-/* Remove extra blank space above navbar */
-body {
-    margin: 0;
-    padding-top: 0;
-}
-
-.header {
-    margin-top: 0;
-}
-
-/* Full screen viewport for mobile */
+/* Mobile-specific cart item layout */
 @media (max-width: 768px) {
-    html {
-        width: 100%;
-        height: 100%;
+    /* Remove extra space above navbar */
+    body {
+        margin: 0;
+        padding-top: 70px;
     }
     
-    body {
+    /* Full screen viewport */
+    html, body {
         width: 100%;
         overflow-x: hidden;
-        margin: 0;
-        padding: 70px 0 0 0;
-        min-height: 100vh;
     }
     
-    .container {
-        width: 100%;
-        max-width: 100%;
-        padding: 0 10px;
-    }
-    
-    /* Ensure full screen display */
-    .cart-main {
-        width: 100%;
-        min-height: calc(100vh - 70px);
-    }
-    
-    /* Mobile cart item layout */
+    /* Cart item mobile layout: image left, controls right */
     .cart-item {
-        display: flex;
+        display: flex !important;
         align-items: flex-start;
         padding: 15px;
         margin-bottom: 15px;
         background: white;
         border-radius: 8px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        border: none;
         gap: 15px;
     }
     
     /* Product image on the left */
     .cart-item-image {
-        width: 80px;
-        height: 80px;
+        width: 80px !important;
+        height: 80px !important;
         object-fit: cover;
         border-radius: 6px;
         flex-shrink: 0;
+        order: 1;
     }
     
-    /* Right side content */
-    .cart-item-details {
+    /* Content area */
+    .cart-item-details,
+    .cart-item-info {
         flex: 1;
+        order: 2;
         display: flex;
         flex-direction: column;
     }
@@ -79,78 +60,99 @@ body {
         margin-bottom: 10px;
     }
     
-    /* Quantity controls on right side */
+    /* Right side controls */
+    .cart-item-controls,
     .cart-item-actions {
+        order: 3;
         display: flex;
         flex-direction: column;
-        align-items: flex-start;
+        align-items: flex-end;
         gap: 8px;
+        flex-shrink: 0;
     }
     
+    /* Quantity controls (+ and - buttons) */
     .quantity-controls {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 8px;
         background: #f8f9fa;
         border-radius: 20px;
-        padding: 5px;
+        padding: 4px;
+        order: 1;
     }
     
-    .quantity-controls button {
-        width: 30px;
-        height: 30px;
+    .quantity-btn,
+    .qty-decrease,
+    .qty-increase {
+        width: 28px !important;
+        height: 28px !important;
         border: none;
         background: #FF6B6B;
         color: white;
         border-radius: 50%;
-        font-size: 16px;
+        font-size: 14px;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
+        font-weight: bold;
     }
     
     .quantity-input {
-        width: 40px;
+        width: 35px;
         text-align: center;
         border: none;
         background: transparent;
         font-size: 14px;
         font-weight: 600;
+        color: #333;
     }
     
     /* Remove button below quantity controls */
-    .remove-btn {
-        background: #dc3545;
-        color: white;
+    .remove-btn,
+    .remove-item-btn {
+        background: #dc3545 !important;
+        color: white !important;
         border: none;
         padding: 6px 12px;
         border-radius: 15px;
-        font-size: 12px;
+        font-size: 11px;
         cursor: pointer;
         display: flex;
         align-items: center;
-        gap: 5px;
+        gap: 4px;
+        order: 2;
+        margin-top: 5px;
     }
     
-    /* Hide all coupon sections completely on mobile */
+    /* Cart item total */
+    .cart-item-total {
+        font-size: 14px;
+        font-weight: bold;
+        color: #333;
+        margin-top: 5px;
+        order: 3;
+    }
+    
+    /* Hide coupon sections completely */
     .coupon-section,
     .coupon-input,
     .coupon-tags,
     .apply-coupon-btn,
-    [class*="coupon"],
-    .available-coupons {
+    .available-coupons,
+    [class*="coupon"] {
         display: none !important;
     }
     
-    /* Fix Instagram logo position in footer - center it below Follow Us text */
+    /* Mobile footer fix - center Instagram logo */
     footer div[style*="grid-template-columns"] {
         grid-template-columns: 1fr !important;
         text-align: center;
         gap: 20px !important;
     }
     
-    footer div[style*="grid-template-columns"] > div:last-child {
+    footer div[style*="grid-template-columns"] > div {
         text-align: center;
     }
     
@@ -163,42 +165,52 @@ body {
         justify-content: center !important;
         margin-top: 10px;
     }
+    
+    /* Cart content mobile layout */
+    .cart-content {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .cart-items {
+        order: 1;
+    }
+    
+    .cart-summary {
+        order: 2;
+        position: static;
+    }
 }
 
-/* Ensure laptop layout remains unaffected */
+/* Ensure desktop layout is preserved */
 @media (min-width: 769px) {
-    /* Keep original desktop layout */
+    /* Keep original desktop grid layout */
     .cart-item {
-        display: grid;
+        display: grid !important;
         grid-template-columns: 100px 1fr auto;
         gap: 20px;
         padding: 20px 0;
         border-bottom: 1px solid #e0e0e0;
     }
     
-    .cart-item-actions {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
-    
-    .quantity-controls {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    
-    /* Keep coupon sections visible on desktop */
+    /* Show coupon sections on desktop */
     .coupon-section,
     .coupon-input,
     .coupon-tags,
-    .apply-coupon-btn {
+    .apply-coupon-btn,
+    .available-coupons {
         display: block !important;
     }
     
-    /* Keep original footer layout on desktop */
+    /* Keep original footer layout */
     footer div[style*="grid-template-columns"] {
         grid-template-columns: 2fr 1fr 1fr 1fr !important;
+        text-align: left;
+    }
+    
+    footer div[style*="grid-template-columns"] > div:last-child {
+        text-align: left;
     }
     
     footer div[style*="grid-template-columns"] > div:last-child div[style*="display: flex"] {

@@ -1,0 +1,303 @@
+/* Analytics Section - Enhanced Colors */
+
+/* Analytics-specific color palette */
+:root {
+    /* Chart Colors */
+    --chart-blue: #3b82f6;
+    --chart-green: #10b981;
+    --chart-purple: #8b5cf6;
+    --chart-orange: #f59e0b;
+    --chart-red: #ef4444;
+    --chart-pink: #ec4899;
+    --chart-cyan: #06b6d4;
+    --chart-indigo: #6366f1;
+    --chart-teal: #14b8a6;
+    --chart-lime: #84cc16;
+    
+    /* Gradient backgrounds for analytics cards */
+    --analytics-gradient-1: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+    --analytics-gradient-2: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%);
+    --analytics-gradient-3: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(239, 68, 68, 0.1) 100%);
+    --analytics-gradient-4: linear-gradient(135deg, rgba(236, 72, 153, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%);
+}
+
+/* Analytics Section Enhancements */
+#analyticsSection .analytics-section {
+    position: relative;
+    overflow: hidden;
+}
+
+#analyticsSection .analytics-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--chart-blue), var(--chart-green), var(--chart-purple), var(--chart-orange));
+}
+
+/* Sales Analytics */
+#analyticsSection .analytics-section:nth-child(2) {
+    background: var(--analytics-gradient-1);
+    border-color: rgba(59, 130, 246, 0.2);
+}
+
+#analyticsSection .analytics-section:nth-child(2) h3 {
+    color: var(--chart-blue);
+}
+
+/* Customer Analytics */
+#analyticsSection .analytics-section:nth-child(3) {
+    background: var(--analytics-gradient-2);
+    border-color: rgba(16, 185, 129, 0.2);
+}
+
+#analyticsSection .analytics-section:nth-child(3) h3 {
+    color: var(--chart-green);
+}
+
+/* Product Analytics */
+#analyticsSection .analytics-section:nth-child(4) {
+    background: var(--analytics-gradient-3);
+    border-color: rgba(245, 158, 11, 0.2);
+}
+
+#analyticsSection .analytics-section:nth-child(4) h3 {
+    color: var(--chart-orange);
+}
+
+/* Marketing Analytics */
+#analyticsSection .analytics-section:nth-child(5) {
+    background: var(--analytics-gradient-4);
+    border-color: rgba(236, 72, 153, 0.2);
+}
+
+#analyticsSection .analytics-section:nth-child(5) h3 {
+    color: var(--chart-pink);
+}
+
+/* Chart Cards in Analytics */
+#analyticsSection .chart-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+#analyticsSection .chart-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Chart Card Headers with Colors */
+#analyticsSection .chart-card:nth-child(1) h4 {
+    color: var(--chart-blue);
+    border-bottom: 2px solid var(--chart-blue);
+    padding-bottom: 0.5rem;
+}
+
+#analyticsSection .chart-card:nth-child(2) h4 {
+    color: var(--chart-green);
+    border-bottom: 2px solid var(--chart-green);
+    padding-bottom: 0.5rem;
+}
+
+#analyticsSection .chart-card:nth-child(3) h4 {
+    color: var(--chart-purple);
+    border-bottom: 2px solid var(--chart-purple);
+    padding-bottom: 0.5rem;
+}
+
+#analyticsSection .chart-card:nth-child(4) h4 {
+    color: var(--chart-orange);
+    border-bottom: 2px solid var(--chart-orange);
+    padding-bottom: 0.5rem;
+}
+
+/* Table Cards in Analytics */
+#analyticsSection .table-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#analyticsSection .table-card h4 {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Analytics Table Enhancements */
+#analyticsSection .analytics-table th {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+#analyticsSection .analytics-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Analytics Filters */
+#analyticsSection .analytics-filters {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+#analyticsSection .filter-select {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-primary);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+}
+
+/* Chart Canvas Styling */
+#analyticsSection canvas {
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+/* Analytics Icons */
+#analyticsSection .analytics-section h3 i {
+    margin-right: 0.5rem;
+    padding: 0.5rem;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Sales Analytics Icons */
+#analyticsSection .analytics-section:nth-child(2) h3 i {
+    background: rgba(59, 130, 246, 0.2);
+    color: var(--chart-blue);
+}
+
+/* Customer Analytics Icons */
+#analyticsSection .analytics-section:nth-child(3) h3 i {
+    background: rgba(16, 185, 129, 0.2);
+    color: var(--chart-green);
+}
+
+/* Product Analytics Icons */
+#analyticsSection .analytics-section:nth-child(4) h3 i {
+    background: rgba(245, 158, 11, 0.2);
+    color: var(--chart-orange);
+}
+
+/* Marketing Analytics Icons */
+#analyticsSection .analytics-section:nth-child(5) h3 i {
+    background: rgba(236, 72, 153, 0.2);
+    color: var(--chart-pink);
+}
+
+/* Responsive Analytics Colors */
+@media (max-width: 768px) {
+    #analyticsSection .analytics-section {
+        margin-bottom: 1rem;
+    }
+    
+    #analyticsSection .chart-card {
+        padding: 1rem;
+    }
+}
+
+/* Chart.js Color Overrides */
+.chartjs-tooltip {
+    background: var(--bg-secondary) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Custom Chart Legend */
+.chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1rem;
+    justify-content: center;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+}
+
+/* Analytics Stats Cards */
+#analyticsSection .stats-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+#analyticsSection .stats-card:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Performance Indicators */
+.performance-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+}
+
+.performance-up {
+    background: rgba(16, 185, 129, 0.2);
+    color: var(--chart-green);
+}
+
+.performance-down {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--chart-red);
+}
+
+.performance-neutral {
+    background: rgba(107, 114, 128, 0.2);
+    color: var(--text-secondary);
+}
+
+/* Chart Container Enhancements */
+.chart-container-wrapper {
+    position: relative;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.chart-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.chart-subtitle {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}

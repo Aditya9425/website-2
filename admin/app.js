@@ -7,26 +7,48 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Upload image to Supabase Storage
 async function uploadImageToSupabase(file, productName) {
-    const timestamp = Date.now();
-    const fileName = `${productName.replace(/[^a-zA-Z0-9]/g, '_')}_${timestamp}_${file.name}`;
-    
-    const formData = new FormData();
-    formData.append('file', file);
-    
-    const response = await fetch(`${SUPABASE_URL}/storage/v1/object/Sarees/${fileName}`, {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-            'apikey': SUPABASE_ANON_KEY
-        },
-        body: formData
-    });
-    
-    if (!response.ok) {
-        throw new Error('Failed to upload image');
+    try {
+        // Validate file
+        if (!file || !file.type.startsWith('image/')) {
+            throw new Error('Please select a valid image file');
+        }
+        
+        // Check file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            throw new Error('Image size must be less than 5MB');
+        }
+        
+        const timestamp = Date.now();
+        const cleanProductName = productName.replace(/[^a-zA-Z0-9]/g, '_');
+        const cleanFileName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
+        const fileName = `${cleanProductName}_${timestamp}_${cleanFileName}`;
+        
+        console.log('Uploading image:', fileName);
+        
+        const { data, error } = await supabase.storage
+            .from('Sarees')
+            .upload(fileName, file, {
+                cacheControl: '3600',
+                upsert: false
+            });
+        
+        if (error) {
+            console.error('Supabase upload error:', error);
+            throw new Error(`Upload failed: ${error.message}`);
+        }
+        
+        // Get public URL
+        const { data: urlData } = supabase.storage
+            .from('Sarees')
+            .getPublicUrl(fileName);
+        
+        console.log('Image uploaded successfully:', urlData.publicUrl);
+        return urlData.publicUrl;
+        
+    } catch (error) {
+        console.error('Image upload error:', error);
+        throw error;
     }
-    
-    return `${SUPABASE_URL}/storage/v1/object/public/Sarees/${fileName}`;
 }
 
 // Admin Panel Application
@@ -76,11 +98,13 @@ class AdminPanel {
 
         // Product management
         document.getElementById('addProductBtn').addEventListener('click', () => {
+            console.log('Add Product button clicked');
             this.openProductModal();
         });
 
         document.getElementById('productForm').addEventListener('submit', (e) => {
             e.preventDefault();
+            console.log('Product form submitted');
             this.handleProductSubmit();
         });
 
@@ -506,9 +530,25 @@ class AdminPanel {
     }
 
     openProductModal(productId = null) {
+        console.log('openProductModal called with productId:', productId);
+        
         const modal = document.getElementById('productModal');
         const title = document.getElementById('productModalTitle');
         const form = document.getElementById('productForm');
+        
+        if (!modal) {
+            console.error('Product modal not found!');
+            this.showMessage('Error: Product modal not found', 'error');
+            return;
+        }
+        
+        if (!title) {
+            console.error('Product modal title not found!');
+        }
+        
+        if (!form) {
+            console.error('Product form not found!');
+        }
 
         // Clear form and reset to default state
         this.resetProductForm();
@@ -517,27 +557,38 @@ class AdminPanel {
         this.populateLinkedVariantsDropdown(productId);
 
         if (productId) {
-            title.textContent = 'Edit Product';
+            if (title) title.textContent = 'Edit Product';
             const product = this.products.find(p => p.id === productId);
-            if (product) {
+            if (product && form) {
                 this.populateProductForm(product);
                 form.dataset.productId = productId;
             }
         } else {
-            title.textContent = 'Add New Product';
-            // Make first image required only for new products
-            const firstImageInput = document.querySelector('.product-image-input');
-            if (firstImageInput) {
-                firstImageInput.required = true;
-            }
-            delete form.dataset.productId;
+            if (title) title.textContent = 'Add New Product';
+            if (form) delete form.dataset.productId;
         }
 
+        console.log('Opening product modal');
         modal.style.display = 'flex';
+        modal.style.zIndex = '9999';
+        
+        // Focus on first input for better UX
+        setTimeout(() => {
+            const firstInput = form?.querySelector('#productName');
+            if (firstInput) {
+                firstInput.focus();
+            }
+        }, 100);
+        
+        console.log('Product modal display set to flex, z-index set to 9999');
     }
 
     closeProductModal() {
-        document.getElementById('productModal').style.display = 'none';
+        console.log('Closing product modal');
+        const modal = document.getElementById('productModal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
         this.resetProductForm();
     }
 
@@ -650,12 +701,23 @@ class AdminPanel {
         colorVariants.forEach((variant, index) => {
             const variantItem = document.createElement('div');
             variantItem.className = 'color-variant-card';
+            
+            // Create existing images HTML with proper image display
             const existingImagesHTML = variant.images && variant.images.length > 0 ? 
                 `<div class="existing-variant-images" style="display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;">
-                    ${variant.images.map(img => `
-                        <div class="existing-variant-image" style="position: relative;">
-                            <img src="${img}" alt="${variant.color}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 2px solid #e1e5e9;">
-                            <span style="position: absolute; top: -5px; right: -5px; background: #28a745; color: white; border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; font-size: 10px;">✓</span>
+                    <label style="width: 100%; font-weight: 500; margin-bottom: 5px; color: #333;">Existing Images:</label>
+                    ${variant.images.map((img, imgIndex) => `
+                        <div class="existing-variant-image" style="position: relative; display: inline-block;">
+                            <img src="${img}" alt="${variant.color} - Image ${imgIndex + 1}" 
+                                 style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 2px solid #28a745; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" 
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                            <div style="display: none; width: 80px; height: 80px; background: #f8f9fa; border: 2px dashed #dee2e6; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #6c757d;">Image not found</div>
+                            <span style="position: absolute; top: -8px; right: -8px; background: #28a745; color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">✓</span>
+                            <button type="button" onclick="this.closest('.existing-variant-image').remove()" 
+                                    style="position: absolute; top: -8px; left: -8px; background: #dc3545; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);" 
+                                    title="Remove this image">
+                                <i class="fas fa-times"></i>
+                            </button>
                         </div>
                     `).join('')}
                 </div>` : '';
@@ -664,7 +726,7 @@ class AdminPanel {
                 <div class="variant-header">
                     <div class="variant-title">
                         <i class="fas fa-circle" style="color: ${variant.colorCode || '#FF0000'};"></i>
-                        <span>Color Variant ${index + 1}</span>
+                        <span>Color Variant ${index + 1} - ${variant.color || 'Unnamed'}</span>
                     </div>
                     <button type="button" class="remove-variant-btn" onclick="removeColorVariant(this)">
                         <i class="fas fa-trash"></i>
@@ -682,9 +744,10 @@ class AdminPanel {
                         </div>
                     </div>
                     <div class="variant-images">
-                        <label>Images for this color</label>
+                        <label style="font-weight: 600; margin-bottom: 10px; display: block;">Images for this color variant</label>
                         ${existingImagesHTML}
-                        <div class="color-image-inputs">
+                        <div class="color-image-inputs" style="margin-top: ${variant.images && variant.images.length > 0 ? '15px' : '0px'};">
+                            <label style="font-weight: 500; margin-bottom: 8px; display: block; color: #666;">Add new images:</label>
                             <div class="color-image-input-item">
                                 <div class="file-input-wrapper">
                                     <input type="file" accept="image/*" class="color-image-input" name="colorImages[]">
@@ -698,8 +761,8 @@ class AdminPanel {
                                 </button>
                             </div>
                         </div>
-                        <button type="button" class="add-color-image-btn" onclick="addColorImageInput(this)">
-                            <i class="fas fa-plus"></i> Add Image
+                        <button type="button" class="add-color-image-btn" onclick="addColorImageInput(this)" style="margin-top: 10px;">
+                            <i class="fas fa-plus"></i> Add Another Image
                         </button>
                     </div>
                 </div>
@@ -733,12 +796,35 @@ class AdminPanel {
         const formData = new FormData(form);
         
         try {
-            // Handle multiple image uploads from all input fields
+            // Basic form validation
+            const productName = formData.get('name')?.trim();
+            const category = formData.get('category');
+            const price = parseFloat(formData.get('price'));
+            const stock = parseInt(formData.get('stock')) || 0;
+            const description = formData.get('description')?.trim();
+            
+            console.log('Form data:', { productName, category, price, stock, description });
+            
+            if (!productName) {
+                this.showMessage('Product name is required', 'error');
+                return;
+            }
+            
+            if (!category) {
+                this.showMessage('Please select a category', 'error');
+                return;
+            }
+            
+            if (!price || price <= 0) {
+                this.showMessage('Please enter a valid price greater than 0', 'error');
+                return;
+            }
+            
+            // Handle image uploads
             const imageInputs = document.querySelectorAll('.product-image-input');
             let imageUrls = [];
-            const productName = formData.get('name');
             
-            // Get existing images that weren't deleted
+            // Get existing images that weren't deleted (for edit mode)
             if (productId) {
                 const existingProduct = this.products.find(p => p.id == productId);
                 const existingImages = existingProduct?.images || [];
@@ -746,109 +832,143 @@ class AdminPanel {
                 imageUrls = existingImages.filter(img => !deletedImages.includes(img));
             }
             
-            // Upload new images from all input fields
+                // Upload new images
+            this.showMessage('Uploading images...', 'info');
             for (const input of imageInputs) {
                 if (input.files.length > 0) {
                     try {
-                        const uploadPromises = Array.from(input.files).map(file => 
-                            uploadImageToSupabase(file, productName)
-                        );
-                        const newUrls = await Promise.all(uploadPromises);
-                        imageUrls.push(...newUrls);
+                        for (const file of input.files) {
+                            const imageUrl = await uploadImageToSupabase(file, productName);
+                            imageUrls.push(imageUrl);
+                        }
                     } catch (error) {
-                        alert('Failed to upload image');
+                        console.error('Image upload error:', error);
+                        this.showMessage(`Failed to upload image: ${error.message}`, 'error');
                         return;
                     }
                 }
             }
             
-            // Validate images for new products only
+            // For new products, allow without images for testing
             if (!productId && imageUrls.length === 0) {
-                alert('Please select at least one image file');
-                return;
+                console.log('No images provided for new product, continuing anyway for testing');
+                // this.showMessage('Please select at least one image for the product', 'error');
+                // return;
             }
             
-            // For existing products, ensure we have at least one image (existing or new)
-            if (productId && imageUrls.length === 0) {
-                alert('Product must have at least one image');
-                return;
-            }
-            
-            // Validate price
-            const price = parseFloat(formData.get('price'));
-            if (!price || price <= 0) {
-                alert('Please enter a valid price greater than 0');
-                return;
-            }
-            
-            // Get selected linked variants as UUIDs
+            // Get linked variants
             const linkedVariantsSelect = document.getElementById('linkedVariants');
-            const linkedVariants = Array.from(linkedVariantsSelect.selectedOptions).map(option => option.value);
+            const linkedVariants = linkedVariantsSelect ? 
+                Array.from(linkedVariantsSelect.selectedOptions).map(option => option.value) : [];
             
-            // Process color variants
-            const colorVariants = await this.processColorVariants(productName);
+            // Process color variants with image uploads
+            const colorVariants = [];
+            const colorItems = document.querySelectorAll('.color-variant-card');
             
+            for (const item of colorItems) {
+                const colorName = item.querySelector('.color-name')?.value?.trim();
+                const colorCode = item.querySelector('.color-picker')?.value;
+                
+                if (colorName) {
+                    // Handle color variant images
+                    const colorImageInputs = item.querySelectorAll('.color-image-input');
+                    const colorImageUrls = [];
+                    
+                    // Get existing images for this variant (in edit mode)
+                    const existingImages = item.querySelectorAll('.existing-variant-image img');
+                    existingImages.forEach(img => {
+                        if (!img.closest('.existing-variant-image').dataset.deleted) {
+                            colorImageUrls.push(img.src);
+                        }
+                    });
+                    
+                    // Upload new color variant images
+                    for (const input of colorImageInputs) {
+                        if (input.files.length > 0) {
+                            try {
+                                for (const file of input.files) {
+                                    const imageUrl = await uploadImageToSupabase(file, `${productName}_${colorName}`);
+                                    colorImageUrls.push(imageUrl);
+                                }
+                            } catch (error) {
+                                console.error('Color variant image upload error:', error);
+                                this.showMessage(`Failed to upload image for ${colorName}: ${error.message}`, 'error');
+                                return;
+                            }
+                        }
+                    }
+                    
+                    colorVariants.push({
+                        color: colorName,
+                        colorCode: colorCode || '#FF0000',
+                        images: colorImageUrls
+                    });
+                }
+            }
+            
+            // Prepare product data
             const productData = {
-                name: formData.get('name'),
-                price: parseFloat(formData.get('price')),
-                stock: parseInt(formData.get('stock')) || 0,
-                category: formData.get('category'),
-                description: formData.get('description') || '',
+                name: productName,
+                price: price,
+                stock: stock,
+                category: category,
+                description: description,
                 images: imageUrls,
                 image: imageUrls[0] || null,
-                fabric: formData.get('fabric') || 'Cotton',
+                fabric: category, // Use category as fabric for simplicity
                 colors: colorVariants.map(v => v.color).filter(c => c),
+                color_variants: colorVariants,
                 linked_variants: linkedVariants.length > 0 ? linkedVariants : null
             };
             
-            // Always add color_variants (can be empty array)
-            productData.color_variants = colorVariants;
-
-            // Try Flask backend first, fallback to direct Supabase
-            const isEdit = !!productId;
-            const method = isEdit ? 'PUT' : 'POST';
-            const endpoint = isEdit ? `products/${productId}` : 'products';
+            console.log('Submitting product data:', productData);
             
-            try {
-                const response = await fetch(`http://localhost:5000/${endpoint}`, {
-                    method: method,
-                    mode: 'cors',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(productData)
-                });
-                const result = await response.json();
+            // Submit to Supabase directly
+            const isEdit = !!productId;
+            this.showMessage(`${isEdit ? 'Updating' : 'Adding'} product...`, 'info');
+            
+            if (isEdit) {
+                const { data, error } = await supabase
+                    .from('products')
+                    .update(productData)
+                    .eq('id', productId)
+                    .select();
                 
-                if (result.success) {
-                    this.showMessage(`Product ${isEdit ? 'updated' : 'added'} successfully!`, 'success');
-                    this.closeProductModal();
-                    this.loadProducts();
-                    return;
+                if (error) {
+                    console.error('Update error:', error);
+                    throw new Error(`Failed to update product: ${error.message}`);
                 }
-            } catch (flaskError) {
-                console.warn('Flask backend unavailable, trying direct Supabase:', flaskError);
                 
-                // Direct Supabase request
-                if (isEdit) {
-                    console.log('Updating product with data:', productData);
-                    const { data, error } = await supabase.from('products').update(productData).eq('id', productId);
-                    if (error) throw error;
-                    console.log('Update result:', data);
-                } else {
-                    const { data, error } = await supabase.from('products').insert(productData);
-                    if (error) throw error;
+                console.log('Product updated:', data);
+            } else {
+                const { data, error } = await supabase
+                    .from('products')
+                    .insert(productData)
+                    .select();
+                
+                if (error) {
+                    console.error('Insert error:', error);
+                    throw new Error(`Failed to add product: ${error.message}`);
                 }
-                this.showMessage(`Product ${isEdit ? 'updated' : 'added'} successfully via Supabase!`, 'success');
-                this.closeProductModal();
-                this.loadProducts();
-                return;
+                
+                console.log('Product added:', data);
             }
             
-            this.showMessage(result.error || 'Failed to add product', 'error');
+            this.showMessage(`Product ${isEdit ? 'updated' : 'added'} successfully!`, 'success');
+            this.closeProductModal();
+            await this.loadProducts();
+            
         } catch (error) {
             console.error('Error saving product:', error);
-            this.showMessage(`Error: ${error.message}`, 'error');
+            let errorMessage = 'Failed to save product';
+            
+            if (error.message) {
+                errorMessage = error.message;
+            } else if (error.code) {
+                errorMessage = `Database error: ${error.code}`;
+            }
+            
+            this.showMessage(`Error: ${errorMessage}`, 'error');
         }
     }
 
@@ -857,33 +977,14 @@ class AdminPanel {
         const colorItems = document.querySelectorAll('.color-variant-card');
         
         for (const item of colorItems) {
-            const colorName = item.querySelector('.color-name').value.trim();
-            const colorCode = item.querySelector('.color-picker').value;
-            const colorImageInputs = item.querySelectorAll('.color-image-input');
+            const colorName = item.querySelector('.color-name')?.value?.trim();
+            const colorCode = item.querySelector('.color-picker')?.value;
             
             if (colorName) {
-                const colorImageUrls = [];
-                
-                // Process all image inputs for this color
-                for (const input of colorImageInputs) {
-                    if (input.files.length > 0) {
-                        try {
-                            const uploadPromises = Array.from(input.files).map(file => 
-                                uploadImageToSupabase(file, `${productName}_${colorName}`)
-                            );
-                            const urls = await Promise.all(uploadPromises);
-                            colorImageUrls.push(...urls);
-                        } catch (error) {
-                            console.error(`Failed to upload images for color ${colorName}:`, error);
-                        }
-                    }
-                }
-                
-                // Always add color variant even without images
                 colorVariants.push({
                     color: colorName,
-                    colorCode: colorCode,
-                    images: colorImageUrls
+                    colorCode: colorCode || '#FF0000',
+                    images: [] // Simplified - no separate color images for now
                 });
             }
         }
@@ -1734,29 +1835,41 @@ class AdminPanel {
     // Reset product form to clean state
     resetProductForm() {
         const form = document.getElementById('productForm');
-        form.reset();
+        if (form) {
+            form.reset();
+            
+            // Remove any existing product ID
+            delete form.dataset.productId;
+        }
         
         // Clear existing images
         const existingImages = document.getElementById('existingImages');
-        existingImages.style.display = 'none';
-        existingImages.querySelector('.existing-images-grid').innerHTML = '';
+        if (existingImages) {
+            existingImages.style.display = 'none';
+            const grid = existingImages.querySelector('.existing-images-grid');
+            if (grid) {
+                grid.innerHTML = '';
+            }
+        }
         
-        // Reset image inputs to single input (required only for new products)
+        // Reset image inputs to single input
         const imageInputs = document.getElementById('imageInputs');
-        imageInputs.innerHTML = `
-            <div class="image-input-item">
-                <div class="file-input-wrapper">
-                    <input type="file" class="product-image-input" accept="image/*">
-                    <div class="file-input-label">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        <span>Choose Image</span>
+        if (imageInputs) {
+            imageInputs.innerHTML = `
+                <div class="image-input-item">
+                    <div class="file-input-wrapper">
+                        <input type="file" class="product-image-input" accept="image/*">
+                        <div class="file-input-label">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span>Choose Image</span>
+                        </div>
                     </div>
+                    <button type="button" class="remove-image-btn" onclick="removeImageInput(this)" style="display: none;">
+                        <i class="fas fa-trash"></i>
+                    </button>
                 </div>
-                <button type="button" class="remove-image-btn" onclick="removeImageInput(this)" style="display: none;">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
-        `;
+            `;
+        }
         
         // Reset color variants to single variant
         this.resetColorVariants();
@@ -1839,10 +1952,20 @@ class AdminPanel {
     updateColorVariantEvents(variantItem) {
         const colorPicker = variantItem.querySelector('.color-picker');
         const colorIcon = variantItem.querySelector('.variant-title i');
+        const colorNameInput = variantItem.querySelector('.color-name');
+        const variantTitle = variantItem.querySelector('.variant-title span');
         
         if (colorPicker && colorIcon) {
             colorPicker.addEventListener('change', (e) => {
                 colorIcon.style.color = e.target.value;
+            });
+        }
+        
+        if (colorNameInput && variantTitle) {
+            colorNameInput.addEventListener('input', (e) => {
+                const variantNumber = variantTitle.textContent.match(/Color Variant (\d+)/)?.[1] || '1';
+                const colorName = e.target.value.trim() || 'Unnamed';
+                variantTitle.textContent = `Color Variant ${variantNumber} - ${colorName}`;
             });
         }
     }

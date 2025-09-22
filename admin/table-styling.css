@@ -1,0 +1,34 @@
+/* Dashboard Recent Orders Table - Black Background */
+#dashboardSection .recent-orders,
+#dashboardSection .chart-container {
+    background: #000000 !important;
+    color: #ffffff !important;
+}
+
+#dashboardSection .recent-orders * {
+    color: #ffffff !important;
+}
+
+/* Analytics Detailed Orders Table - Black Background */
+#analyticsSection .table-card,
+#analyticsSection .analytics-table {
+    background: #000000 !important;
+    color: #ffffff !important;
+}
+
+#analyticsSection .table-card h4 {
+    background: #000000 !important;
+    color: #ffffff !important;
+    border-bottom: 1px solid #333333 !important;
+}
+
+#analyticsSection .analytics-table th,
+#analyticsSection .analytics-table td {
+    background: #000000 !important;
+    color: #ffffff !important;
+    border-bottom: 1px solid #333333 !important;
+}
+
+#analyticsSection .analytics-table tbody tr:hover {
+    background: #1a1a1a !important;
+}

@@ -1,0 +1,70 @@
+/* Add Products Modal Layout Improvements */
+
+/* Reduce modal width and add proper margins */
+.product-modal {
+    max-width: 700px !important;
+    margin: 2rem auto !important;
+    width: calc(100% - 4rem) !important;
+}
+
+/* Better form section spacing */
+.product-form .form-section {
+    padding: 1.5rem 2.5rem;
+}
+
+/* Improved form row layout */
+.product-form .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Better form group spacing */
+.product-form .form-group {
+    margin-bottom: 1.5rem;
+}
+
+/* Modal actions with better padding */
+.product-form .modal-actions {
+    padding: 1.5rem 2.5rem;
+    margin: 0;
+}
+
+/* Color variant cards with improved spacing */
+.color-variant-card {
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+}
+
+/* Variant content spacing */
+.variant-content {
+    padding: 1rem 0;
+}
+
+/* Image inputs container spacing */
+.image-inputs-container {
+    gap: 1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .product-modal {
+        max-width: calc(100% - 2rem) !important;
+        margin: 1rem !important;
+        width: auto !important;
+    }
+    
+    .product-form .form-section {
+        padding: 1rem 1.5rem;
+    }
+    
+    .product-form .form-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .product-form .modal-actions {
+        padding: 1rem 1.5rem;
+    }
+}

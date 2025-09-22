@@ -466,13 +466,61 @@ function closeOrderDetails() {
     }
 }
 
+// Mobile Menu Toggle Functionality
+function toggleMobileMenu() {
+    const navLinks = document.getElementById('navLinks');
+    const menuToggle = document.getElementById('mobileMenuToggle');
+    
+    if (navLinks && menuToggle) {
+        if (navLinks.classList.contains('active')) {
+            navLinks.classList.remove('active');
+            menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+        } else {
+            navLinks.classList.add('active');
+            menuToggle.innerHTML = '<i class="fas fa-times"></i>';
+        }
+    }
+}
+
+// Close mobile menu when clicking outside
+function initializeMobileMenu() {
+    document.addEventListener('click', (e) => {
+        const navLinks = document.getElementById('navLinks');
+        const menuToggle = document.getElementById('mobileMenuToggle');
+        const navbar = document.querySelector('.navbar');
+        
+        if (navLinks && menuToggle && navbar) {
+            if (!navbar.contains(e.target) && navLinks.classList.contains('active')) {
+                navLinks.classList.remove('active');
+                menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+            }
+        }
+    });
+    
+    // Close menu on nav link clicks
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', () => {
+            const navLinks = document.getElementById('navLinks');
+            const menuToggle = document.getElementById('mobileMenuToggle');
+            if (navLinks && menuToggle) {
+                navLinks.classList.remove('active');
+                menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+            }
+        });
+    });
+}
+
 // Make functions globally available
 window.viewOrderDetails = viewOrderDetails;
 window.closeOrderDetails = closeOrderDetails;
+window.toggleMobileMenu = toggleMobileMenu;
 
 // Initialize profile page
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Profile page DOM loaded');
+    
+    // Initialize mobile menu
+    initializeMobileMenu();
     
     if (!checkAuth()) {
         console.log('Authentication failed, redirecting...');

@@ -1564,6 +1564,28 @@ window.changeModalMainImage = changeModalMainImage;
 // Generate color palette for products
 function generateColorPalette(product) {
     if (!product.color_variants || product.color_variants.length === 0) {
+        // Fallback to regular colors if no color variants
+        if (product.colors && product.colors.length > 0) {
+            const colorDots = product.colors.map(color => {
+                const colorCode = getColorCode(color.toLowerCase());
+                return `
+                    <div class="color-dot" 
+                         style="background-color: ${colorCode}; cursor: pointer;" 
+                         title="${color}"
+                         onclick="event.stopPropagation(); openColorVariant('${product.id}', '${color}')">
+                    </div>
+                `;
+            }).join('');
+            
+            return `
+                <div class="color-palette">
+                    <span class="color-label">Colors:</span>
+                    <div class="color-dots">
+                        ${colorDots}
+                    </div>
+                </div>
+            `;
+        }
         return '';
     }
     
@@ -1572,7 +1594,7 @@ function generateColorPalette(product) {
         
         return `
             <div class="color-dot" 
-                 style="background-color: ${colorCode}" 
+                 style="background-color: ${colorCode}; cursor: pointer; border: 2px solid #ddd; border-radius: 50%; width: 20px; height: 20px; display: inline-block; margin: 2px;" 
                  title="${variant.color}"
                  onclick="event.stopPropagation(); openColorVariant('${product.id}', '${variant.color}')">
             </div>
@@ -1582,7 +1604,7 @@ function generateColorPalette(product) {
     return `
         <div class="color-palette">
             <span class="color-label">Colors:</span>
-            <div class="color-dots">
+            <div class="color-dots" style="display: inline-flex; gap: 4px; align-items: center;">
                 ${colorDots}
             </div>
         </div>
@@ -1623,6 +1645,28 @@ function getColorCode(colorName) {
 // Open color variant
 function openColorVariant(productId, color, variantImage) {
     console.log('Opening color variant:', productId, color, variantImage);
+    
+    // Find the product and its color variant
+    const product = products.find(p => p.id == productId);
+    if (!product) {
+        console.error('Product not found:', productId);
+        return;
+    }
+    
+    // Check if color variants exist
+    if (!product.color_variants || product.color_variants.length === 0) {
+        console.log('No color variants available, opening regular product page');
+        window.location.href = `product.html?id=${productId}`;
+        return;
+    }
+    
+    // Find the specific color variant
+    const colorVariant = product.color_variants.find(v => v.color === color);
+    if (!colorVariant) {
+        console.log('Color variant not found, opening regular product page');
+        window.location.href = `product.html?id=${productId}`;
+        return;
+    }
     
     // Navigate to product page with color parameter
     window.location.href = `product.html?id=${productId}&color=${encodeURIComponent(color)}`;
@@ -1712,12 +1756,10 @@ function toggleMobileMenu() {
     const menuToggle = document.getElementById('mobileMenuToggle');
     
     if (navLinks && menuToggle) {
-        if (navLinks.style.display === 'flex') {
-            navLinks.style.display = 'none';
+        if (navLinks.classList.contains('active')) {
             navLinks.classList.remove('active');
             menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
         } else {
-            navLinks.style.display = 'flex';
             navLinks.classList.add('active');
             menuToggle.innerHTML = '<i class="fas fa-times"></i>';
         }
@@ -1732,11 +1774,9 @@ function closeMobileMenuOnNavClick() {
     
     navLinks.forEach(link => {
         link.addEventListener('click', () => {
-            if (window.innerWidth <= 768) {
+            if (window.innerWidth <= 768 && navLinksContainer && menuToggle) {
                 navLinksContainer.classList.remove('active');
-                if (menuToggle) {
-                    menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
-                }
+                menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
             }
         });
     });
