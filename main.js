@@ -165,6 +165,10 @@ function loadFeaturedProducts() {
                         <div class="stars">${generateStars(product.rating)}</div>
                         <span>${product.rating} (${product.reviews})</span>
                     </div>
+                    <div class="product-actions">
+                        <button class="action-btn add-to-cart-btn" onclick="event.stopPropagation(); addToCart(${product.id}); window.location.href='cart.html';">Add to Cart</button>
+                        <button class="action-btn buy-now-btn" onclick="event.stopPropagation(); buyNow(${product.id});">Buy Now</button>
+                    </div>
                 </div>
             </div>
         `;
@@ -479,11 +483,11 @@ function displayProducts(productsToDisplay) {
                 <div class="product-image-container">
                     <img src="${imageUrl}" alt="${product.name}" class="product-image">
                     <div class="product-actions">
-                        <button class="action-btn view-btn" onclick="window.location.href='product.html?id=${product.id}'">
-                            <i class="fas fa-eye"></i>
+                        <button class="action-btn add-to-cart-btn" onclick="addToCart('${product.id}'); window.location.href='cart.html'; event.stopPropagation();">
+                            Add to Cart
                         </button>
-                        <button class="action-btn cart-btn" onclick="addToCart('${product.id}'); event.stopPropagation();">
-                            <i class="fas fa-shopping-cart"></i>
+                        <button class="action-btn buy-now-btn" onclick="buyNow('${product.id}'); event.stopPropagation();">
+                            Buy Now
                         </button>
                     </div>
                 </div>
@@ -552,11 +556,11 @@ function displayProducts(productsToDisplay) {
                                 <div class="product-image-container">
                                     <img src="${imageUrl}" alt="${product.name}" class="product-image">
                                     <div class="product-actions">
-                                        <button class="action-btn view-btn" onclick="window.location.href='product.html?id=${product.id}'">
-                                            <i class="fas fa-eye"></i>
+                                        <button class="action-btn add-to-cart-btn" onclick="addToCart('${product.id}'); window.location.href='cart.html'; event.stopPropagation();">
+                                            Add to Cart
                                         </button>
-                                        <button class="action-btn cart-btn" onclick="addToCart('${product.id}'); event.stopPropagation();">
-                                            <i class="fas fa-shopping-cart"></i>
+                                        <button class="action-btn buy-now-btn" onclick="buyNow('${product.id}'); event.stopPropagation();">
+                                            Buy Now
                                         </button>
                                     </div>
                                 </div>
