@@ -432,6 +432,154 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// Display products on collections page
+function displayProducts(productsToDisplay) {
+    const productsGrid = document.getElementById('productsGrid');
+    if (!productsGrid) return;
+    
+    // Get category from URL if present
+    const urlParams = new URLSearchParams(window.location.search);
+    const categoryParam = urlParams.get('category');
+    
+    // Filter products by category if specified
+    let filteredProducts = productsToDisplay;
+    if (categoryParam && categoryParam !== 'all') {
+        filteredProducts = productsToDisplay.filter(p => p.category === categoryParam);
+        
+        // Update category filter buttons
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        filterButtons.forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.dataset.category === categoryParam) {
+                btn.classList.add('active');
+            }
+        });
+        
+        // Update page header
+        const pageHeader = document.querySelector('.page-header h1');
+        if (pageHeader) {
+            const categoryName = categoryParam.charAt(0).toUpperCase() + categoryParam.slice(1);
+            pageHeader.textContent = categoryName + ' Sarees';
+        }
+    }
+    
+    // Generate HTML for products
+    productsGrid.innerHTML = filteredProducts.map(product => {
+        let imageUrl;
+        if (product.image && product.image.startsWith('http')) {
+            imageUrl = product.image;
+        } else if (product.image) {
+            imageUrl = `https://jstvadizuzvwhabtfhfs.supabase.co/storage/v1/object/public/Sarees/${product.image}`;
+        } else {
+            imageUrl = `https://via.placeholder.com/350x450/FF6B6B/FFFFFF?text=${encodeURIComponent(product.name)}`;
+        }
+        
+        return `
+            <div class="product-card" data-product-id="${product.id}" data-category="${product.category}">
+                <div class="product-image-container">
+                    <img src="${imageUrl}" alt="${product.name}" class="product-image">
+                    <div class="product-actions">
+                        <button class="action-btn view-btn" onclick="window.location.href='product.html?id=${product.id}'">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="action-btn cart-btn" onclick="addToCart('${product.id}'); event.stopPropagation();">
+                            <i class="fas fa-shopping-cart"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="product-info">
+                    <h3 class="product-name">${product.name}</h3>
+                    <div class="product-price">
+                        <span class="current-price">₹${product.price.toLocaleString()}</span>
+                        ${product.originalPrice ? `<span class="original-price">₹${product.originalPrice.toLocaleString()}</span>` : ''}
+                    </div>
+                    <div class="product-rating">
+                        <div class="stars">${generateStars(product.rating)}</div>
+                        <span>${product.rating} (${product.reviews})</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    // Add click event to product cards
+    document.querySelectorAll('.product-card').forEach(card => {
+        card.addEventListener('click', () => {
+            const productId = card.dataset.productId;
+            window.location.href = `product.html?id=${productId}`;
+        });
+    });
+    
+    // Add filter functionality
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const category = button.dataset.category;
+            
+            // Update active button
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            
+            // Update page header
+            const pageHeader = document.querySelector('.page-header h1');
+            if (pageHeader) {
+                if (category === 'all') {
+                    pageHeader.textContent = 'All Sarees';
+                } else {
+                    const categoryName = category.charAt(0).toUpperCase() + category.slice(1);
+                    pageHeader.textContent = categoryName + ' Sarees';
+                }
+            }
+            
+            // Filter products
+            if (category === 'all') {
+                displayProducts(productsToDisplay);
+            } else {
+                const filtered = productsToDisplay.filter(p => p.category === category);
+                productsGrid.innerHTML = filtered.length > 0 
+                    ? filtered.map(product => {
+                        let imageUrl;
+                        if (product.image && product.image.startsWith('http')) {
+                            imageUrl = product.image;
+                        } else if (product.image) {
+                            imageUrl = `https://jstvadizuzvwhabtfhfs.supabase.co/storage/v1/object/public/Sarees/${product.image}`;
+                        } else {
+                            imageUrl = `https://via.placeholder.com/350x450/FF6B6B/FFFFFF?text=${encodeURIComponent(product.name)}`;
+                        }
+                        
+                        return `
+                            <div class="product-card" data-product-id="${product.id}" data-category="${product.category}">
+                                <div class="product-image-container">
+                                    <img src="${imageUrl}" alt="${product.name}" class="product-image">
+                                    <div class="product-actions">
+                                        <button class="action-btn view-btn" onclick="window.location.href='product.html?id=${product.id}'">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="action-btn cart-btn" onclick="addToCart('${product.id}'); event.stopPropagation();">
+                                            <i class="fas fa-shopping-cart"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="product-info">
+                                    <h3 class="product-name">${product.name}</h3>
+                                    <div class="product-price">
+                                        <span class="current-price">₹${product.price.toLocaleString()}</span>
+                                        ${product.originalPrice ? `<span class="original-price">₹${product.originalPrice.toLocaleString()}</span>` : ''}
+                                    </div>
+                                    <div class="product-rating">
+                                        <div class="stars">${generateStars(product.rating)}</div>
+                                        <span>${product.rating} (${product.reviews})</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')
+                    : '<div class="no-products">No products found in this category.</div>';
+            }
+        });
+    });
+}
+
 // Make functions globally available
 window.openFeedbackForm = openFeedbackForm;
 window.closeFeedbackModal = closeFeedbackModal;
@@ -442,3 +590,4 @@ window.removeFromCart = removeFromCart;
 window.clearCart = clearCart;
 window.buyNow = buyNow;
 window.logout = logout;
+window.displayProducts = displayProducts;
