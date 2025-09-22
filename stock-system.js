@@ -134,7 +134,50 @@ class StockManager {
 // Initialize stock manager
 const stockManager = new StockManager();
 
-// Hook into existing order processing
+// Direct stock deduction function
+window.deductProductStock = async function(productId, quantity) {
+    try {
+        console.log(`Deducting stock: Product ${productId}, Quantity ${quantity}`);
+        
+        // First get current stock
+        const { data: currentData, error: fetchError } = await stockManager.supabase
+            .from('products')
+            .select('stock')
+            .eq('id', productId)
+            .single();
+        
+        if (fetchError) {
+            console.error('Error fetching current stock:', fetchError);
+            return false;
+        }
+        
+        const currentStock = currentData.stock || 0;
+        const newStock = Math.max(0, currentStock - quantity);
+        
+        console.log(`Current stock: ${currentStock}, New stock: ${newStock}`);
+        
+        // Update stock
+        const { data, error } = await stockManager.supabase
+            .from('products')
+            .update({ stock: newStock })
+            .eq('id', productId)
+            .select('stock')
+            .single();
+        
+        if (error) {
+            console.error('Stock update error:', error);
+            return false;
+        }
+        
+        console.log(`Stock successfully updated for product ${productId}:`, data);
+        return true;
+    } catch (error) {
+        console.error('Error deducting stock:', error);
+        return false;
+    }
+};
+
+// Hook into existing order processing with direct SQL
 const originalProcessOrder = window.processOrder;
 window.processOrder = async function(total, paymentMethod, orderItems = null, isBuyNow = false, paymentId = null) {
     try {
@@ -142,13 +185,10 @@ window.processOrder = async function(total, paymentMethod, orderItems = null, is
         const order = await originalProcessOrder(total, paymentMethod, orderItems, isBuyNow, paymentId);
         
         if (order && order.items) {
-            // Deduct stock for each item
+            console.log('Order processed, deducting stock for items:', order.items);
+            // Deduct stock for each item using direct SQL
             for (const item of order.items) {
-                try {
-                    await stockManager.deductStock(item.id, item.quantity);
-                } catch (error) {
-                    console.error(`Failed to deduct stock for product ${item.id}:`, error);
-                }
+                await window.deductProductStock(item.id, item.quantity);
             }
         }
         
