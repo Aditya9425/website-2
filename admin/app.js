@@ -236,7 +236,8 @@ class AdminPanel {
             products: 'Product Management',
             orders: 'Order Management',
             customers: 'Customer Management',
-            analytics: 'Analytics & Reports'
+            analytics: 'Analytics & Reports',
+            feedback: 'Customer Feedback'
         };
         pageTitle.textContent = titles[section] || 'Dashboard';
 
@@ -260,6 +261,9 @@ class AdminPanel {
                 break;
             case 'analytics':
                 await this.loadAnalytics();
+                break;
+            case 'feedback':
+                await this.loadFeedback();
                 break;
         }
     }

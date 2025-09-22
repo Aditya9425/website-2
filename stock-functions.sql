@@ -13,7 +13,6 @@ END;
 $$;
 
 -- SQL function to update stock (for admin)
-DROP FUNCTION IF EXISTS update_stock(bigint, integer);
 CREATE OR REPLACE FUNCTION update_stock(product_id bigint, new_stock integer)
 RETURNS boolean
 LANGUAGE plpgsql

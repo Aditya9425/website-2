@@ -917,10 +917,13 @@ function handlePlaceOrder() {
     alert('Please use the Place Order button on the checkout page.');
 }
 
-// Save order to database
+// Save order to database with RLS support
 async function saveOrderToDatabase(order) {
     try {
         console.log('💾 Saving order to Supabase:', order);
+        
+        // Get authenticated client
+        const client = window.authManager ? window.authManager.getAuthenticatedClient() : supabase;
         
         // Prepare order data for Supabase (UUID will be auto-generated)
         const orderData = {
@@ -935,7 +938,7 @@ async function saveOrderToDatabase(order) {
         console.log('📤 Inserting order data:', orderData);
         
         // Save to Supabase and get the generated UUID
-        const { data, error } = await supabase
+        const { data, error } = await client
             .from('orders')
             .insert([orderData])
             .select('id, created_at, *')
@@ -2011,3 +2014,71 @@ function displayProducts(productsToShow) {
         attachAddToCartListeners();
     }
 }
+// Feedback Modal Functions
+function openFeedbackModal() {
+    const modal = document.getElementById('feedbackModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeFeedbackModal() {
+    const modal = document.getElementById('feedbackModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+        // Clear the form
+        const form = document.getElementById('feedbackForm');
+        if (form) {
+            form.reset();
+        }
+    }
+}
+
+// Handle feedback form submission
+async function handleFeedbackSubmit(event) {
+    event.preventDefault();
+    
+    const feedbackText = document.getElementById('feedbackText').value.trim();
+    
+    if (!feedbackText) {
+        alert('Please enter your feedback before submitting.');
+        return;
+    }
+    
+    const submitBtn = event.target.querySelector('.submit-btn');
+    const originalText = submitBtn.innerHTML;
+    
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+    
+    try {
+        const { data, error } = await supabase
+            .from('feedbacks')
+            .insert([{ message: feedbackText }]);
+        
+        if (error) throw error;
+        
+        alert('Thank you for your feedback! We appreciate your input and will use it to improve our website.');
+        closeFeedbackModal();
+    } catch (error) {
+        console.error('Error saving feedback:', error);
+        alert('Sorry, there was an error submitting your feedback. Please try again.');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    }
+}
+
+// Make functions globally available
+window.openFeedbackModal = openFeedbackModal;
+window.closeFeedbackModal = closeFeedbackModal;
+
+// Add event listener for feedback form when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    const feedbackForm = document.getElementById('feedbackForm');
+    if (feedbackForm) {
+        feedbackForm.addEventListener('submit', handleFeedbackSubmit);
+    }
+});
