@@ -208,6 +208,9 @@ class PaymentManager {
             
             console.log('Order saved to Supabase successfully:', data);
             
+            // Trigger stock deduction event
+            window.dispatchEvent(new Event('orderPlaced'));
+            
             // Also save to localStorage as backup
             const orders = JSON.parse(localStorage.getItem('orders') || '[]');
             orders.push(order);
