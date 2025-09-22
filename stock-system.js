@@ -224,9 +224,75 @@ window.createTestOrder = async function() {
     }
 };
 
+// Hook into processOrder function for immediate stock deduction
+const originalProcessOrder = window.processOrder;
+if (originalProcessOrder) {
+    window.processOrder = async function(...args) {
+        console.log('🎯 processOrder called, will deduct stock after order save');
+        const result = await originalProcessOrder.apply(this, args);
+        
+        if (result && result.id) {
+            console.log('🔄 Order saved successfully, deducting stock for order:', result.id);
+            setTimeout(async () => {
+                try {
+                    const { data: order } = await stockSupabase
+                        .from('orders')
+                        .select('*')
+                        .eq('id', result.id)
+                        .single();
+                    
+                    if (order && order.items) {
+                        for (const item of order.items) {
+                            await window.deductStock(item.id, item.quantity);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error in automatic stock deduction:', error);
+                }
+            }, 500);
+        }
+        
+        return result;
+    };
+}
+
 // Load stock UI when page loads
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         window.updateStockUI();
+        
+        // Try to hook processOrder if it loads later
+        setTimeout(() => {
+            if (window.processOrder && !window.processOrder.toString().includes('deduct stock')) {
+                const originalProcessOrder = window.processOrder;
+                window.processOrder = async function(...args) {
+                    console.log('🎯 processOrder called (late hook), will deduct stock after order save');
+                    const result = await originalProcessOrder.apply(this, args);
+                    
+                    if (result && result.id) {
+                        console.log('🔄 Order saved successfully, deducting stock for order:', result.id);
+                        setTimeout(async () => {
+                            try {
+                                const { data: order } = await stockSupabase
+                                    .from('orders')
+                                    .select('*')
+                                    .eq('id', result.id)
+                                    .single();
+                                
+                                if (order && order.items) {
+                                    for (const item of order.items) {
+                                        await window.deductStock(item.id, item.quantity);
+                                    }
+                                }
+                            } catch (error) {
+                                console.error('Error in automatic stock deduction:', error);
+                            }
+                        }, 500);
+                    }
+                    
+                    return result;
+                };
+            }
+        }, 3000);
     }, 2000);
 });
