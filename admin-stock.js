@@ -1,97 +1,85 @@
 // Admin Stock Management
-
-// Update stock from admin
-async function updateProductStock(productId, newStock) {
-    try {
-        const { data } = await supabase.rpc('update_stock', {
-            product_id: productId,
-            new_stock: newStock
-        });
-        return data?.success || false;
-    } catch {
-        return false;
+class AdminStockManager {
+    constructor() {
+        this.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        this.loadProducts();
+        this.setupRealTimeUpdates();
     }
-}
 
-// Get products with stock
-async function getProductsWithStock() {
-    try {
-        const { data } = await supabase.from('products').select('id, name, stock, price').order('id');
-        return data || [];
-    } catch {
-        return [];
-    }
-}
-
-// Setup admin table
-async function setupAdminStockTable() {
-    const products = await getProductsWithStock();
-    const tableBody = document.getElementById('stockTableBody');
-    
-    if (!tableBody) return;
-    
-    tableBody.innerHTML = products.map(p => `
-        <tr data-product-id="${p.id}" ${p.stock <= 0 ? 'style="background:#ffe6e6;color:#dc3545;"' : ''}>
-            <td>${p.id}</td>
-            <td>${p.name}</td>
-            <td><strong>${p.stock}</strong></td>
-            <td>₹${p.price.toLocaleString()}</td>
-            <td>
-                <input type="number" min="0" value="${p.stock}" 
-                       onchange="updateStock(${p.id}, this.value)" 
-                       style="width:80px;padding:5px;border:1px solid #ddd;border-radius:4px;">
-            </td>
-        </tr>
-    `).join('');
-}
-
-// Update stock from admin
-async function updateStock(productId, newStock) {
-    const success = await updateProductStock(productId, parseInt(newStock));
-    
-    if (success) {
-        const row = document.querySelector(`tr[data-product-id="${productId}"]`);
-        if (row) {
-            row.children[2].innerHTML = `<strong>${newStock}</strong>`;
+    async loadProducts() {
+        try {
+            const { data, error } = await this.supabase
+                .from('products')
+                .select('id, name, stock, price')
+                .order('name');
             
-            if (newStock <= 0) {
-                row.style.cssText = 'background:#ffe6e6;color:#dc3545;';
-            } else {
-                row.style.cssText = '';
-            }
+            if (error) throw error;
+            this.displayProducts(data);
+        } catch (error) {
+            console.error('Error loading products:', error);
         }
-        alert('Stock updated successfully!');
-    } else {
-        alert('Failed to update stock.');
     }
-}
 
-// Setup realtime for admin
-function setupAdminRealtime() {
-    supabase.channel('admin-stock').on('postgres_changes', {
-        event: 'UPDATE', schema: 'public', table: 'products'
-    }, payload => {
-        const { id, stock } = payload.new;
-        const row = document.querySelector(`tr[data-product-id="${id}"]`);
+    displayProducts(products) {
+        const container = document.getElementById('stockTable');
+        if (!container) return;
+
+        container.innerHTML = products.map(product => `
+            <tr>
+                <td>${product.id}</td>
+                <td>${product.name}</td>
+                <td>₹${product.price.toLocaleString()}</td>
+                <td class="stock-cell ${product.stock <= 0 ? 'out-of-stock' : product.stock <= 5 ? 'low-stock' : ''}">
+                    ${product.stock}
+                </td>
+                <td>
+                    <input type="number" min="0" value="${product.stock}" 
+                           id="stock-${product.id}" class="stock-input">
+                    <button onclick="adminStock.updateStock(${product.id})" class="update-btn">
+                        Update
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    async updateStock(productId) {
+        const input = document.getElementById(`stock-${productId}`);
+        const newStock = parseInt(input.value);
         
-        if (row) {
-            row.children[2].innerHTML = `<strong>${stock}</strong>`;
-            row.querySelector('input').value = stock;
-            
-            if (stock <= 0) {
-                row.style.cssText = 'background:#ffe6e6;color:#dc3545;';
-            } else {
-                row.style.cssText = '';
-            }
+        if (isNaN(newStock) || newStock < 0) {
+            alert('Please enter a valid stock quantity');
+            return;
         }
-    }).subscribe();
+
+        try {
+            const { error } = await this.supabase.rpc('update_stock', {
+                product_id: productId,
+                new_stock: newStock
+            });
+            
+            if (error) throw error;
+            
+            showNotification('Stock updated successfully!', 'success');
+            this.loadProducts(); // Refresh the table
+        } catch (error) {
+            console.error('Error updating stock:', error);
+            showNotification('Failed to update stock', 'error');
+        }
+    }
+
+    setupRealTimeUpdates() {
+        this.supabase
+            .channel('admin-stock-updates')
+            .on('postgres_changes', 
+                { event: 'UPDATE', schema: 'public', table: 'products' },
+                () => {
+                    this.loadProducts(); // Refresh when stock changes
+                }
+            )
+            .subscribe();
+    }
 }
 
-// Initialize admin
-function initAdminStock() {
-    setupAdminStockTable();
-    setupAdminRealtime();
-}
-
-window.updateStock = updateStock;
-window.initAdminStock = initAdminStock;
+// Initialize admin stock manager
+const adminStock = new AdminStockManager();
