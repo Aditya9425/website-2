@@ -75,17 +75,37 @@ if (typeof window.processOrder === 'function') {
     };
 }
 
-// Also hook into saveOrderToDatabase as backup
+// Hook into payment integration saveOrder function
 setTimeout(() => {
+    // Check if payment-integration.js has loaded
+    if (typeof window.saveOrder === 'function') {
+        const originalSaveOrder = window.saveOrder;
+        window.saveOrder = async function(orderData) {
+            console.log('💾 Payment integration - saving order with stock deduction...');
+            
+            const savedOrder = await originalSaveOrder(orderData);
+            
+            if (savedOrder && orderData.items) {
+                console.log('📦 Deducting stock for payment order:', orderData.items);
+                for (const item of orderData.items) {
+                    await window.deductStock(item.id, item.quantity);
+                }
+            }
+            
+            return savedOrder;
+        };
+    }
+    
+    // Also try the main.js saveOrderToDatabase
     if (typeof window.saveOrderToDatabase === 'function') {
         const originalSaveOrder = window.saveOrderToDatabase;
         window.saveOrderToDatabase = async function(order) {
-            console.log('💾 Saving order with stock deduction...');
+            console.log('💾 Main.js - saving order with stock deduction...');
             
             const savedOrder = await originalSaveOrder(order);
             
             if (savedOrder && order.items) {
-                console.log('📦 Deducting stock after save:', order.items);
+                console.log('📦 Deducting stock after main save:', order.items);
                 for (const item of order.items) {
                     await window.deductStock(item.id, item.quantity);
                 }
@@ -94,7 +114,7 @@ setTimeout(() => {
             return savedOrder;
         };
     }
-}, 1000);
+}, 2000);
 
 // Load stock UI when page loads
 document.addEventListener('DOMContentLoaded', () => {
