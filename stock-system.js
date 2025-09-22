@@ -1,207 +1,87 @@
-// Stock Management System
-class StockManager {
-    constructor() {
-        this.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        this.initializeStockUpdates();
-    }
-
-    // Check stock for a product
-    async checkStock(productId) {
-        try {
-            const { data, error } = await this.supabase
-                .from('products')
-                .select('stock')
-                .eq('id', productId)
-                .single();
-            
-            if (error) throw error;
-            return data?.stock || 0;
-        } catch (error) {
-            console.error('Error checking stock:', error);
-            return 0;
-        }
-    }
-
-    // Deduct stock after successful order
-    async deductStock(productId, quantity) {
-        try {
-            const { data, error } = await this.supabase.rpc('deduct_stock', {
-                product_id: productId,
-                quantity_to_deduct: quantity
-            });
-            
-            if (error) throw error;
-            return data;
-        } catch (error) {
-            console.error('Error deducting stock:', error);
-            throw error;
-        }
-    }
-
-    // Update UI based on stock status
-    updateProductUI(productId, stock) {
-        const productCards = document.querySelectorAll(`[data-product-id="${productId}"]`);
-        
-        productCards.forEach(card => {
-            const addToCartBtn = card.querySelector('.add-to-cart, .add-to-cart-btn');
-            const buyNowBtn = card.querySelector('.buy-now-btn');
-            
-            if (stock <= 0) {
-                // Out of stock
-                if (addToCartBtn) {
-                    addToCartBtn.disabled = true;
-                    addToCartBtn.textContent = 'Out of Stock';
-                    addToCartBtn.style.backgroundColor = '#ccc';
-                }
-                if (buyNowBtn) {
-                    buyNowBtn.disabled = true;
-                    buyNowBtn.textContent = 'Out of Stock';
-                    buyNowBtn.style.backgroundColor = '#ccc';
-                }
-                
-                // Add out of stock badge
-                if (!card.querySelector('.stock-badge')) {
-                    const badge = document.createElement('div');
-                    badge.className = 'stock-badge out-of-stock';
-                    badge.textContent = 'Out of Stock';
-                    badge.style.cssText = `
-                        position: absolute;
-                        top: 10px;
-                        right: 10px;
-                        background: #dc3545;
-                        color: white;
-                        padding: 4px 8px;
-                        border-radius: 4px;
-                        font-size: 12px;
-                        font-weight: bold;
-                        z-index: 2;
-                    `;
-                    card.style.position = 'relative';
-                    card.appendChild(badge);
-                }
-            } else {
-                // In stock
-                if (addToCartBtn) {
-                    addToCartBtn.disabled = false;
-                    addToCartBtn.textContent = 'Add to Cart';
-                    addToCartBtn.style.backgroundColor = '';
-                }
-                if (buyNowBtn) {
-                    buyNowBtn.disabled = false;
-                    buyNowBtn.textContent = 'Buy Now';
-                    buyNowBtn.style.backgroundColor = '';
-                }
-                
-                // Remove out of stock badge
-                const badge = card.querySelector('.stock-badge');
-                if (badge) badge.remove();
-            }
-        });
-    }
-
-    // Initialize real-time stock updates
-    initializeStockUpdates() {
-        this.supabase
-            .channel('stock-updates')
-            .on('postgres_changes', 
-                { event: 'UPDATE', schema: 'public', table: 'products' },
-                (payload) => {
-                    const { id, stock } = payload.new;
-                    this.updateProductUI(id, stock);
-                }
-            )
-            .subscribe();
-    }
-
-    // Load and apply stock status for all products
-    async loadStockStatus() {
-        try {
-            const { data, error } = await this.supabase
-                .from('products')
-                .select('id, stock');
-            
-            if (error) throw error;
-            
-            data.forEach(product => {
-                this.updateProductUI(product.id, product.stock);
-            });
-        } catch (error) {
-            console.error('Error loading stock status:', error);
-        }
-    }
-}
-
-// Initialize stock manager
-const stockManager = new StockManager();
-
-// Direct stock deduction function
-window.deductProductStock = async function(productId, quantity) {
+// Simple stock deduction function
+window.deductStock = async function(productId, quantity) {
     try {
-        console.log(`Deducting stock: Product ${productId}, Quantity ${quantity}`);
+        console.log(`🔄 Deducting stock: Product ${productId}, Quantity ${quantity}`);
         
-        // First get current stock
-        const { data: currentData, error: fetchError } = await stockManager.supabase
+        const { data: current } = await supabase
             .from('products')
             .select('stock')
             .eq('id', productId)
             .single();
         
-        if (fetchError) {
-            console.error('Error fetching current stock:', fetchError);
-            return false;
-        }
+        const newStock = Math.max(0, (current?.stock || 0) - quantity);
         
-        const currentStock = currentData.stock || 0;
-        const newStock = Math.max(0, currentStock - quantity);
-        
-        console.log(`Current stock: ${currentStock}, New stock: ${newStock}`);
-        
-        // Update stock
-        const { data, error } = await stockManager.supabase
+        const { error } = await supabase
             .from('products')
             .update({ stock: newStock })
-            .eq('id', productId)
-            .select('stock')
-            .single();
+            .eq('id', productId);
         
-        if (error) {
-            console.error('Stock update error:', error);
-            return false;
-        }
+        if (error) throw error;
         
-        console.log(`Stock successfully updated for product ${productId}:`, data);
+        console.log(`✅ Stock updated: Product ${productId} now has ${newStock} items`);
         return true;
     } catch (error) {
-        console.error('Error deducting stock:', error);
+        console.error('❌ Stock deduction failed:', error);
         return false;
     }
 };
 
-// Hook into existing order processing with direct SQL
-const originalProcessOrder = window.processOrder;
-window.processOrder = async function(total, paymentMethod, orderItems = null, isBuyNow = false, paymentId = null) {
+// Update UI for out of stock products
+window.updateStockUI = async function() {
     try {
-        // Process order first
-        const order = await originalProcessOrder(total, paymentMethod, orderItems, isBuyNow, paymentId);
+        const { data } = await supabase.from('products').select('id, stock');
         
-        if (order && order.items) {
-            console.log('Order processed, deducting stock for items:', order.items);
-            // Deduct stock for each item using direct SQL
+        data?.forEach(product => {
+            const cards = document.querySelectorAll(`[data-product-id="${product.id}"]`);
+            cards.forEach(card => {
+                const addBtn = card.querySelector('.add-to-cart, .add-to-cart-btn');
+                const buyBtn = card.querySelector('.buy-now-btn');
+                
+                if (product.stock <= 0) {
+                    if (addBtn) {
+                        addBtn.disabled = true;
+                        addBtn.textContent = 'Out of Stock';
+                        addBtn.style.backgroundColor = '#ccc';
+                    }
+                    if (buyBtn) {
+                        buyBtn.disabled = true;
+                        buyBtn.textContent = 'Out of Stock';
+                        buyBtn.style.backgroundColor = '#ccc';
+                    }
+                }
+            });
+        });
+    } catch (error) {
+        console.error('Error updating stock UI:', error);
+    }
+};
+
+// Override saveOrderToDatabase to include stock deduction
+const originalSaveOrder = window.saveOrderToDatabase;
+window.saveOrderToDatabase = async function(order) {
+    try {
+        console.log('💾 Saving order and deducting stock...');
+        
+        // Save order first
+        const savedOrder = await originalSaveOrder(order);
+        
+        // Deduct stock for each item
+        if (savedOrder && order.items) {
             for (const item of order.items) {
-                await window.deductProductStock(item.id, item.quantity);
+                await window.deductStock(item.id, item.quantity);
             }
         }
         
-        return order;
+        return savedOrder;
     } catch (error) {
-        console.error('Error in enhanced processOrder:', error);
+        console.error('Error in enhanced saveOrderToDatabase:', error);
         throw error;
     }
 };
 
-// Load stock status when page loads
+// Load stock UI when page loads
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
-        stockManager.loadStockStatus();
-    }, 1000);
+        window.updateStockUI();
+    }, 2000);
 });
