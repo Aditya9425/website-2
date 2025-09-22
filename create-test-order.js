@@ -12,8 +12,8 @@ async function createTestOrder() {
     const testOrder = {
         user_id: user.id,
         items: [{
-            id: 1,
-            name: 'Test Silk Saree',
+            id: 'e9b9000f-8f9d-47a9-8ca0-43e8aec8ae39',
+            name: 'Gajri silk saree',
             price: 2500,
             quantity: 1,
             image: 'test-image.jpg',

@@ -170,6 +170,60 @@ window.updateStockUI = async function() {
 
 
 
+// Create test order function
+window.createTestOrder = async function() {
+    try {
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user) {
+            console.error('❌ No user logged in');
+            return;
+        }
+        
+        const testOrder = {
+            user_id: user.id,
+            user_email: user.email,
+            items: [
+                { id: 'e9b9000f-8f9d-47a9-8ca0-43e8aec8ae39', name: 'Gajri silk saree', quantity: 1, price: 2999 },
+                { id: '73239457-a584-4d0d-9668-5c6ec1767a19', name: 'Reliance', quantity: 1, price: 1999 }
+            ],
+            total_amount: 34997,
+            status: 'pending',
+            payment_method: 'cod',
+            delivery_address: {
+                name: 'Test User',
+                phone: user.mobile || '1234567890',
+                address: 'Test Address',
+                city: 'Test City',
+                state: 'Rajasthan',
+                pincode: '123456'
+            }
+        };
+        
+        const { data, error } = await stockSupabase
+            .from('orders')
+            .insert([testOrder])
+            .select();
+        
+        if (error) throw error;
+        
+        console.log('✅ Test order created:', data[0]);
+        console.log('🔄 Manually triggering stock deduction...');
+        
+        // Manually trigger stock deduction for this order
+        setTimeout(async () => {
+            if (data[0].items) {
+                for (const item of data[0].items) {
+                    await window.deductStock(item.id, item.quantity);
+                }
+            }
+        }, 1000);
+        
+        return data[0];
+    } catch (error) {
+        console.error('❌ Failed to create test order:', error);
+    }
+};
+
 // Load stock UI when page loads
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
