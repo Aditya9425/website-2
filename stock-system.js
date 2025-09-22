@@ -93,38 +93,33 @@ window.deductStockForLastOrder = async function() {
     }
 };
 
-// Auto-trigger every 5 seconds to check for new orders
-setInterval(async () => {
-    try {
-        const { data: orders } = await stockSupabase
-            .from('orders')
-            .select('*')
-            .order('created_at', { ascending: false })
-            .limit(1);
-        
-        if (orders && orders[0]) {
-            const order = orders[0];
-            const orderTime = new Date(order.created_at).getTime();
-            const now = new Date().getTime();
-            
-            // If order is less than 10 seconds old and not processed
-            if (now - orderTime < 10000 && !window.processedOrders?.includes(order.id)) {
-                console.log('🆕 Auto-detected new order, deducting stock:', order.id);
-                
-                if (!window.processedOrders) window.processedOrders = [];
-                window.processedOrders.push(order.id);
-                
-                if (order.items) {
-                    for (const item of order.items) {
-                        await window.deductStock(item.id, item.quantity);
-                    }
-                }
+// Auto-trigger by monitoring DOM for order confirmation
+const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+            if (node.nodeType === 1 && node.textContent?.includes('Order Placed Successfully')) {
+                console.log('🎯 Auto-detected order success, triggering stock deduction...');
+                setTimeout(() => {
+                    window.deductStockForLastOrder();
+                }, 2000);
             }
-        }
-    } catch (error) {
-        // Silent fail
-    }
-}, 5000);
+        });
+    });
+});
+
+// Start observing
+observer.observe(document.body, {
+    childList: true,
+    subtree: true
+});
+
+// Also hook into window events
+window.addEventListener('orderPlaced', () => {
+    console.log('🎯 Order event detected, deducting stock...');
+    setTimeout(() => {
+        window.deductStockForLastOrder();
+    }, 2000);
+});
 
 // Update UI for out of stock products
 window.updateStockUI = async function() {
