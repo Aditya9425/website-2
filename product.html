@@ -188,13 +188,6 @@
                     </div>
                 </div>
             </div>
-            
-            <!-- Feedback Section -->
-            <div class="feedback-section">
-                <p class="feedback-message">We are in the early stage. The site may have minor bugs, but we really appreciate your support...</p>
-                <button class="feedback-button" onclick="openFeedbackForm()">Click Here to Give Feedback</button>
-            </div>
-            
             <div style="border-top: 1px solid #34495e; padding-top: 20px; text-align: center;">
                 <p style="color: #bdc3c7; margin: 0;">&copy; 2025 Shagun Saree Baran. All rights reserved.</p>
             </div>
@@ -529,37 +522,5 @@
         // Make changeMainImage globally available
         window.changeMainImage = changeMainImage;
     </script>
-
-    <!-- Feedback Modal -->
-    <div id="feedbackModal" class="feedback-modal">
-        <div class="feedback-modal-overlay" onclick="closeFeedbackModal()"></div>
-        <div class="feedback-modal-content">
-            <div class="feedback-modal-header">
-                <h3>Share Your Feedback</h3>
-                <button class="feedback-modal-close" onclick="closeFeedbackModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="feedback-modal-body">
-                <p class="feedback-modal-description">We appreciate your feedback! Please share any suggestions, bugs, or comments to help us improve.</p>
-                <form id="feedbackForm" onsubmit="submitFeedback(event)">
-                    <div class="feedback-form-group">
-                        <label for="feedbackText">Your Feedback:</label>
-                        <textarea 
-                            id="feedbackText" 
-                            name="feedback" 
-                            placeholder="Please share your thoughts, suggestions, or report any issues you've encountered..."
-                            required
-                            rows="5"
-                        ></textarea>
-                    </div>
-                    <div class="feedback-form-actions">
-                        <button type="button" class="feedback-btn-cancel" onclick="closeFeedbackModal()">Cancel</button>
-                        <button type="submit" class="feedback-btn-submit">Submit Feedback</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
 </body>
 </html>

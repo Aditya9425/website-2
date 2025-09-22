@@ -58,7 +58,6 @@ class AdminPanel {
         this.products = [];
         this.orders = [];
         this.customers = [];
-        this.feedbackData = [];
         this.charts = {};
         
         console.log('✅ Supabase client ready for admin panel');
@@ -102,14 +101,6 @@ class AdminPanel {
             console.log('Add Product button clicked');
             this.openProductModal();
         });
-
-        // Feedback refresh button
-        const refreshFeedbackBtn = document.getElementById('refreshFeedback');
-        if (refreshFeedbackBtn) {
-            refreshFeedbackBtn.addEventListener('click', () => {
-                this.loadFeedback();
-            });
-        }
 
         document.getElementById('productForm').addEventListener('submit', (e) => {
             e.preventDefault();
@@ -245,8 +236,7 @@ class AdminPanel {
             products: 'Product Management',
             orders: 'Order Management',
             customers: 'Customer Management',
-            analytics: 'Analytics & Reports',
-            feedback: 'Customer Feedback'
+            analytics: 'Analytics & Reports'
         };
         pageTitle.textContent = titles[section] || 'Dashboard';
 
@@ -270,9 +260,6 @@ class AdminPanel {
                 break;
             case 'analytics':
                 await this.loadAnalytics();
-                break;
-            case 'feedback':
-                await this.loadFeedback();
                 break;
         }
     }
@@ -1498,191 +1485,6 @@ class AdminPanel {
         } catch (error) {
             console.error('❌ Error loading analytics:', error);
         }
-    }
-
-    // Feedback Methods
-    async loadFeedback() {
-        console.log('💬 Loading feedback data...');
-        try {
-            await this.fetchFeedbackData();
-            this.renderFeedbackTable();
-            this.updateFeedbackStats();
-        } catch (error) {
-            console.error('❌ Error loading feedback:', error);
-            this.showFeedbackError('Failed to load feedback. Please try again.');
-        }
-    }
-
-    async fetchFeedbackData() {
-        try {
-            this.showFeedbackLoading();
-            
-            const { data, error } = await supabase
-                .from('feedbacks')
-                .select('*')
-                .order('submitted_at', { ascending: false });
-            
-            if (error) {
-                console.error('Error fetching feedback:', error);
-                throw new Error(error.message);
-            }
-            
-            this.feedbackData = data || [];
-            console.log(`✅ Loaded ${this.feedbackData.length} feedback entries`);
-            
-        } catch (error) {
-            console.error('Error fetching feedback:', error);
-            throw error;
-        }
-    }
-
-    showFeedbackLoading() {
-        const tbody = document.getElementById('feedbackTableBody');
-        if (tbody) {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="4" class="loading-row">
-                        <div class="loading-spinner">
-                            <i class="fas fa-spinner fa-spin"></i>
-                            Loading feedback...
-                        </div>
-                    </td>
-                </tr>
-            `;
-        }
-    }
-
-    showFeedbackError(message) {
-        const tbody = document.getElementById('feedbackTableBody');
-        if (tbody) {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="4" class="error-row">
-                        <div class="error-message">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            ${message}
-                        </div>
-                    </td>
-                </tr>
-            `;
-        }
-    }
-
-    renderFeedbackTable() {
-        const tbody = document.getElementById('feedbackTableBody');
-        if (!tbody) return;
-
-        if (this.feedbackData.length === 0) {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="4" class="empty-row">
-                        <div class="empty-state">
-                            <i class="fas fa-comments"></i>
-                            <p>No feedback received yet</p>
-                        </div>
-                    </td>
-                </tr>
-            `;
-            return;
-        }
-
-        tbody.innerHTML = this.feedbackData.map(feedback => {
-            const submittedAt = new Date(feedback.submitted_at);
-            const formattedDate = submittedAt.toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-
-            return `
-                <tr>
-                    <td class="feedback-id">#${feedback.id}</td>
-                    <td class="feedback-message">
-                        <div class="message-content">
-                            ${this.truncateMessage(feedback.message, 80)}
-                        </div>
-                    </td>
-                    <td class="feedback-date">${formattedDate}</td>
-                    <td class="feedback-actions">
-                        <button class="btn-view" onclick="adminPanel.viewFeedback(${feedback.id})" title="View Full Message">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </td>
-                </tr>
-            `;
-        }).join('');
-    }
-
-    truncateMessage(message, maxLength) {
-        if (message.length <= maxLength) {
-            return message;
-        }
-        return message.substring(0, maxLength) + '...';
-    }
-
-    updateFeedbackStats() {
-        const totalFeedback = this.feedbackData.length;
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-        
-        const recentFeedback = this.feedbackData.filter(feedback => 
-            new Date(feedback.submitted_at) >= sevenDaysAgo
-        ).length;
-
-        const totalElement = document.getElementById('totalFeedback');
-        const recentElement = document.getElementById('recentFeedback');
-        
-        if (totalElement) totalElement.textContent = totalFeedback;
-        if (recentElement) recentElement.textContent = recentFeedback;
-    }
-
-    viewFeedback(feedbackId) {
-        const feedback = this.feedbackData.find(f => f.id === feedbackId);
-        if (!feedback) return;
-
-        const submittedAt = new Date(feedback.submitted_at);
-        const formattedDate = submittedAt.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-
-        const modal = document.createElement('div');
-        modal.className = 'modal';
-        modal.style.display = 'block';
-        modal.innerHTML = `
-            <div class="modal-content feedback-modal">
-                <div class="modal-header">
-                    <h3>Feedback #${feedback.id}</h3>
-                    <button class="close-btn" onclick="this.closest('.modal').remove()">&times;</button>
-                </div>
-                <div class="feedback-details">
-                    <div class="feedback-meta">
-                        <div class="meta-item">
-                            <strong>Submitted:</strong> ${formattedDate}
-                        </div>
-                        <div class="meta-item">
-                            <strong>ID:</strong> #${feedback.id}
-                        </div>
-                    </div>
-                    <div class="feedback-message-full">
-                        <h4>Message:</h4>
-                        <div class="message-text">${feedback.message}</div>
-                    </div>
-                </div>
-                <div class="modal-actions">
-                    <button class="btn-close" onclick="this.closest('.modal').remove()">
-                        Close
-                    </button>
-                </div>
-            </div>
-        `;
-
-        document.body.appendChild(modal);
     }
 
     initializeCharts() {
