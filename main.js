@@ -1288,18 +1288,23 @@ async function processOrder(total, paymentMethod, orderItems = null, isBuyNow = 
         
         // Update stock for ordered items
         console.log('📦 Updating stock for ordered items...');
-        if (typeof updateOrderStock === 'function') {
-            const stockUpdates = await updateOrderStock(items);
-            console.log('📊 Stock updates:', stockUpdates);
-            
-            // Refresh products after stock update
-            setTimeout(() => {
-                if (typeof fetchProducts === 'function') {
-                    fetchProducts();
+        try {
+            if (typeof updateOrderStock === 'function') {
+                const stockUpdates = await updateOrderStock(items);
+                console.log('📊 Stock updates:', stockUpdates);
+            } else {
+                console.warn('⚠️ updateOrderStock not available, using direct update');
+                // Fallback: direct stock update
+                for (const item of items) {
+                    const { data, error } = await supabase.rpc('deduct_stock', {
+                        product_id: item.id,
+                        quantity_to_deduct: item.quantity
+                    });
+                    console.log(`Stock update for product ${item.id}:`, data, error);
                 }
-            }, 1000);
-        } else {
-            console.warn('⚠️ Stock update function not available');
+            }
+        } catch (error) {
+            console.error('❌ Stock update failed:', error);
         }
         
         // Clear appropriate storage after successful order

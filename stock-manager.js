@@ -39,9 +39,10 @@ async function validateOrderStock(orderItems) {
 
 async function updateProductStock(productId, quantityOrdered) {
     try {
+        console.log(`Updating stock for product ${productId}, quantity: ${quantityOrdered}`);
         const { data, error } = await supabase.rpc('deduct_stock', {
-            product_id: productId,
-            quantity_to_deduct: quantityOrdered
+            product_id: parseInt(productId),
+            quantity_to_deduct: parseInt(quantityOrdered)
         });
         
         if (error) {
@@ -49,6 +50,7 @@ async function updateProductStock(productId, quantityOrdered) {
             return false;
         }
         
+        console.log(`Stock update result for product ${productId}:`, data);
         return data;
     } catch (error) {
         console.error('Stock update failed:', error);
