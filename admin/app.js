@@ -509,6 +509,8 @@ class AdminPanel {
                     <span class="status-badge ${(product.stock || 0) > 0 ? 'status-delivered' : 'status-cancelled'}">
                         ${(product.stock || 0) > 0 ? 'In Stock' : 'Out of Stock'}
                     </span>
+                    ${(product.stock === 0 || product.status === 'out-of-stock') ? 
+                        '<span class="out-of-stock-badge">Out of Stock</span>' : ''}
                 </td>
                 <td>
                     <div class="action-buttons">

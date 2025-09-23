@@ -51,7 +51,8 @@ async function fetchProductsFromSupabase() {
             color_variants: row.color_variants || [],
             sizes: row.sizes || ['Free Size'],
             fabric: row.fabric,
-            reviews: row.reviews || 50
+            reviews: row.reviews || 50,
+            status: row.status || 'active'
         }));
         
         return mappedProducts;
@@ -377,8 +378,11 @@ function loadTrendingProducts() {
             const colorPalette = generateColorPalette(product);
             
             return `
-            <div class="product-card" data-product-id="${product.id}">
-                <img src="${imageUrl}" alt="${product.name}" class="product-image">
+            <div class="product-card" data-product-id="${product.id}" data-status="${product.status || 'active'}">
+                <div class="product-image-container">
+                    <img src="${imageUrl}" alt="${product.name}" class="product-image">
+                    ${product.status === 'out-of-stock' ? '<div class="out-of-stock-overlay">Out of Stock</div>' : ''}
+                </div>
                 <div class="product-info">
                     <h3 class="product-name">${product.name}</h3>
                     <div class="product-price">₹${product.price.toLocaleString()}</div>
@@ -389,9 +393,12 @@ function loadTrendingProducts() {
                         <span>${product.rating} (${product.reviews})</span>
                     </div>
                     ${colorPalette}
-                    <button class="add-to-cart add-to-cart-btn" data-id="${product.id}" onclick="event.stopPropagation()">
-                        Add to Cart
-                    </button>
+                    ${product.status === 'out-of-stock' ? 
+                        '<div class="out-of-stock-label">Out of Stock</div>' :
+                        `<button class="add-to-cart add-to-cart-btn" data-id="${product.id}" onclick="event.stopPropagation()">
+                            Add to Cart
+                        </button>`
+                    }
                 </div>
             </div>
             `;
@@ -1252,6 +1259,19 @@ async function processOrder(total, paymentMethod, orderItems = null, isBuyNow = 
     console.log('📋 Order created:', order);
     
     try {
+        // Validate stock before processing order
+        console.log('🔍 Validating stock availability...');
+        if (typeof validateOrderStock === 'function') {
+            const stockValidation = await validateOrderStock(items);
+            if (!stockValidation.valid) {
+                const errorMsg = stockValidation.reason ? 
+                    `${stockValidation.productName}: ${stockValidation.reason}` :
+                    `${stockValidation.productName} is not available in the requested quantity`;
+                throw new Error(errorMsg);
+            }
+            console.log('✅ Stock validation passed');
+        }
+        
         // Validate order data before saving
         if (!order.items || order.items.length === 0 || !order.total_amount) {
             throw new Error('Invalid order data - missing items or total amount');
@@ -1265,6 +1285,22 @@ async function processOrder(total, paymentMethod, orderItems = null, isBuyNow = 
         }
         
         console.log('✅ Order saved with ID:', savedOrder.id);
+        
+        // Update stock for ordered items
+        console.log('📦 Updating stock for ordered items...');
+        if (typeof updateOrderStock === 'function') {
+            const stockUpdates = await updateOrderStock(items);
+            console.log('📊 Stock updates:', stockUpdates);
+            
+            // Refresh products after stock update
+            setTimeout(() => {
+                if (typeof fetchProducts === 'function') {
+                    fetchProducts();
+                }
+            }, 1000);
+        } else {
+            console.warn('⚠️ Stock update function not available');
+        }
         
         // Clear appropriate storage after successful order
         if (isBuyNow) {
@@ -1495,21 +1531,27 @@ function loadFeaturedProducts() {
             const colorPalette = generateColorPalette(product);
             
             return `
-            <div class="featured-card" data-product-id="${product.id}">
+            <div class="featured-card" data-product-id="${product.id}" data-status="${product.status || 'active'}">
                 <div class="featured-image" onclick="window.location.href='product.html?id=${product.id}'">
-                    <img src="${imageUrl}" alt="${product.name}" loading="lazy">
+                    <div class="product-image-container">
+                        <img src="${imageUrl}" alt="${product.name}" loading="lazy">
+                        ${product.status === 'out-of-stock' ? '<div class="out-of-stock-overlay">Out of Stock</div>' : ''}
+                    </div>
                 </div>
                 <div class="featured-info">
                     <h3 class="featured-title">${product.name}</h3>
                     <div class="featured-price">₹${product.price.toLocaleString()}</div>
                     ${colorPalette}
                     <div class="featured-buttons">
-                        <button class="add-to-cart-btn" data-id="${product.id}" onclick="event.stopPropagation(); addToCart(this)">
-                            Add to Cart
-                        </button>
-                        <button class="buy-now-btn" onclick="event.stopPropagation(); buyNow('${product.id}')">
-                            Buy Now
-                        </button>
+                        ${product.status === 'out-of-stock' ? 
+                            '<div class="out-of-stock-label">Out of Stock</div>' :
+                            `<button class="add-to-cart-btn" data-id="${product.id}" onclick="event.stopPropagation(); addToCart(this)">
+                                Add to Cart
+                            </button>
+                            <button class="buy-now-btn" onclick="event.stopPropagation(); buyNow('${product.id}')">
+                                Buy Now
+                            </button>`
+                        }
                     </div>
                 </div>
             </div>
@@ -1977,8 +2019,11 @@ function displayProducts(productsToShow) {
             const colorPalette = generateColorPalette(product);
             
             return `
-            <div class="product-card" data-product-id="${product.id}">
-                <img src="${imageUrl}" alt="${product.name}" class="product-image">
+            <div class="product-card" data-product-id="${product.id}" data-status="${product.status || 'active'}">
+                <div class="product-image-container">
+                    <img src="${imageUrl}" alt="${product.name}" class="product-image">
+                    ${product.status === 'out-of-stock' ? '<div class="out-of-stock-overlay">Out of Stock</div>' : ''}
+                </div>
                 <div class="product-info">
                     <h3 class="product-name">${product.name}</h3>
                     <div class="product-price">₹${product.price.toLocaleString()}</div>
@@ -1990,12 +2035,15 @@ function displayProducts(productsToShow) {
                     </div>
                     ${colorPalette}
                     <div class="action-buttons">
-                        <button class="add-to-cart add-to-cart-btn" data-id="${product.id}" onclick="event.stopPropagation()">
-                            Add to Cart
-                        </button>
-                        <button class="buy-now-btn" data-id="${product.id}" onclick="event.stopPropagation(); buyNow('${product.id}')">
-                            Buy Now
-                        </button>
+                        ${product.status === 'out-of-stock' ? 
+                            '<div class="out-of-stock-label">Out of Stock</div>' :
+                            `<button class="add-to-cart add-to-cart-btn" data-id="${product.id}" onclick="event.stopPropagation()">
+                                Add to Cart
+                            </button>
+                            <button class="buy-now-btn" data-id="${product.id}" onclick="event.stopPropagation(); buyNow('${product.id}')">
+                                Buy Now
+                            </button>`
+                        }
                     </div>
                 </div>
             </div>

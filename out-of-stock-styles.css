@@ -1,0 +1,38 @@
+.out-of-stock-label {
+    background: #dc3545;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    text-align: center;
+    cursor: not-allowed;
+}
+
+.product-card[data-status="out-of-stock"] {
+    opacity: 0.6;
+}
+
+.product-card[data-status="out-of-stock"] .product-image {
+    filter: grayscale(50%);
+}
+
+.product-image-container {
+    position: relative;
+    display: inline-block;
+}
+
+.out-of-stock-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 16px;
+    z-index: 2;
+}
