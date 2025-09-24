@@ -1308,6 +1308,11 @@ async function processOrder(total, paymentMethod, orderItems = null, isBuyNow = 
             window.triggerStockUpdate();
         }
         
+        // Force admin panel refresh
+        if (typeof window.triggerStockUpdateForAdmin === 'function') {
+            window.triggerStockUpdateForAdmin();
+        }
+        
         return savedOrder;
         
     } catch (error) {
