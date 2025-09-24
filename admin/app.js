@@ -1033,7 +1033,7 @@ class AdminPanel {
             
             console.log('Submitting product data:', productData);
             
-            // Submit to Supabase directly
+            // Submit to Supabase directly (no stock functions for admin operations)
             const isEdit = !!productId;
             this.showMessage(`${isEdit ? 'Updating' : 'Adding'} product...`, 'info');
             
@@ -2217,14 +2217,18 @@ class AdminPanel {
         try {
             this.showMessage('Updating stock...', 'info');
             
-            // Use the enhanced SQL function
-            const { data, error } = await supabase.rpc('update_stock', {
-                product_id: parseInt(productId),
-                new_stock: newStock
-            });
+            // Direct update without using deduct_stock function
+            const { data, error } = await supabase
+                .from('products')
+                .update({ 
+                    stock: newStock,
+                    status: newStock > 0 ? 'active' : 'out-of-stock'
+                })
+                .eq('id', productId)
+                .select();
             
-            if (error || !data) {
-                throw new Error('Failed to update stock');
+            if (error) {
+                throw new Error(`Failed to update stock: ${error.message}`);
             }
             
             this.showMessage('Stock updated successfully!', 'success');

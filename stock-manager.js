@@ -95,17 +95,26 @@ async function restoreOrderStock(orderItems) {
         console.log('🔄 Restoring stock for failed order...');
         
         for (const item of orderItems) {
-            const { data, error } = await supabase
+            const { data: product, error: fetchError } = await supabase
                 .from('products')
-                .update({ 
-                    stock: supabase.raw('stock + ?', [item.quantity])
-                })
-                .eq('id', item.id);
+                .select('stock')
+                .eq('id', item.id)
+                .single();
             
-            if (error) {
-                console.error(`Failed to restore stock for product ${item.id}:`, error);
-            } else {
-                console.log(`✅ Stock restored for product ${item.id}: +${item.quantity} units`);
+            if (!fetchError && product) {
+                const { data, error } = await supabase
+                    .from('products')
+                    .update({ 
+                        stock: product.stock + item.quantity,
+                        status: 'active'
+                    })
+                    .eq('id', item.id);
+                
+                if (error) {
+                    console.error(`Failed to restore stock for product ${item.id}:`, error);
+                } else {
+                    console.log(`✅ Stock restored for product ${item.id}: +${item.quantity} units`);
+                }
             }
         }
     } catch (error) {
