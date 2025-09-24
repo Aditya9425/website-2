@@ -1,0 +1,321 @@
+/* Enhanced Stock Management Styles for Admin Panel */
+
+/* Stock Status Indicators */
+.stock-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.stock-number {
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 4px;
+    min-width: 40px;
+    text-align: center;
+}
+
+.stock-good {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.stock-low {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.stock-zero {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.stock-update-btn {
+    padding: 4px 6px !important;
+    font-size: 12px;
+}
+
+/* Product Row Styling */
+.out-of-stock-row {
+    background-color: #fdf2f2;
+    opacity: 0.8;
+}
+
+.low-stock-row {
+    background-color: #fffbf0;
+}
+
+.product-name-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.out-of-stock-indicator {
+    color: #dc3545;
+    font-size: 16px;
+}
+
+.low-stock-indicator {
+    color: #ffc107;
+    font-size: 14px;
+}
+
+/* Stock Alerts Section */
+#stockAlerts {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.stock-alert {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+}
+
+.stock-alert.critical {
+    background-color: #f8d7da;
+    border-left: 4px solid #dc3545;
+}
+
+.stock-alert.warning {
+    background-color: #fff3cd;
+    border-left: 4px solid #ffc107;
+}
+
+.stock-alert i {
+    font-size: 18px;
+}
+
+.stock-alert.critical i {
+    color: #dc3545;
+}
+
+.stock-alert.warning i {
+    color: #ffc107;
+}
+
+.alert-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.alert-content strong {
+    font-size: 14px;
+    color: #333;
+}
+
+.alert-content span {
+    font-size: 12px;
+    color: #666;
+}
+
+.no-alerts {
+    text-align: center;
+    padding: 20px;
+    color: #28a745;
+    font-weight: 500;
+}
+
+.no-alerts i {
+    font-size: 24px;
+    margin-bottom: 8px;
+    display: block;
+}
+
+/* Stock Update Modal */
+#stockUpdateModal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+
+#stockUpdateModal .modal-content {
+    background: white;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+#stockUpdateModal .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+#stockUpdateModal .modal-header h3 {
+    margin: 0;
+    color: #333;
+}
+
+#stockUpdateModal .close-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #999;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#stockUpdateModal .close-btn:hover {
+    color: #333;
+}
+
+#stockUpdateModal .modal-body {
+    padding: 20px;
+}
+
+#stockUpdateModal .form-group {
+    margin-bottom: 16px;
+}
+
+#stockUpdateModal .form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: #333;
+}
+
+#stockUpdateModal .product-name-display {
+    font-size: 16px;
+    font-weight: bold;
+    color: #007bff;
+    padding: 8px 0;
+}
+
+#stockUpdateModal .current-stock-display {
+    font-size: 18px;
+    font-weight: bold;
+    color: #28a745;
+    padding: 8px 0;
+}
+
+#stockUpdateModal .form-control {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+#stockUpdateModal .form-control:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+}
+
+.stock-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+
+.stock-actions button {
+    padding: 6px 12px;
+    font-size: 12px;
+    border-radius: 4px;
+}
+
+#stockUpdateModal .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 20px;
+    border-top: 1px solid #eee;
+}
+
+/* Stock Filter */
+#stockFilter {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    font-size: 14px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .stock-cell {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+    
+    .stock-alert {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .stock-actions {
+        justify-content: center;
+    }
+    
+    #stockUpdateModal .modal-footer {
+        flex-direction: column;
+    }
+    
+    #stockUpdateModal .modal-footer button {
+        width: 100%;
+    }
+}
+
+/* Animation for stock updates */
+@keyframes stockUpdate {
+    0% { background-color: #fff3cd; }
+    50% { background-color: #ffeaa7; }
+    100% { background-color: transparent; }
+}
+
+.stock-updated {
+    animation: stockUpdate 2s ease-in-out;
+}
+
+/* Status badges enhancement */
+.status-badge {
+    position: relative;
+    overflow: visible;
+}
+
+.status-badge.status-cancelled::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 8px;
+    height: 8px;
+    background: #dc3545;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.7; }
+    100% { transform: scale(1); opacity: 1; }
+}

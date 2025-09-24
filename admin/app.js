@@ -120,6 +120,19 @@ class AdminPanel {
         document.getElementById('addColorVariant').addEventListener('click', () => {
             this.addColorVariant();
         });
+        
+        // Stock update modal handlers
+        const stockModal = document.getElementById('stockUpdateModal');
+        if (stockModal) {
+            document.getElementById('closeStockModal').addEventListener('click', () => {
+                this.closeStockUpdateModal();
+            });
+            
+            document.getElementById('stockUpdateForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.handleStockUpdate();
+            });
+        }
 
         // Image input management
         document.getElementById('addImageBtn').addEventListener('click', () => {
@@ -136,6 +149,7 @@ class AdminPanel {
         // Search and filter functionality
         const productSearch = document.getElementById('productSearch');
         const categoryFilter = document.getElementById('categoryFilter');
+        const stockFilter = document.getElementById('stockFilter');
         
         if (productSearch) {
             productSearch.addEventListener('input', () => {
@@ -145,6 +159,12 @@ class AdminPanel {
         
         if (categoryFilter) {
             categoryFilter.addEventListener('change', () => {
+                this.filterProducts();
+            });
+        }
+        
+        if (stockFilter) {
+            stockFilter.addEventListener('change', () => {
                 this.filterProducts();
             });
         }
@@ -328,9 +348,63 @@ class AdminPanel {
             const stats = await this.getDashboardStats();
             this.updateDashboardStats(stats);
             this.loadRecentOrders();
+            this.loadStockAlerts();
         } catch (error) {
             console.error('Error loading dashboard data:', error);
         }
+    }
+    
+    async loadStockAlerts() {
+        try {
+            console.log('📊 Loading stock alerts...');
+            
+            const { data, error } = await supabase
+                .from('products')
+                .select('id, name, stock, status')
+                .or('stock.eq.0,stock.lte.5')
+                .order('stock', { ascending: true });
+            
+            if (error) {
+                console.error('❌ Error loading stock alerts:', error);
+                return;
+            }
+            
+            this.displayStockAlerts(data || []);
+        } catch (error) {
+            console.error('❌ Error loading stock alerts:', error);
+        }
+    }
+    
+    displayStockAlerts(products) {
+        const alertsContainer = document.getElementById('stockAlerts');
+        if (!alertsContainer) return;
+        
+        if (products.length === 0) {
+            alertsContainer.innerHTML = '<div class="no-alerts"><i class="fas fa-check-circle"></i> All products are well stocked!</div>';
+            return;
+        }
+        
+        const alertsHTML = products.map(product => {
+            const isOutOfStock = product.stock === 0 || product.status === 'out-of-stock';
+            const alertType = isOutOfStock ? 'critical' : 'warning';
+            const alertIcon = isOutOfStock ? 'fas fa-exclamation-triangle' : 'fas fa-exclamation-circle';
+            const alertText = isOutOfStock ? 'Out of Stock' : `Low Stock (${product.stock} left)`;
+            
+            return `
+                <div class="stock-alert ${alertType}">
+                    <i class="${alertIcon}"></i>
+                    <div class="alert-content">
+                        <strong>${product.name}</strong>
+                        <span>${alertText}</span>
+                    </div>
+                    <button class="btn-small btn-primary" onclick="window.adminPanel.openStockUpdateModal('${product.id}', ${product.stock})">
+                        Update
+                    </button>
+                </div>
+            `;
+        }).join('');
+        
+        alertsContainer.innerHTML = alertsHTML;
     }
 
     async getDashboardStats() {
@@ -490,34 +564,63 @@ class AdminPanel {
         const tbody = document.getElementById('productsTableBody');
         
         if (products.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><i class="fas fa-tshirt"></i><h3>No products found</h3><p>Add your first product to get started.</p></td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><i class="fas fa-tshirt"></i><h3>No products found</h3><p>Add your first product to get started.</p></td></tr>';
             return;
         }
 
-        const productsHTML = products.map(product => `
-            <tr>
+        const productsHTML = products.map(product => {
+            const stockLevel = product.stock || 0;
+            const isOutOfStock = stockLevel === 0 || product.status === 'out-of-stock';
+            const isLowStock = stockLevel > 0 && stockLevel <= 5;
+            
+            let stockStatusClass = 'status-delivered';
+            let stockStatusText = 'In Stock';
+            
+            if (isOutOfStock) {
+                stockStatusClass = 'status-cancelled';
+                stockStatusText = 'Out of Stock';
+            } else if (isLowStock) {
+                stockStatusClass = 'status-pending';
+                stockStatusText = 'Low Stock';
+            }
+            
+            return `
+            <tr class="${isOutOfStock ? 'out-of-stock-row' : isLowStock ? 'low-stock-row' : ''}">
                 <td>
                     ${product.images && product.images[0] ? 
                         `<img src="${product.images[0]}" alt="${product.name || 'Product'}" width="50" height="50" style="object-fit: cover; border-radius: 4px;">` : 
                         '<span style="color: #999;">No Image</span>'}
                 </td>
-                <td>${product.name}</td>
+                <td>
+                    <div class="product-name-cell">
+                        <strong>${product.name}</strong>
+                        ${isOutOfStock ? '<span class="out-of-stock-indicator">⚠️</span>' : ''}
+                        ${isLowStock ? '<span class="low-stock-indicator">⚡</span>' : ''}
+                    </div>
+                </td>
                 <td>${product.category}</td>
                 <td>₹${product.price?.toLocaleString() || '0'}</td>
-                <td>${product.stock || 0}</td>
                 <td>
-                    <span class="status-badge ${(product.stock || 0) > 0 ? 'status-delivered' : 'status-cancelled'}">
-                        ${(product.stock || 0) > 0 ? 'In Stock' : 'Out of Stock'}
+                    <div class="stock-cell">
+                        <span class="stock-number ${isOutOfStock ? 'stock-zero' : isLowStock ? 'stock-low' : 'stock-good'}">
+                            ${stockLevel}
+                        </span>
+                        <button class="btn-small btn-secondary stock-update-btn" onclick="window.adminPanel.openStockUpdateModal('${product.id}', ${stockLevel})" title="Update Stock">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </div>
+                </td>
+                <td>
+                    <span class="status-badge ${stockStatusClass}">
+                        ${stockStatusText}
                     </span>
-                    ${(product.stock === 0 || product.status === 'out-of-stock') ? 
-                        '<span class="out-of-stock-badge">Out of Stock</span>' : ''}
                 </td>
                 <td>
                     <div class="action-buttons">
-                        <button class="btn-primary btn-small" onclick="window.adminPanel.editProduct('${product.id}')">
+                        <button class="btn-primary btn-small" onclick="window.adminPanel.editProduct('${product.id}')" title="Edit Product">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="btn-danger btn-small" onclick="window.adminPanel.deleteProduct('${product.id}')">
+                        <button class="btn-danger btn-small" onclick="window.adminPanel.deleteProduct('${product.id}')" title="Delete Product">
                             <i class="fas fa-trash"></i>
                         </button>
                         ${product.linked_variants && product.linked_variants.length > 0 ? 
@@ -530,7 +633,8 @@ class AdminPanel {
                     </div>
                 </td>
             </tr>
-        `).join('');
+        `;
+        }).join('');
 
         tbody.innerHTML = productsHTML;
     }
@@ -2016,11 +2120,135 @@ class AdminPanel {
             }
         });
     }
+    
+    // Stock Update Modal Functions
+    openStockUpdateModal(productId, currentStock) {
+        const product = this.products.find(p => p.id == productId);
+        if (!product) {
+            this.showMessage('Product not found', 'error');
+            return;
+        }
+        
+        // Create modal if it doesn't exist
+        let modal = document.getElementById('stockUpdateModal');
+        if (!modal) {
+            modal = this.createStockUpdateModal();
+            document.body.appendChild(modal);
+        }
+        
+        // Populate modal
+        document.getElementById('stockProductName').textContent = product.name;
+        document.getElementById('stockProductId').value = productId;
+        document.getElementById('currentStockDisplay').textContent = currentStock;
+        document.getElementById('newStockValue').value = currentStock;
+        document.getElementById('newStockValue').focus();
+        
+        modal.style.display = 'flex';
+    }
+    
+    closeStockUpdateModal() {
+        const modal = document.getElementById('stockUpdateModal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+    
+    createStockUpdateModal() {
+        const modal = document.createElement('div');
+        modal.id = 'stockUpdateModal';
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Update Stock</h3>
+                    <button type="button" class="close-btn" id="closeStockModal">&times;</button>
+                </div>
+                <form id="stockUpdateForm">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>Product:</label>
+                            <div id="stockProductName" class="product-name-display"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Current Stock:</label>
+                            <div id="currentStockDisplay" class="current-stock-display"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="newStockValue">New Stock Quantity:</label>
+                            <input type="number" id="newStockValue" min="0" required class="form-control">
+                            <input type="hidden" id="stockProductId">
+                        </div>
+                        <div class="stock-actions">
+                            <button type="button" class="btn-secondary" onclick="document.getElementById('newStockValue').value = 0">Set to 0</button>
+                            <button type="button" class="btn-secondary" onclick="document.getElementById('newStockValue').value = parseInt(document.getElementById('newStockValue').value || 0) + 10">+10</button>
+                            <button type="button" class="btn-secondary" onclick="document.getElementById('newStockValue').value = parseInt(document.getElementById('newStockValue').value || 0) + 50">+50</button>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-secondary" onclick="window.adminPanel.closeStockUpdateModal()">Cancel</button>
+                        <button type="submit" class="btn-primary">Update Stock</button>
+                    </div>
+                </form>
+            </div>
+        `;
+        
+        // Add event listeners
+        modal.querySelector('#closeStockModal').addEventListener('click', () => {
+            this.closeStockUpdateModal();
+        });
+        
+        modal.querySelector('#stockUpdateForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.handleStockUpdate();
+        });
+        
+        return modal;
+    }
+    
+    async handleStockUpdate() {
+        const productId = document.getElementById('stockProductId').value;
+        const newStock = parseInt(document.getElementById('newStockValue').value);
+        
+        if (isNaN(newStock) || newStock < 0) {
+            this.showMessage('Please enter a valid stock quantity', 'error');
+            return;
+        }
+        
+        try {
+            this.showMessage('Updating stock...', 'info');
+            
+            // Use the enhanced SQL function
+            const { data, error } = await supabase.rpc('update_stock', {
+                product_id: parseInt(productId),
+                new_stock: newStock
+            });
+            
+            if (error || !data) {
+                throw new Error('Failed to update stock');
+            }
+            
+            this.showMessage('Stock updated successfully!', 'success');
+            this.closeStockUpdateModal();
+            
+            // Refresh products list
+            await this.loadProducts();
+            
+            // Refresh dashboard if we're on it
+            if (document.getElementById('dashboardSection').classList.contains('active')) {
+                await this.loadDashboardData();
+            }
+            
+        } catch (error) {
+            console.error('Error updating stock:', error);
+            this.showMessage(`Error updating stock: ${error.message}`, 'error');
+        }
+    }
 
     // Filter products based on search and category
     filterProducts() {
         const searchTerm = document.getElementById('productSearch')?.value.toLowerCase() || '';
         const selectedCategory = document.getElementById('categoryFilter')?.value || '';
+        const stockFilter = document.getElementById('stockFilter')?.value || '';
         
         let filteredProducts = this.products;
         
@@ -2038,6 +2266,23 @@ class AdminPanel {
             filteredProducts = filteredProducts.filter(product => 
                 product.category === selectedCategory
             );
+        }
+        
+        // Filter by stock status
+        if (stockFilter) {
+            filteredProducts = filteredProducts.filter(product => {
+                const stock = product.stock || 0;
+                switch (stockFilter) {
+                    case 'in-stock':
+                        return stock > 5;
+                    case 'low-stock':
+                        return stock > 0 && stock <= 5;
+                    case 'out-of-stock':
+                        return stock === 0 || product.status === 'out-of-stock';
+                    default:
+                        return true;
+                }
+            });
         }
         
         this.displayProducts(filteredProducts);

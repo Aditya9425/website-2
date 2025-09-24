@@ -939,7 +939,8 @@ async function saveOrderToDatabase(order) {
             total_amount: order.total_amount,
             shipping_addr: order.shipping_addr,
             status: order.status || 'pending',
-            payment_method: order.payment_method || 'razorpay'
+            payment_method: order.payment_method || 'razorpay',
+            payment_id: order.payment_id
         };
         
         console.log('📤 Inserting order data:', orderData);
@@ -962,7 +963,7 @@ async function saveOrderToDatabase(order) {
         order.id = data.id;
         order.created_at = data.created_at;
         
-        showNotification('Order saved successfully!', 'success');
+        showNotification('Order placed successfully!', 'success');
         
         return data;
         
@@ -1228,84 +1229,68 @@ async function processOrder(total, paymentMethod, orderItems = null, isBuyNow = 
     const deliveryCharges = 0;
     const calculatedTotal = subtotal + deliveryCharges;
     
-    // Create order object with proper structure for Supabase
-    const order = {
-        user_id: userId.toString(), // Ensure string format
-        items: items.map(item => ({
-            id: item.id,
-            name: item.name,
-            price: item.price,
-            quantity: item.quantity,
-            image: item.image,
-            category: item.category
-        })),
-        total_amount: calculatedTotal,
-        shipping_addr: {
-            firstName: addressData.firstName,
-            lastName: addressData.lastName,
-            email: addressData.email,
-            mobile: addressData.mobile,
-            addressLine1: addressData.addressLine1,
-            addressLine2: addressData.addressLine2 || '',
-            city: addressData.city,
-            state: addressData.state,
-            pincode: addressData.pincode
-        },
-        status: paymentMethod === 'cod' ? 'pending' : 'confirmed',
-        payment_method: paymentMethod,
-        payment_id: paymentId // Store the payment ID from Razorpay
-    };
-    
-    console.log('📋 Order created:', order);
-    
     try {
-        // Validate stock before processing order
+        // STEP 1: Validate stock availability before processing
         console.log('🔍 Validating stock availability...');
-        if (typeof validateOrderStock === 'function') {
-            const stockValidation = await validateOrderStock(items);
-            if (!stockValidation.valid) {
-                const errorMsg = stockValidation.reason ? 
-                    `${stockValidation.productName}: ${stockValidation.reason}` :
-                    `${stockValidation.productName} is not available in the requested quantity`;
-                throw new Error(errorMsg);
-            }
-            console.log('✅ Stock validation passed');
+        const stockValidation = await validateOrderStock(items);
+        if (!stockValidation.valid) {
+            const errorMsg = stockValidation.reason ? 
+                `${stockValidation.productName}: ${stockValidation.reason}` :
+                `${stockValidation.productName} is not available in the requested quantity`;
+            throw new Error(errorMsg);
         }
+        console.log('✅ Stock validation passed');
         
-        // Validate order data before saving
-        if (!order.items || order.items.length === 0 || !order.total_amount) {
-            throw new Error('Invalid order data - missing items or total amount');
+        // STEP 2: Reserve stock (atomic operation)
+        console.log('🔒 Reserving stock for order...');
+        const stockReservation = await reserveOrderStock(items);
+        if (!stockReservation.success) {
+            throw new Error(`Stock reservation failed: ${stockReservation.error}`);
         }
+        console.log('✅ Stock reserved successfully');
         
-        // Save order to database and get the generated UUID
+        // Create order object with proper structure for Supabase
+        const order = {
+            user_id: userId.toString(),
+            items: items.map(item => ({
+                id: item.id,
+                name: item.name,
+                price: item.price,
+                quantity: item.quantity,
+                image: item.image,
+                category: item.category
+            })),
+            total_amount: calculatedTotal,
+            shipping_addr: {
+                firstName: addressData.firstName,
+                lastName: addressData.lastName,
+                email: addressData.email,
+                mobile: addressData.mobile,
+                addressLine1: addressData.addressLine1,
+                addressLine2: addressData.addressLine2 || '',
+                city: addressData.city,
+                state: addressData.state,
+                pincode: addressData.pincode
+            },
+            status: paymentMethod === 'cod' ? 'pending' : 'confirmed',
+            payment_method: paymentMethod,
+            payment_id: paymentId
+        };
+        
+        console.log('📋 Order created:', order);
+        
+        // STEP 3: Save order to database
         const savedOrder = await saveOrderToDatabase(order);
-        
         if (!savedOrder || !savedOrder.id) {
+            // If order save fails, restore stock
+            await restoreOrderStock(items);
             throw new Error('Failed to save order to database');
         }
         
         console.log('✅ Order saved with ID:', savedOrder.id);
         
-        // Update stock for ordered items
-        console.log('📦 Updating stock for ordered items...');
-        try {
-            if (typeof updateOrderStock === 'function') {
-                const stockUpdates = await updateOrderStock(items);
-                console.log('📊 Stock updates:', stockUpdates);
-            } else {
-                console.warn('⚠️ updateOrderStock not available, using direct update');
-                // Fallback: direct stock update
-                for (const item of items) {
-                    const { data, error } = await supabase.rpc('deduct_stock', {
-                        product_id: item.id,
-                        quantity_to_deduct: item.quantity
-                    });
-                    console.log(`Stock update for product ${item.id}:`, data, error);
-                }
-            }
-        } catch (error) {
-            console.error('❌ Stock update failed:', error);
-        }
+        // STEP 4: Update product status if any item goes out of stock
+        await updateProductStatusAfterOrder(items);
         
         // Clear appropriate storage after successful order
         if (isBuyNow) {
@@ -1318,12 +1303,16 @@ async function processOrder(total, paymentMethod, orderItems = null, isBuyNow = 
             console.log('✅ Cart cleared');
         }
         
-        // Return the saved order with the database-generated ID
+        // Trigger real-time update for admin panel
+        if (typeof window.triggerStockUpdate === 'function') {
+            window.triggerStockUpdate();
+        }
+        
         return savedOrder;
         
     } catch (error) {
         console.error('❌ Error processing order:', error);
-        alert('There was an error processing your order. Please try again.');
+        alert(`Order failed: ${error.message}`);
         return null;
     }
 }
