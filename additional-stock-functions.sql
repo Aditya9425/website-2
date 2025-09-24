@@ -1,4 +1,6 @@
--- Additional functions (don't run the existing ones again)
+-- Remove existing functions first
+DROP FUNCTION IF EXISTS check_stock_availability(bigint, integer);
+DROP FUNCTION IF EXISTS process_order_stock_deduction(jsonb);
 
 -- Function to check stock availability without deducting
 CREATE OR REPLACE FUNCTION check_stock_availability(product_id bigint, required_quantity integer)

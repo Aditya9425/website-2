@@ -1016,11 +1016,12 @@ class AdminPanel {
                 }
             }
             
-            // Prepare product data
+            // Prepare product data with proper stock handling
             const productData = {
                 name: productName,
                 price: price,
                 stock: stock,
+                status: stock > 0 ? 'active' : 'out-of-stock',
                 category: category,
                 description: description,
                 images: imageUrls,
@@ -1030,6 +1031,8 @@ class AdminPanel {
                 color_variants: colorVariants,
                 linked_variants: linkedVariants.length > 0 ? linkedVariants : null
             };
+            
+            console.log('Product data before save:', productData);
             
             console.log('Submitting product data:', productData);
             
