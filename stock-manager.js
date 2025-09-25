@@ -63,18 +63,43 @@ async function reserveOrderStock(orderItems) {
                 quantity_to_deduct: parseInt(item.quantity)
             });
             
-            if (error) {
-                console.error(`Stock deduction failed for product ${item.id}:`, error);
-                // If any item fails, we need to restore previously deducted stock
-                await restoreOrderStock(orderItems.slice(0, orderItems.indexOf(item)));
-                return { success: false, error: `Failed to reserve stock for ${item.name}` };
-            }
-            
-            if (!data) {
-                console.error(`Insufficient stock for product ${item.id}`);
-                // Restore previously deducted stock
-                await restoreOrderStock(orderItems.slice(0, orderItems.indexOf(item)));
-                return { success: false, error: `Insufficient stock for ${item.name}` };
+            if (error || data === null) {
+                console.warn(`RPC deduct_stock failed for product ${item.id}. Falling back to direct update...`, error);
+                // Fallback: direct stock decrement with check
+                const { data: current, error: fetchErr } = await supabase
+                    .from('products')
+                    .select('stock, status')
+                    .eq('id', item.id)
+                    .single();
+                
+                if (fetchErr || !current) {
+                    await restoreOrderStock(orderItems.slice(0, orderItems.indexOf(item)));
+                    return { success: false, error: `Failed to fetch stock for ${item.name}` };
+                }
+                
+                if (current.stock < item.quantity || current.status === 'out-of-stock') {
+                    await restoreOrderStock(orderItems.slice(0, orderItems.indexOf(item)));
+                    return { success: false, error: `Insufficient stock for ${item.name}` };
+                }
+                
+                const newStock = current.stock - item.quantity;
+                const updates = { stock: newStock };
+                if (newStock === 0) {
+                    updates.status = 'out-of-stock';
+                }
+                
+                const { error: updateErr } = await supabase
+                    .from('products')
+                    .update(updates)
+                    .eq('id', item.id);
+                
+                if (updateErr) {
+                    await restoreOrderStock(orderItems.slice(0, orderItems.indexOf(item)));
+                    return { success: false, error: `Failed to update stock for ${item.name}` };
+                }
+                
+                console.log(`✅ Fallback: Stock updated for product ${item.id}: -${item.quantity} units`);
+                continue;
             }
             
             console.log(`✅ Stock reserved for product ${item.id}: ${item.quantity} units`);
