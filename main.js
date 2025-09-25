@@ -1313,6 +1313,9 @@ async function processOrder(total, paymentMethod, orderItems = null, isBuyNow = 
             window.triggerStockUpdateForAdmin();
         }
         
+        // Show order confirmation to user
+        try { showOrderConfirmation(savedOrder); } catch (e) { console.warn('Could not show confirmation popup:', e); }
+        
         return savedOrder;
         
     } catch (error) {
@@ -1444,6 +1447,12 @@ function decreaseQuantity() {
 function addToCartFromModal() {
     if (!currentProduct) return;
     
+    // Prevent adding out-of-stock items
+    if ((currentProduct.status && currentProduct.status === 'out-of-stock') || (typeof currentProduct.stock === 'number' && currentProduct.stock <= 0)) {
+        showNotification('This item is out of stock', 'warning');
+        return;
+    }
+    
     const quantity = parseInt(document.getElementById('modalQuantity').value);
     const existingItem = cart.find(item => item.id == currentProduct.id);
     
@@ -1470,6 +1479,12 @@ function buyNowFromModal() {
     
     if (!currentProduct) return;
     
+    // Prevent buying out-of-stock items
+    if ((currentProduct.status && currentProduct.status === 'out-of-stock') || (typeof currentProduct.stock === 'number' && currentProduct.stock <= 0)) {
+        showNotification('This item is out of stock', 'warning');
+        return;
+    }
+    
     const quantity = parseInt(document.getElementById('modalQuantity').value);
     // Store buy now item separately (don't add to cart)
     const buyNowItem = { ...currentProduct, quantity };
@@ -1490,6 +1505,12 @@ function buyNow(productId) {
     
     const product = products.find(p => p.id == productId);
     if (!product) return;
+    
+    // Prevent buying out-of-stock items
+    if ((product.status && product.status === 'out-of-stock') || (typeof product.stock === 'number' && product.stock <= 0)) {
+        showNotification('This item is out of stock', 'warning');
+        return;
+    }
     
     // Store buy now item separately (don't add to cart)
     const buyNowItem = { ...product, quantity: 1 };
