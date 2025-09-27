@@ -945,8 +945,11 @@ body {
     font-size: 14px;
     white-space: nowrap;
     text-align: center;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     min-width: fit-content;
+    line-height: 1;
 }
 
 .color-option:hover,

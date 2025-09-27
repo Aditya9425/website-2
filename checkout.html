@@ -251,6 +251,31 @@
                     </div>
                 </div>
             </div>
+            <!-- Feedback Section -->
+            <div style="text-align: center; padding: 25px 0; border-top: 1px solid #34495e; margin-bottom: 20px;">
+                <p style="color: #bdc3c7; font-size: 14px; margin: 0 0 15px 0; line-height: 1.5;">
+                    The website is in early stages. There may be minor bugs. We appreciate your feedback to help us improve!
+                </p>
+                <button onclick="openFeedbackModal()" style="
+                    background: linear-gradient(135deg, #FF6B6B 0%, #E85A4F 100%);
+                    color: white;
+                    border: none;
+                    padding: 12px 24px;
+                    border-radius: 25px;
+                    cursor: pointer;
+                    font-size: 14px;
+                    font-weight: 600;
+                    transition: all 0.3s ease;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 8px;
+                    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+                " onmouseover="this.style.background='linear-gradient(135deg, #E85A4F 0%, #D44638 100%)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='linear-gradient(135deg, #FF6B6B 0%, #E85A4F 100%)'; this.style.transform='translateY(0)';">
+                    <i class="fas fa-comment-dots" style="font-size: 16px;"></i>
+                    Give Feedback
+                </button>
+            </div>
+            
             <div style="border-top: 1px solid #34495e; padding-top: 20px; text-align: center;">
                 <p style="color: #bdc3c7; margin: 0;">&copy; 2025 Shagun Saree Baran. All rights reserved.</p>
             </div>
@@ -299,6 +324,31 @@
                     <i class="fas fa-receipt"></i>
                     View Order Details
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feedback Modal -->
+    <div id="feedbackModal" class="feedback-modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Share Your Feedback</h3>
+                <button class="modal-close" onclick="closeFeedbackModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="feedbackForm">
+                    <textarea 
+                        id="feedbackText" 
+                        placeholder="Please share your thoughts, suggestions, or report any bugs you've encountered. Your feedback helps us improve!"
+                        required
+                    ></textarea>
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-paper-plane"></i>
+                        Submit Feedback
+                    </button>
+                </form>
             </div>
         </div>
     </div>

@@ -475,14 +475,10 @@ function displayCartItems() {
                 <div class="cart-item-info">
                     <h4 class="cart-item-name">${item.name}</h4>
                     <div class="cart-item-price">₹${item.price.toLocaleString()}</div>
+                    <div class="cart-item-quantity">Quantity: ${item.quantity}</div>
                 </div>
             </div>
             <div class="cart-item-controls">
-                <div class="quantity-controls">
-                    <button class="quantity-btn qty-decrease" data-id="${item.id}">-</button>
-                    <input type="number" class="quantity-input" value="${item.quantity}" min="1" readonly>
-                    <button class="quantity-btn qty-increase" data-id="${item.id}">+</button>
-                </div>
                 <button class="remove-btn" data-id="${item.id}">
                     <i class="fas fa-trash"></i> Remove
                 </button>
@@ -492,27 +488,7 @@ function displayCartItems() {
         `;
     }).join('');
     
-    // Add event listeners to the buttons
-    document.querySelectorAll('.qty-decrease').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const productId = e.target.getAttribute('data-id');
-            const item = cart.find(item => item.id == productId);
-            if (item) {
-                updateCartItemQuantity(productId, item.quantity - 1);
-            }
-        });
-    });
-    
-    document.querySelectorAll('.qty-increase').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const productId = e.target.getAttribute('data-id');
-            const item = cart.find(item => item.id == productId);
-            if (item) {
-                updateCartItemQuantity(productId, item.quantity + 1);
-            }
-        });
-    });
-    
+    // Add event listeners to the remove buttons
     document.querySelectorAll('.remove-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const productId = e.target.getAttribute('data-id');
@@ -2145,7 +2121,8 @@ async function handleFeedbackSubmit(event) {
         
         if (error) throw error;
         
-        alert('Thank you for your feedback! We appreciate your input and will use it to improve our website.');
+        // Show success alert with checkmark
+        alert('✅ Thanks for your feedback!');
         closeFeedbackModal();
     } catch (error) {
         console.error('Error saving feedback:', error);
@@ -2165,5 +2142,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const feedbackForm = document.getElementById('feedbackForm');
     if (feedbackForm) {
         feedbackForm.addEventListener('submit', handleFeedbackSubmit);
+    }
+    
+    // Close modal when clicking outside
+    const feedbackModal = document.getElementById('feedbackModal');
+    if (feedbackModal) {
+        feedbackModal.addEventListener('click', function(e) {
+            if (e.target === feedbackModal) {
+                closeFeedbackModal();
+            }
+        });
     }
 });

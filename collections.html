@@ -195,11 +195,47 @@
                     </div>
                 </div>
             </div>
+            <!-- Feedback Section -->
+            <div class="footer-feedback">
+                <p class="feedback-message">
+                    The website is in early stages. There may be minor bugs. We appreciate your feedback to help us improve!
+                </p>
+                <button class="feedback-btn" onclick="openFeedbackModal()">
+                    <i class="fas fa-comment-dots"></i>
+                    Give Feedback
+                </button>
+            </div>
+            
             <div class="footer-bottom">
                 <p>&copy; 2025 Shagun Saree Baran. All rights reserved.</p>
             </div>
         </div>
     </footer>
+
+    <!-- Feedback Modal -->
+    <div id="feedbackModal" class="feedback-modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Share Your Feedback</h3>
+                <button class="modal-close" onclick="closeFeedbackModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="feedbackForm">
+                    <textarea 
+                        id="feedbackText" 
+                        placeholder="Please share your thoughts, suggestions, or report any bugs you've encountered. Your feedback helps us improve!"
+                        required
+                    ></textarea>
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-paper-plane"></i>
+                        Submit Feedback
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <script src="stock-manager.js"></script>
     <script src="realtime-stock.js"></script>

@@ -83,6 +83,11 @@
                         Product description will be loaded here...
                     </div>
 
+                    <!-- Stock Status -->
+                    <div class="stock-status" id="stockStatus" style="margin: 15px 0; padding: 10px; border-radius: 5px;">
+                        <!-- Stock info will be loaded dynamically -->
+                    </div>
+
                     <!-- Color Variants -->
                     <div class="color-variants" id="colorVariants" style="display: none;">
                         <h4>Available Colors</h4>
@@ -100,15 +105,7 @@
                             </div>
                         </div>
 
-                        <!-- Quantity Selection -->
-                        <div class="option-group">
-                            <h4>Quantity</h4>
-                            <div class="quantity-selector">
-                                <button class="qty-btn" id="decreaseQty">-</button>
-                                <input type="number" value="1" min="1" max="10" id="quantityInput" class="quantity-input">
-                                <button class="qty-btn" id="increaseQty">+</button>
-                            </div>
-                        </div>
+
                     </div>
 
                     <!-- Action Buttons -->
@@ -188,11 +185,61 @@
                     </div>
                 </div>
             </div>
+            <!-- Feedback Section -->
+            <div style="text-align: center; padding: 25px 0; border-top: 1px solid #34495e; margin-bottom: 20px;">
+                <p style="color: #bdc3c7; font-size: 14px; margin: 0 0 15px 0; line-height: 1.5;">
+                    The website is in early stages. There may be minor bugs. We appreciate your feedback to help us improve!
+                </p>
+                <button onclick="openFeedbackModal()" style="
+                    background: linear-gradient(135deg, #FF6B6B 0%, #E85A4F 100%);
+                    color: white;
+                    border: none;
+                    padding: 12px 24px;
+                    border-radius: 25px;
+                    cursor: pointer;
+                    font-size: 14px;
+                    font-weight: 600;
+                    transition: all 0.3s ease;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 8px;
+                    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+                " onmouseover="this.style.background='linear-gradient(135deg, #E85A4F 0%, #D44638 100%)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='linear-gradient(135deg, #FF6B6B 0%, #E85A4F 100%)'; this.style.transform='translateY(0)';">
+                    <i class="fas fa-comment-dots" style="font-size: 16px;"></i>
+                    Give Feedback
+                </button>
+            </div>
+            
             <div style="border-top: 1px solid #34495e; padding-top: 20px; text-align: center;">
                 <p style="color: #bdc3c7; margin: 0;">&copy; 2025 Shagun Saree Baran. All rights reserved.</p>
             </div>
         </div>
     </footer>
+
+    <!-- Feedback Modal -->
+    <div id="feedbackModal" class="feedback-modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Share Your Feedback</h3>
+                <button class="modal-close" onclick="closeFeedbackModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="feedbackForm">
+                    <textarea 
+                        id="feedbackText" 
+                        placeholder="Please share your thoughts, suggestions, or report any bugs you've encountered. Your feedback helps us improve!"
+                        required
+                    ></textarea>
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-paper-plane"></i>
+                        Submit Feedback
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <script src="main.js"></script>
     <script src="cart-count-fix.js"></script>
@@ -305,7 +352,9 @@
                     color_variants: data.color_variants || [],
                     sizes: data.sizes || ['Free Size'],
                     fabric: data.fabric,
-                    reviews: data.reviews || 50
+                    reviews: data.reviews || 50,
+                    stock: data.stock || 0,
+                    status: data.status || 'active'
                 };
                 
                 displayProductDetails(product, selectedColor);
@@ -322,6 +371,20 @@
             document.getElementById('currentPrice').textContent = `₹${product.price.toLocaleString()}`;
             document.getElementById('originalPrice').textContent = product.originalPrice ? `₹${product.originalPrice.toLocaleString()}` : '';
             document.getElementById('productDescription').textContent = product.description || 'No description available.';
+            
+            // Display stock status
+            const stockStatus = document.getElementById('stockStatus');
+            if (product.stock === 0 || product.status === 'out-of-stock') {
+                stockStatus.innerHTML = '<i class="fas fa-times-circle" style="color: #dc3545;"></i> <strong style="color: #dc3545;">Out of Stock</strong>';
+                stockStatus.style.backgroundColor = '#f8d7da';
+                stockStatus.style.border = '1px solid #f5c6cb';
+                stockStatus.style.color = '#721c24';
+            } else {
+                stockStatus.innerHTML = `<i class="fas fa-check-circle" style="color: #28a745;"></i> <strong style="color: #155724;">In Stock</strong>`;
+                stockStatus.style.backgroundColor = '#d4edda';
+                stockStatus.style.border = '1px solid #c3e6cb';
+                stockStatus.style.color = '#155724';
+            }
             
             // Load image gallery
             let imagesToShow = [];
@@ -423,29 +486,24 @@
         }
         
         function setupProductActions(product) {
-            // Add to Cart button
-            document.getElementById('addToCartBtn').addEventListener('click', function() {
-                const quantity = parseInt(document.getElementById('quantityInput').value);
-                addProductToCart(product, quantity);
+            const addToCartBtn = document.getElementById('addToCartBtn');
+            const buyNowBtn = document.getElementById('buyNowBtn');
+            
+            // Check if product is out of stock
+            if (product.stock === 0 || product.status === 'out-of-stock') {
+                // Remove buttons completely
+                addToCartBtn.remove();
+                buyNowBtn.remove();
+                return;
+            }
+            
+            // Normal functionality for in-stock products (quantity fixed to 1)
+            addToCartBtn.addEventListener('click', function() {
+                addProductToCart(product, 1);
             });
             
-            // Buy Now button
-            document.getElementById('buyNowBtn').addEventListener('click', function() {
-                const quantity = parseInt(document.getElementById('quantityInput').value);
-                buyNowProduct(product, quantity);
-            });
-            
-            // Quantity controls
-            document.getElementById('increaseQty').addEventListener('click', function() {
-                const input = document.getElementById('quantityInput');
-                input.value = parseInt(input.value) + 1;
-            });
-            
-            document.getElementById('decreaseQty').addEventListener('click', function() {
-                const input = document.getElementById('quantityInput');
-                if (parseInt(input.value) > 1) {
-                    input.value = parseInt(input.value) - 1;
-                }
+            buyNowBtn.addEventListener('click', function() {
+                buyNowProduct(product, 1);
             });
         }
         
@@ -466,7 +524,7 @@
             document.getElementById('cartCount').textContent = count;
             
             // Show notification
-            alert(`Added ${quantity} item(s) to cart!`);
+            alert('Added to cart!');
         }
         
         function buyNowProduct(product, quantity) {
