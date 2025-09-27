@@ -1289,23 +1289,7 @@ async function processOrder(total, paymentMethod, orderItems = null, isBuyNow = 
         
         console.log('✅ Order saved with ID:', savedOrder.id);
         
-        // STEP 4: Deduct stock from database
-        console.log('📉 Deducting stock from database...');
-        for (const item of items) {
-            const { data, error } = await supabase.rpc('deduct_stock', {
-                product_id: item.id,
-                quantity_to_deduct: item.quantity
-            });
-            
-            if (error || !data) {
-                console.error(`❌ Failed to deduct stock for product ${item.id}:`, error);
-                // Continue with other items even if one fails
-            } else {
-                console.log(`✅ Stock deducted for product ${item.id}: ${item.quantity} units`);
-            }
-        }
-        
-        // STEP 5: Update product status and refresh frontend
+        // STEP 4: Update product status and refresh frontend
         await updateProductStatusAfterOrder(items);
         await refreshProductsAfterOrder(items);
         
