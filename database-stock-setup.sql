@@ -16,8 +16,13 @@ UPDATE products
 SET status = 'active' 
 WHERE status IS NULL;
 
--- Create or replace the stock deduction function
-CREATE OR REPLACE FUNCTION deduct_stock(product_id bigint, quantity_to_deduct integer)
+-- Drop all existing deduct_stock functions
+DROP FUNCTION IF EXISTS deduct_stock(bigint, integer);
+DROP FUNCTION IF EXISTS deduct_stock(integer, integer);
+DROP FUNCTION IF EXISTS deduct_stock(uuid, integer);
+
+-- Create single clean stock deduction function
+CREATE FUNCTION deduct_stock(product_id uuid, quantity_to_deduct integer)
 RETURNS boolean
 LANGUAGE plpgsql
 SECURITY DEFINER

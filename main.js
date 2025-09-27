@@ -1230,24 +1230,43 @@ async function processOrder(total, paymentMethod, orderItems = null, isBuyNow = 
     const calculatedTotal = subtotal + deliveryCharges;
     
     try {
-        // STEP 1: Validate stock availability before processing
-        console.log('🔍 Validating stock availability...');
-        const stockValidation = await validateOrderStock(items);
-        if (!stockValidation.valid) {
-            const errorMsg = stockValidation.reason ? 
-                `${stockValidation.productName}: ${stockValidation.reason}` :
-                `${stockValidation.productName} is not available in the requested quantity`;
-            throw new Error(errorMsg);
+        // STEP 1: Deduct stock directly from database
+        console.log('📉 Deducting stock from database...');
+        for (const item of items) {
+            console.log(`Deducting ${item.quantity} units from product ${item.id}`);
+            
+            // Get current stock
+            const { data: product, error: fetchError } = await supabase
+                .from('products')
+                .select('stock, status')
+                .eq('id', item.id)
+                .single();
+            
+            if (fetchError || !product) {
+                throw new Error(`Product ${item.name} not found`);
+            }
+            
+            if (product.stock < item.quantity) {
+                throw new Error(`Insufficient stock for ${item.name}. Available: ${product.stock}, Requested: ${item.quantity}`);
+            }
+            
+            // Update stock
+            const newStock = product.stock - item.quantity;
+            const { error: updateError } = await supabase
+                .from('products')
+                .update({ 
+                    stock: newStock,
+                    status: newStock === 0 ? 'out-of-stock' : 'active'
+                })
+                .eq('id', item.id);
+            
+            if (updateError) {
+                throw new Error(`Failed to update stock for ${item.name}`);
+            }
+            
+            console.log(`✅ Stock updated for ${item.id}: ${product.stock} -> ${newStock}`);
         }
-        console.log('✅ Stock validation passed');
-        
-        // STEP 2: Reserve stock (atomic operation)
-        console.log('🔒 Reserving stock for order...');
-        const stockReservation = await reserveOrderStock(items);
-        if (!stockReservation.success) {
-            throw new Error(`Stock reservation failed: ${stockReservation.error}`);
-        }
-        console.log('✅ Stock reserved successfully');
+        console.log('✅ Stock deducted successfully');
         
         // Create order object with proper structure for Supabase
         const order = {
@@ -1279,19 +1298,13 @@ async function processOrder(total, paymentMethod, orderItems = null, isBuyNow = 
         
         console.log('📋 Order created:', order);
         
-        // STEP 3: Save order to database
+        // STEP 2: Save order to database
         const savedOrder = await saveOrderToDatabase(order);
         if (!savedOrder || !savedOrder.id) {
-            // If order save fails, restore stock
-            await restoreOrderStock(items);
             throw new Error('Failed to save order to database');
         }
         
         console.log('✅ Order saved with ID:', savedOrder.id);
-        
-        // STEP 4: Update product status and refresh frontend
-        await updateProductStatusAfterOrder(items);
-        await refreshProductsAfterOrder(items);
         
         // Clear appropriate storage after successful order
         if (isBuyNow) {

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Stock Deduction</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>Test Stock Deduction</h1>
+    <button onclick="testStockDeduction()">Test Deduct Stock</button>
+    <div id="result"></div>
+
+    <script>
+        const SUPABASE_URL = 'https://jstvadizuzvwhabtfhfs.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzdHZhZGl6dXp2d2hhYnRmaGZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NjI3NjAsImV4cCI6MjA3MjIzODc2MH0.6btNpJfUh6Fd5PfoivIvu-f31Fj5IXl1vxBLsHz5ISw';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function testStockDeduction() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing...';
+
+            try {
+                const productId = '73239457-a584-4d0d-9668-5c6ec1767a19'; // Valid UUID with stock 10
+                
+                // Get current stock
+                const { data: product, error: fetchError } = await supabase
+                    .from('products')
+                    .select('stock, status')
+                    .eq('id', productId)
+                    .single();
+                
+                if (fetchError || !product) {
+                    resultDiv.innerHTML = `Error: Product not found - ${JSON.stringify(fetchError)}`;
+                    return;
+                }
+                
+                if (product.stock < 1) {
+                    resultDiv.innerHTML = `Error: Insufficient stock. Available: ${product.stock}`;
+                    return;
+                }
+                
+                // Update stock
+                const newStock = product.stock - 1;
+                const { error: updateError } = await supabase
+                    .from('products')
+                    .update({ 
+                        stock: newStock,
+                        status: newStock === 0 ? 'out-of-stock' : 'active'
+                    })
+                    .eq('id', productId);
+                
+                if (updateError) {
+                    resultDiv.innerHTML = `Error: ${JSON.stringify(updateError)}`;
+                } else {
+                    resultDiv.innerHTML = `Success: Stock reduced from ${product.stock} to ${newStock}`;
+                }
+            } catch (err) {
+                resultDiv.innerHTML = `Exception: ${err.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
