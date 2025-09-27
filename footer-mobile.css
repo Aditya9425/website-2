@@ -147,57 +147,77 @@
     }
 }
 
-/* Mobile Styles - Matches the provided image */
+/* Mobile Styles - Horizontal Layout Like Laptop */
 @media (max-width: 768px) {
     .footer {
-        padding: 30px 0 15px;
+        padding: 25px 0 12px;
         margin-top: 40px;
     }
     
     .footer-container {
-        padding: 0 15px;
+        padding: 0 10px;
     }
     
     .footer-content {
-        grid-template-columns: 1fr;
-        gap: 25px;
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+        gap: 15px;
         text-align: center;
     }
     
     .footer-section h3 {
-        font-size: 1.3rem;
-        margin-bottom: 12px;
+        font-size: 1rem;
+        margin-bottom: 8px;
     }
     
     .footer-section h4 {
-        font-size: 1.1rem;
-        margin-bottom: 12px;
+        font-size: 0.9rem;
+        margin-bottom: 8px;
     }
     
     .footer-section p {
-        font-size: 14px;
-        line-height: 1.5;
+        font-size: 11px;
+        line-height: 1.4;
+    }
+    
+    .footer-links {
+        gap: 4px;
+    }
+    
+    .footer-links a {
+        font-size: 11px;
+        padding: 2px 0;
     }
     
     .footer-contact {
         align-items: center;
+        gap: 4px;
     }
     
     .footer-contact div {
         justify-content: center;
-        font-size: 14px;
+        font-size: 10px;
+    }
+    
+    .footer-contact i {
+        font-size: 10px;
     }
     
     .footer-social {
         justify-content: center;
     }
     
+    .footer-social a {
+        width: 28px;
+        height: 28px;
+        font-size: 1rem;
+    }
+    
     .footer-bottom {
-        padding-top: 15px;
+        padding-top: 12px;
     }
     
     .footer-bottom p {
-        font-size: 13px;
+        font-size: 11px;
     }
 }
 
@@ -292,56 +312,73 @@ footer[style*="background"] i {
     color: #FF6B6B !important;
 }
 
-/* Mobile overrides for inline styles */
+/* Mobile overrides for inline styles - Horizontal Layout */
 @media (max-width: 768px) {
     footer[style*="background"] {
-        padding: 30px 0 15px !important;
+        padding: 25px 0 12px !important;
         margin-top: 40px !important;
     }
     
     footer[style*="background"] > div {
-        padding: 0 15px !important;
+        padding: 0 10px !important;
     }
     
     footer[style*="background"] > div > div[style*="grid"] {
-        grid-template-columns: 1fr !important;
-        gap: 25px !important;
+        grid-template-columns: 1fr 1fr 1fr 1fr !important;
+        gap: 15px !important;
         text-align: center !important;
     }
     
     footer[style*="background"] h3 {
-        font-size: 1.3rem !important;
-        margin-bottom: 12px !important;
+        font-size: 1rem !important;
+        margin-bottom: 8px !important;
     }
     
     footer[style*="background"] h4 {
-        font-size: 1.1rem !important;
-        margin-bottom: 12px !important;
+        font-size: 0.9rem !important;
+        margin-bottom: 8px !important;
     }
     
     footer[style*="background"] p {
-        font-size: 14px !important;
+        font-size: 11px !important;
+        line-height: 1.4 !important;
     }
     
     footer[style*="background"] div[style*="flex-direction: column"] {
         align-items: center !important;
+        gap: 4px !important;
     }
     
     footer[style*="background"] div[style*="flex-direction: column"] div {
         justify-content: center !important;
-        font-size: 14px !important;
+        font-size: 10px !important;
+    }
+    
+    footer[style*="background"] div[style*="flex-direction: column"] a {
+        font-size: 11px !important;
+        padding: 2px 0 !important;
     }
     
     footer[style*="background"] div[style*="gap: 15px"] {
         justify-content: center !important;
     }
     
+    footer[style*="background"] div[style*="gap: 15px"] a {
+        width: 28px !important;
+        height: 28px !important;
+        font-size: 1rem !important;
+    }
+    
     footer[style*="background"] div[style*="border-top"] {
-        padding-top: 15px !important;
+        padding-top: 12px !important;
     }
     
     footer[style*="background"] div[style*="border-top"] p {
-        font-size: 13px !important;
+        font-size: 11px !important;
+    }
+    
+    footer[style*="background"] i {
+        font-size: 10px !important;
     }
 }
 

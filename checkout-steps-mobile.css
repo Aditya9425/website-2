@@ -1,0 +1,83 @@
+/* Mobile Checkout Steps Optimization */
+@media (max-width: 768px) {
+    .checkout-steps {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        gap: 5px !important;
+        padding: 15px 10px !important;
+        overflow-x: auto !important;
+    }
+    
+    .step {
+        flex-direction: column !important;
+        text-align: center !important;
+        padding: 10px 5px !important;
+        background: transparent !important;
+        border-radius: 8px !important;
+        min-width: 70px !important;
+        flex: 1 !important;
+        position: relative !important;
+    }
+    
+    .step:not(:last-child):after {
+        content: '' !important;
+        position: absolute !important;
+        right: -50% !important;
+        top: 20px !important;
+        width: 100% !important;
+        height: 2px !important;
+        background: #e0e0e0 !important;
+        z-index: 1 !important;
+        display: block !important;
+    }
+    
+    .step.active:not(:last-child):after {
+        background: #FF6B6B !important;
+    }
+    
+    .step-number {
+        margin-right: 0 !important;
+        margin-bottom: 8px !important;
+        width: 30px !important;
+        height: 30px !important;
+        font-size: 14px !important;
+    }
+    
+    .step-title {
+        font-size: 12px !important;
+        font-weight: 600 !important;
+    }
+    
+    .step-desc {
+        font-size: 10px !important;
+        margin-top: 2px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .checkout-steps {
+        gap: 2px !important;
+        padding: 10px 5px !important;
+    }
+    
+    .step {
+        min-width: 60px !important;
+        padding: 8px 3px !important;
+    }
+    
+    .step-number {
+        width: 25px !important;
+        height: 25px !important;
+        font-size: 12px !important;
+        margin-bottom: 5px !important;
+    }
+    
+    .step-title {
+        font-size: 11px !important;
+    }
+    
+    .step-desc {
+        font-size: 9px !important;
+    }
+}

@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="mobile-responsive.css">
     <link rel="stylesheet" href="checkout-mobile-optimized.css">
     <link rel="stylesheet" href="checkout-mobile-final.css">
+    <link rel="stylesheet" href="checkout-steps-mobile.css">
     <link rel="stylesheet" href="footer-mobile.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -79,7 +80,7 @@
 
             <div class="checkout-content">
                 <!-- Checkout Steps -->
-                <div class="checkout-steps">
+                <div class="checkout-steps" onclick="scrollToPayNow()" style="cursor: pointer;">
                     <div class="step active">
                         <div class="step-number">1</div>
                         <div class="step-info">
@@ -666,6 +667,14 @@
                 await paymentManager.initiatePayment(orderData);
             } else {
                 alert('Payment system not loaded. Please refresh the page.');
+            }
+        }
+        
+        // Scroll to Pay Now button function
+        function scrollToPayNow() {
+            const payNowBtn = document.getElementById('payNowBtn');
+            if (payNowBtn) {
+                payNowBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         }
         
