@@ -1,0 +1,241 @@
+/* Out of Stock Display Styles */
+
+/* Out of Stock Overlay */
+.out-of-stock-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 16px;
+    z-index: 10;
+    border-radius: 12px 12px 0 0;
+}
+
+/* Out of Stock Product Card */
+.product-card[data-status="out-of-stock"] {
+    opacity: 0.7;
+    position: relative;
+}
+
+.product-card[data-status="out-of-stock"]::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 10px,
+        rgba(255, 0, 0, 0.1) 10px,
+        rgba(255, 0, 0, 0.1) 20px
+    );
+    pointer-events: none;
+    border-radius: 12px;
+}
+
+/* Out of Stock Label */
+.out-of-stock-label {
+    background: #dc3545;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 14px;
+    width: 100%;
+    margin-top: 10px;
+}
+
+/* Low Stock Indicator */
+.low-stock-indicator {
+    background: #ffc107;
+    color: #856404;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.low-stock-indicator i {
+    font-size: 10px;
+}
+
+/* Product Card States */
+.product-card.out-of-stock-row {
+    background: #f8f9fa;
+    border: 2px dashed #dc3545;
+}
+
+.product-card.low-stock-row {
+    border-left: 4px solid #ffc107;
+}
+
+/* Stock Status Badges */
+.stock-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.stock-status.in-stock {
+    background: #d4edda;
+    color: #155724;
+}
+
+.stock-status.low-stock {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.stock-status.out-of-stock {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* Disabled Buttons */
+.product-card[data-status="out-of-stock"] .add-to-cart-btn,
+.product-card[data-status="out-of-stock"] .buy-now-btn {
+    background: #6c757d !important;
+    color: #fff !important;
+    cursor: not-allowed !important;
+    opacity: 0.6;
+}
+
+.product-card[data-status="out-of-stock"] .add-to-cart-btn:hover,
+.product-card[data-status="out-of-stock"] .buy-now-btn:hover {
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* Stock Indicators in Product Info */
+.product-name-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.out-of-stock-indicator {
+    color: #dc3545;
+    font-size: 16px;
+}
+
+.low-stock-indicator-icon {
+    color: #ffc107;
+    font-size: 14px;
+}
+
+/* Admin Panel Stock Indicators */
+.stock-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.stock-number {
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 4px;
+    min-width: 30px;
+    text-align: center;
+}
+
+.stock-number.stock-zero {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.stock-number.stock-low {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.stock-number.stock-good {
+    background: #d4edda;
+    color: #155724;
+}
+
+.stock-update-btn {
+    padding: 4px 8px !important;
+    font-size: 12px !important;
+}
+
+/* Modal Styles for Stock Updates */
+.stock-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+}
+
+.stock-actions .btn-secondary {
+    padding: 8px 12px;
+    font-size: 12px;
+    border-radius: 4px;
+}
+
+.current-stock-display {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.product-name-display {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    padding: 10px;
+    background: #e9ecef;
+    border-radius: 4px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .out-of-stock-overlay {
+        font-size: 14px;
+    }
+    
+    .low-stock-indicator {
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+    
+    .stock-actions {
+        flex-direction: column;
+    }
+    
+    .stock-actions .btn-secondary {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .out-of-stock-overlay {
+        font-size: 12px;
+    }
+    
+    .out-of-stock-label {
+        font-size: 12px;
+        padding: 8px 12px;
+    }
+}

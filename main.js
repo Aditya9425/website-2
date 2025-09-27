@@ -1289,8 +1289,9 @@ async function processOrder(total, paymentMethod, orderItems = null, isBuyNow = 
         
         console.log('✅ Order saved with ID:', savedOrder.id);
         
-        // STEP 4: Update product status if any item goes out of stock
+        // STEP 4: Update product status and refresh frontend
         await updateProductStatusAfterOrder(items);
+        await refreshProductsAfterOrder(items);
         
         // Clear appropriate storage after successful order
         if (isBuyNow) {
