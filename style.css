@@ -81,6 +81,7 @@ body {
     font-weight: 600;
     color: #333;
     margin: 0;
+    white-space: nowrap;
 }
 
 .nav-search {
@@ -2945,6 +2946,7 @@ body {
     
     .logo-text {
         font-size: 16px;
+        white-space: nowrap;
     }
     
     .logo-icon {
@@ -3020,6 +3022,7 @@ body {
     
     .logo-text {
         font-size: 14px;
+        white-space: nowrap;
     }
     
     .logo-icon {

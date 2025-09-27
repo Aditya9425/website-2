@@ -17,6 +17,8 @@
     <link rel="stylesheet" href="mobile-responsive.css">
     <link rel="stylesheet" href="mobile-fix.css">
     <link rel="stylesheet" href="footer-mobile.css">
+    <link rel="stylesheet" href="carousel-navigation.css">
+    <link rel="stylesheet" href="mobile-menu-fix.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
@@ -83,9 +85,15 @@
                     <p class="section-subtitle">Handpicked beauties from our collection ✨</p>
                 </div>
                 <div class="carousel-container">
+                    <button class="carousel-btn carousel-btn-left" onclick="slideCarousel('left')">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
                     <div class="carousel-track" id="featuredProducts">
                         <!-- Featured products will be loaded here -->
                     </div>
+                    <button class="carousel-btn carousel-btn-right" onclick="slideCarousel('right')">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
                 </div>
             </div>
         </section>
@@ -263,5 +271,18 @@
 
     <script src="main.js"></script>
     <script src="cart-count-fix.js"></script>
+    
+    <script>
+        function slideCarousel(direction) {
+            const track = document.getElementById('featuredProducts');
+            const scrollAmount = 300;
+            
+            if (direction === 'left') {
+                track.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+            } else {
+                track.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+            }
+        }
+    </script>
 </body>
 </html>

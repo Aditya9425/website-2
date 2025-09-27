@@ -1859,12 +1859,14 @@ function toggleMobileMenu() {
     const menuToggle = document.getElementById('mobileMenuToggle');
     
     if (navLinks && menuToggle) {
+        navLinks.classList.toggle('active');
+        
         if (navLinks.classList.contains('active')) {
-            navLinks.classList.remove('active');
-            menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
-        } else {
-            navLinks.classList.add('active');
             menuToggle.innerHTML = '<i class="fas fa-times"></i>';
+            document.body.style.overflow = 'hidden';
+        } else {
+            menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+            document.body.style.overflow = 'auto';
         }
     }
 }
@@ -1880,6 +1882,7 @@ function closeMobileMenuOnNavClick() {
             if (window.innerWidth <= 768 && navLinksContainer && menuToggle) {
                 navLinksContainer.classList.remove('active');
                 menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+                document.body.style.overflow = 'auto';
             }
         });
     });

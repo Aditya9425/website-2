@@ -1,0 +1,141 @@
+/* Mobile Menu Fix */
+.mobile-menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #333;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.mobile-menu-toggle:hover {
+    background: rgba(255, 107, 107, 0.1);
+    color: #FF6B6B;
+}
+
+/* Mobile Navigation Styles */
+@media (max-width: 768px) {
+    .mobile-menu-toggle {
+        display: block;
+        order: 3;
+    }
+    
+    .nav-links {
+        position: fixed;
+        top: 70px;
+        left: 0;
+        width: 100%;
+        background: white;
+        flex-direction: column;
+        padding: 20px 0;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        transform: translateY(-100%);
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        z-index: 1000;
+        border-top: 1px solid #eee;
+    }
+    
+    .nav-links.active {
+        transform: translateY(0);
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    .nav-link {
+        padding: 12px 20px;
+        border-bottom: 1px solid #f0f0f0;
+        text-align: center;
+        font-size: 16px;
+        color: #333;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+    
+    .nav-link:hover,
+    .nav-link.active {
+        background: #FF6B6B;
+        color: white;
+    }
+    
+    .nav-link:last-child {
+        border-bottom: none;
+    }
+    
+    .navbar {
+        position: relative;
+        padding: 15px 20px;
+    }
+    
+    .nav-brand {
+        order: 1;
+    }
+    
+    .nav-actions {
+        order: 2;
+        gap: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .mobile-menu-toggle {
+        font-size: 18px;
+        padding: 6px;
+    }
+    
+    .nav-links {
+        top: 65px;
+        padding: 15px 0;
+    }
+    
+    .nav-link {
+        padding: 10px 15px;
+        font-size: 15px;
+    }
+    
+    .navbar {
+        padding: 12px 15px;
+    }
+}
+
+/* Ensure hamburger is always visible on mobile */
+@media (max-width: 768px) {
+    .mobile-menu-toggle {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        background: rgba(255, 107, 107, 0.1);
+        border: 2px solid transparent;
+    }
+    
+    .mobile-menu-toggle:hover {
+        border-color: #FF6B6B;
+        background: rgba(255, 107, 107, 0.2);
+    }
+    
+    .mobile-menu-toggle i {
+        font-size: 18px;
+        color: #FF6B6B;
+    }
+}
+
+/* Overlay for mobile menu */
+@media (max-width: 768px) {
+    .nav-links.active::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: -1;
+    }
+}
