@@ -155,6 +155,50 @@ class PaymentManager {
             return;
         }
 
+        try {
+            // Deduct stock from database
+            console.log('📉 Deducting stock from database...');
+            const supabase = window.supabase.createClient(
+                'https://jstvadizuzvwhabtfhfs.supabase.co',
+                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzdHZhZGl6dXp2d2hhYnRmaGZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NjI3NjAsImV4cCI6MjA3MjIzODc2MH0.6btNpJfUh6Fd5PfoivIvu-f31Fj5IXl1vxBLsHz5ISw'
+            );
+            
+            for (const item of orderData.items) {
+                const { data: product, error: fetchError } = await supabase
+                    .from('products')
+                    .select('stock, status')
+                    .eq('id', item.id)
+                    .single();
+                
+                if (fetchError || !product) {
+                    throw new Error(`Product ${item.name} not found`);
+                }
+                
+                if (product.stock < item.quantity) {
+                    throw new Error(`Insufficient stock for ${item.name}`);
+                }
+                
+                const newStock = product.stock - item.quantity;
+                const { error: updateError } = await supabase
+                    .from('products')
+                    .update({ 
+                        stock: newStock,
+                        status: newStock === 0 ? 'out-of-stock' : 'active'
+                    })
+                    .eq('id', item.id);
+                
+                if (updateError) {
+                    throw new Error(`Failed to update stock for ${item.name}`);
+                }
+                
+                console.log(`✅ Stock updated for ${item.id}: ${product.stock} -> ${newStock}`);
+            }
+            console.log('✅ Stock deducted successfully');
+        } catch (error) {
+            console.error('Stock deduction failed:', error);
+            this.showNotification(`Stock update failed: ${error.message}`, 'warning');
+        }
+
         // Create order object with proper structure
         const order = {
             user_id: userId,
@@ -183,7 +227,7 @@ class PaymentManager {
         }
 
         // Show success message
-        this.showOrderConfirmation(savedOrder || order);
+        this.showOrderConfirmation(savedOrder);
     }
 
     // Save order to database and localStorage
@@ -210,23 +254,28 @@ class PaymentManager {
             
             // Also save to localStorage as backup
             const orders = JSON.parse(localStorage.getItem('orders') || '[]');
-            orders.push(order);
+            orders.push(data);
             localStorage.setItem('orders', JSON.stringify(orders));
             
             this.showNotification('Order saved successfully!', 'success');
+            
+            return data;
             
         } catch (error) {
             console.error('Error saving order to Supabase:', error);
             
             // Fallback to localStorage only
             try {
+                const tempOrder = { ...order, id: `temp_${Date.now()}` };
                 const orders = JSON.parse(localStorage.getItem('orders') || '[]');
-                orders.push(order);
+                orders.push(tempOrder);
                 localStorage.setItem('orders', JSON.stringify(orders));
                 this.showNotification('Order saved locally. Database sync may be delayed.', 'warning');
+                return tempOrder;
             } catch (localError) {
                 console.error('Failed to save order even locally:', localError);
                 this.showNotification('Failed to save order. Please contact support immediately.', 'error');
+                return { ...order, id: `error_${Date.now()}` };
             }
         }
     }
@@ -264,19 +313,20 @@ class PaymentManager {
 
     // Show order confirmation
     showOrderConfirmation(order) {
-        console.log('Showing order confirmation for:', order.id);
+        const orderId = order.id || order.payment_id || `ORDER_${Date.now()}`;
+        console.log('Showing order confirmation for:', orderId);
         
         // Update modal content
         const orderNumber = document.getElementById('orderNumber');
         const orderTotal = document.getElementById('orderTotal');
         
-        if (orderNumber) orderNumber.textContent = order.id;
+        if (orderNumber) orderNumber.textContent = orderId;
         if (orderTotal) orderTotal.textContent = `₹${order.total_amount.toLocaleString()}`;
         
         // Show modal
         const modal = document.getElementById('orderConfirmationModal');
         if (modal) {
-            console.log('Showing order confirmation modal');
+            console.log('Showing order confirmation modal. this is happening at payment and after it');
             modal.style.display = 'flex';
             
             // Auto redirect after 8 seconds
@@ -288,7 +338,7 @@ class PaymentManager {
         } else {
             console.log('Modal not found, showing alert');
             // Fallback alert with immediate redirect option
-            const result = confirm(`✅ Payment Successful!\n\nOrder ID: ${order.id}\nTotal: ₹${order.total_amount.toLocaleString()}\n\nClick OK to view your orders or Cancel to go to home page.`);
+            const result = confirm(`✅ Payment Successful!\n\nOrder ID: ${orderId}\nTotal: ₹${order.total_amount.toLocaleString()}\n\nClick OK to view your orders or Cancel to go to home page.`);
             if (result) {
                 window.location.href = 'profile.html';
             } else {
