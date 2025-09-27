@@ -1174,11 +1174,14 @@ function handlePlaceOrderWithPayment(isBuyNow = false) {
 
 // Process order after payment (or for COD)
 async function processOrder(total, paymentMethod, orderItems = null, isBuyNow = false, paymentId = null) {
-    console.log('=== PROCESSING ORDER ===');
+    console.log('🚀 === PROCESSING ORDER START ===');
     console.log('Total:', total);
     console.log('Payment method:', paymentMethod);
     console.log('Is Buy Now:', isBuyNow);
     console.log('Payment ID:', paymentId);
+    
+    // Add alert to confirm function is called
+    alert('processOrder function called - check console for details');
     
     // Get user session
     const userSession = JSON.parse(localStorage.getItem('userSession') || '{}');
