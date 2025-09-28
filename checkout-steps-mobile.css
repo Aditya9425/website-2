@@ -32,6 +32,11 @@
         display: block !important;
     }
     
+    /* Hide line after 3rd step */
+    .step:nth-child(3):after {
+        display: none !important;
+    }
+    
     .step.active:not(:last-child):after {
         background: #FF6B6B !important;
     }

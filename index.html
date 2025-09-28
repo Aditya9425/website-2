@@ -17,9 +17,8 @@
     <link rel="stylesheet" href="mobile-responsive.css">
     <link rel="stylesheet" href="mobile-fix.css">
     <link rel="stylesheet" href="footer-mobile.css">
-    <link rel="stylesheet" href="carousel-navigation.css">
-    <link rel="stylesheet" href="mobile-menu-fix.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -63,16 +62,23 @@
     <!-- Main Content -->
     <main>
         <!-- Hero Section -->
-        <section class="hero">
+        <section class="hero premium-hero">
+            <video class="hero-video" autoplay muted loop playsinline>
+                <source src="VN20250928_112029.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <div class="hero-overlay"></div>
             <div class="hero-content">
-                <h1 class="hero-title">
-                    <span class="title-line">Elegance</span>
-                    <span class="title-line accent">Redefined</span>
-                </h1>
-                <p class="hero-subtitle">Discover the timeless beauty of traditional Indian sarees with contemporary styling. Each piece tells a story of craftsmanship and heritage that spans generations.</p>
-                <div class="hero-buttons">
-                    <a href="collections.html" class="btn-primary">Explore Collection</a>
-                    <a href="#categories" class="btn-secondary">Shop Now</a>
+                <div class="text-backdrop">
+                    <h1 class="hero-title">
+                        <span class="title-elegance">ELEGANCE</span>
+                        <span class="title-redefined">REDEFINED</span>
+                    </h1>
+                    <p class="hero-subtitle">Discover the timeless beauty of traditional Indian sarees with contemporary styling. Each piece tells a story of craftsmanship and heritage that spans generations.</p>
+                    <div class="hero-buttons">
+                        <a href="collections.html" class="btn-explore">Explore Collection</a>
+                        <a href="#categories" class="btn-shop">Shop Now</a>
+                    </div>
                 </div>
             </div>
         </section>
@@ -95,6 +101,65 @@
                         <i class="fas fa-chevron-right"></i>
                     </button>
                 </div>
+                
+                <script>
+                    let currentIndex = 0;
+                    let isManualMode = false;
+                    let resumeTimeout;
+                    
+                    function slideCarousel(direction) {
+                        const track = document.getElementById('featuredProducts');
+                        if (!track) return;
+                        
+                        track.style.animationPlayState = 'paused';
+                        isManualMode = true;
+                        
+                        const cards = track.querySelectorAll('.featured-card');
+                        const totalCards = Math.floor(cards.length / 2);
+                        
+                        let cardWidth = 350;
+                        let gap = 30;
+                        
+                        if (window.innerWidth <= 480) {
+                            cardWidth = 250;
+                            gap = 15;
+                        } else if (window.innerWidth <= 768) {
+                            cardWidth = 280;
+                            gap = 20;
+                        }
+                        
+                        if (direction === 'left') {
+                            currentIndex = currentIndex > 0 ? currentIndex - 1 : totalCards - 1;
+                        } else {
+                            currentIndex = currentIndex < totalCards - 1 ? currentIndex + 1 : 0;
+                        }
+                        
+                        const scrollPosition = -(currentIndex * (cardWidth + gap));
+                        track.style.transform = `translateX(${scrollPosition}px)`;
+                        
+                        clearTimeout(resumeTimeout);
+                        resumeTimeout = setTimeout(() => {
+                            track.style.animationPlayState = 'running';
+                            isManualMode = false;
+                        }, 3000);
+                    }
+                    
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const section = document.querySelector('.featured-sarees');
+                        const track = document.getElementById('featuredProducts');
+                        
+                        if (section && track) {
+                            section.addEventListener('mouseleave', () => {
+                                if (isManualMode) {
+                                    track.style.animationPlayState = 'running';
+                                    isManualMode = false;
+                                }
+                            });
+                        }
+                    });
+                    
+                    window.slideCarousel = slideCarousel;
+                </script>
             </div>
         </section>
 
@@ -271,18 +336,5 @@
 
     <script src="main.js"></script>
     <script src="cart-count-fix.js"></script>
-    
-    <script>
-        function slideCarousel(direction) {
-            const track = document.getElementById('featuredProducts');
-            const scrollAmount = 300;
-            
-            if (direction === 'left') {
-                track.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
-            } else {
-                track.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-            }
-        }
-    </script>
 </body>
 </html>
