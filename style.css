@@ -4909,8 +4909,7 @@ body {
     background: linear-gradient(135deg, #FFF5F8 0%, #F8F9FA 100%);
     padding: 20px 0;
     border-bottom: 1px solid rgba(252, 108, 133, 0.1);
-    position: sticky;
-    top: 80px;
+    position: relative;
     z-index: 998;
     backdrop-filter: blur(10px);
 }
@@ -5061,12 +5060,12 @@ body {
 /* Mobile Responsive */
 @media (max-width: 768px) {
     body {
-        padding-top: 180px;
+        padding-top: 140px;
     }
     
     .search-section {
         padding: 15px 0;
-        top: 120px;
+        position: static;
     }
     
     .search-container {
@@ -5114,11 +5113,12 @@ body {
 
 @media (max-width: 480px) {
     body {
-        padding-top: 170px;
+        padding-top: 130px;
     }
     
     .search-section {
         padding: 12px 0;
+        position: static;
     }
     
     .search-container {

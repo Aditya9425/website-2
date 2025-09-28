@@ -3,7 +3,7 @@
 /* Reset body padding for mobile */
 @media (max-width: 768px) {
     body {
-        padding-top: 70px;
+        padding-top: 120px;
         margin: 0;
         font-size: 16px;
     }
@@ -120,6 +120,34 @@
     }
 }
 
+/* Search Section Mobile */
+@media (max-width: 768px) {
+    .search-section {
+        position: static;
+        padding: 15px 0;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(252, 108, 133, 0.1);
+    }
+    
+    .search-container {
+        max-width: 100%;
+        margin: 0 15px;
+        border-radius: 25px;
+    }
+    
+    .search-input {
+        padding: 14px 20px;
+        font-size: 16px;
+    }
+    
+    .search-btn {
+        padding: 14px 18px;
+        min-width: 48px;
+        height: 48px;
+    }
+}
+
 /* Hero Section Mobile */
 @media (max-width: 768px) {
     .hero {
@@ -128,6 +156,7 @@
         display: flex;
         align-items: center;
         text-align: center;
+        margin-top: 0;
     }
     
     .hero-title {
@@ -426,6 +455,29 @@
 
 /* Extra small screens */
 @media (max-width: 480px) {
+    body {
+        padding-top: 110px;
+    }
+    
+    .search-section {
+        padding: 12px 0;
+    }
+    
+    .search-container {
+        margin: 0 10px;
+    }
+    
+    .search-input {
+        padding: 12px 18px;
+        font-size: 15px;
+    }
+    
+    .search-btn {
+        padding: 12px 16px;
+        min-width: 44px;
+        height: 44px;
+    }
+    
     .featured-grid {
         grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
         gap: 12px;
