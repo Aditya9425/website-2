@@ -1867,11 +1867,23 @@ function toggleMobileMenu() {
         
         if (navLinks.classList.contains('active')) {
             menuToggle.innerHTML = '<i class="fas fa-times"></i>';
-            document.body.style.overflow = 'hidden';
+            document.body.classList.add('menu-open');
         } else {
             menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
-            document.body.style.overflow = 'auto';
+            document.body.classList.remove('menu-open');
         }
+    }
+}
+
+// Ensure menu starts closed on page load
+function initializeMobileMenuState() {
+    const navLinks = document.getElementById('navLinks');
+    const menuToggle = document.getElementById('mobileMenuToggle');
+    
+    if (navLinks && menuToggle) {
+        navLinks.classList.remove('active');
+        menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+        document.body.classList.remove('menu-open');
     }
 }
 
@@ -1886,7 +1898,7 @@ function closeMobileMenuOnNavClick() {
             if (window.innerWidth <= 768 && navLinksContainer && menuToggle) {
                 navLinksContainer.classList.remove('active');
                 menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
-                document.body.style.overflow = 'auto';
+                document.body.classList.remove('menu-open');
             }
         });
     });
@@ -1894,6 +1906,9 @@ function closeMobileMenuOnNavClick() {
 
 // Initialize mobile menu on page load
 function initializeMobileMenu() {
+    // Initialize menu state
+    initializeMobileMenuState();
+    
     // Close menu on nav link clicks
     closeMobileMenuOnNavClick();
     
@@ -1907,6 +1922,7 @@ function initializeMobileMenu() {
             if (!navbar.contains(e.target) && navLinks.classList.contains('active')) {
                 navLinks.classList.remove('active');
                 menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+                document.body.classList.remove('menu-open');
             }
         }
     });
@@ -1919,6 +1935,7 @@ function initializeMobileMenu() {
             if (window.innerWidth > 768) {
                 navLinks.classList.remove('active');
                 menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+                document.body.classList.remove('menu-open');
             }
         }
     });

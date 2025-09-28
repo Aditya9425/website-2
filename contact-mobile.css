@@ -1,10 +1,18 @@
 /* ===== CONTACT PAGE MOBILE OPTIMIZATION ===== */
 
 @media (max-width: 768px) {
+    /* Ensure proper mobile viewport */
+    body {
+        padding-top: 120px !important;
+        font-size: 16px;
+        -webkit-text-size-adjust: 100%;
+    }
+    
     /* Main container adjustments */
     .contact-container {
         padding: 20px 15px;
         max-width: 100%;
+        margin: 0 auto;
     }
 
     /* Contact header mobile optimization */
@@ -15,17 +23,18 @@
     }
 
     .contact-header h1 {
-        font-size: 24px;
-        margin-bottom: 12px;
+        font-size: 28px;
+        margin-bottom: 15px;
         color: #333;
         line-height: 1.3;
+        font-weight: 600;
     }
 
     .contact-header p {
-        font-size: 16px;
+        font-size: 18px;
         color: #666;
         margin: 0;
-        line-height: 1.5;
+        line-height: 1.6;
     }
 
     /* Contact grid - stack vertically on mobile */
@@ -39,21 +48,22 @@
     /* Contact cards */
     .contact-card {
         background: white;
-        padding: 25px 20px;
-        border-radius: 12px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        padding: 30px 25px;
+        border-radius: 15px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.1);
         text-align: center;
         margin-bottom: 0;
+        border: 1px solid #f0f0f0;
     }
 
     .contact-card .icon {
-        font-size: 2.5rem;
-        margin-bottom: 15px;
+        font-size: 3rem;
+        margin-bottom: 20px;
     }
 
     .contact-card h3 {
-        font-size: 18px;
-        margin-bottom: 15px;
+        font-size: 20px;
+        margin-bottom: 18px;
         color: #333;
         font-weight: 600;
     }
@@ -63,16 +73,16 @@
     }
 
     .contact-info p {
-        margin-bottom: 8px;
-        font-size: 15px;
-        line-height: 1.5;
+        margin-bottom: 12px;
+        font-size: 16px;
+        line-height: 1.6;
     }
 
     .contact-info a {
         color: #FF6B6B;
         text-decoration: none;
         font-weight: 500;
-        font-size: 15px;
+        font-size: 16px;
     }
 
     .contact-info a:hover {
@@ -83,17 +93,18 @@
     .whatsapp-btn {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
+        gap: 10px;
         color: #25D366;
-        padding: 12px 20px;
-        border-radius: 25px;
+        padding: 15px 25px;
+        border-radius: 30px;
         text-decoration: none;
-        font-weight: 500;
-        margin-top: 10px;
+        font-weight: 600;
+        margin-top: 15px;
         transition: all 0.3s ease;
         border: 2px solid #25D366;
         background: transparent;
-        font-size: 14px;
+        font-size: 16px;
+        min-height: 48px;
     }
 
     .whatsapp-btn:hover {
@@ -104,7 +115,7 @@
 
     .whatsapp-btn i {
         color: #25D366;
-        font-size: 16px;
+        font-size: 18px;
     }
 
     .whatsapp-btn:hover i {
@@ -112,9 +123,9 @@
     }
 
     .whatsapp-note {
-        font-size: 12px;
+        font-size: 14px;
         color: #666;
-        margin-top: 8px;
+        margin-top: 10px;
         font-style: italic;
     }
 
@@ -122,33 +133,35 @@
     .response-message {
         background: linear-gradient(135deg, #4ECDC4, #44A08D);
         color: white;
-        padding: 20px;
-        border-radius: 12px;
+        padding: 25px 20px;
+        border-radius: 15px;
         text-align: center;
-        margin: 25px 0;
-        box-shadow: 0 4px 15px rgba(68, 160, 141, 0.3);
+        margin: 30px 0;
+        box-shadow: 0 6px 20px rgba(68, 160, 141, 0.3);
     }
 
     .response-message p {
         margin: 0;
-        font-size: 15px;
-        line-height: 1.6;
+        font-size: 16px;
+        line-height: 1.7;
+        font-weight: 500;
     }
 
     /* Social section */
     .social-section {
         text-align: center;
         background: white;
-        padding: 25px 20px;
-        border-radius: 12px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        padding: 30px 25px;
+        border-radius: 15px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.1);
         margin-bottom: 30px;
+        border: 1px solid #f0f0f0;
     }
 
     .social-section h3 {
-        margin-bottom: 20px;
+        margin-bottom: 25px;
         color: #333;
-        font-size: 18px;
+        font-size: 20px;
         font-weight: 600;
     }
 
@@ -156,16 +169,17 @@
     .social-link {
         display: inline-flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
         background: transparent !important;
         color: #333 !important;
-        padding: 15px 25px;
+        padding: 18px 30px;
         border: 2px solid #e0e0e0;
-        border-radius: 25px;
+        border-radius: 30px;
         text-decoration: none;
-        font-weight: 500;
+        font-weight: 600;
         transition: all 0.3s ease;
-        font-size: 15px;
+        font-size: 16px;
+        min-height: 48px;
     }
 
     .social-link:hover {
@@ -181,7 +195,7 @@
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
-        font-size: 20px;
+        font-size: 22px;
     }
 
     /* Footer mobile optimization */
@@ -244,6 +258,45 @@
     /* Footer social icons */
     footer div[style*="display: flex; gap: 15px;"] {
         justify-content: center !important;
+    }
+}
+
+/* Prevent horizontal scroll and ensure proper mobile layout */
+@media (max-width: 768px) {
+    html, body {
+        overflow-x: hidden;
+        width: 100%;
+        max-width: 100vw;
+    }
+    
+    * {
+        box-sizing: border-box;
+    }
+    
+    /* Ensure all text is readable without zooming */
+    .contact-container * {
+        font-size: 16px !important;
+        line-height: 1.5 !important;
+    }
+    
+    .contact-header h1 {
+        font-size: 28px !important;
+    }
+    
+    .contact-header p {
+        font-size: 18px !important;
+    }
+    
+    .contact-card h3 {
+        font-size: 20px !important;
+    }
+    
+    .whatsapp-btn {
+        font-size: 16px !important;
+    }
+    
+    .social-link {
+        font-size: 16px !important;
     }
 }
 

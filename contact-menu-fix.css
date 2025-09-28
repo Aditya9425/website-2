@@ -1,0 +1,128 @@
+/* Mobile Menu Fix for Contact Page */
+@media (max-width: 768px) {
+    /* Mobile menu toggle button */
+    .mobile-menu-toggle {
+        display: block;
+        background: none;
+        border: none;
+        font-size: 20px;
+        color: #333;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+        order: 2;
+    }
+
+    .mobile-menu-toggle:hover {
+        background: rgba(252, 108, 133, 0.1);
+        color: #FC6C85;
+    }
+
+    /* Navigation links mobile styles */
+    .nav-links {
+        position: fixed;
+        top: 70px;
+        left: -100%;
+        width: 100%;
+        height: calc(100vh - 70px);
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(10px);
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+        padding: 30px 20px;
+        transition: left 0.3s ease;
+        z-index: 999;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-links.active {
+        left: 0;
+    }
+
+    .nav-link {
+        padding: 15px 20px;
+        margin: 5px 0;
+        width: 100%;
+        text-align: center;
+        background: #f8f9fa;
+        border-radius: 10px;
+        color: #333;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+        background: #FF6B6B;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+    }
+
+    /* Navbar adjustments */
+    .navbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 15px;
+        flex-wrap: nowrap;
+    }
+
+    .nav-brand {
+        order: 1;
+        flex-shrink: 0;
+    }
+
+    .nav-actions {
+        order: 3;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        flex-shrink: 0;
+    }
+
+    /* Hide mobile menu toggle on desktop */
+    @media (min-width: 769px) {
+        .mobile-menu-toggle {
+            display: none;
+        }
+        
+        .nav-links {
+            position: static;
+            width: auto;
+            height: auto;
+            background: none;
+            flex-direction: row;
+            padding: 0;
+            box-shadow: none;
+        }
+    }
+}
+
+/* Prevent body scroll when menu is open */
+body.menu-open {
+    overflow: hidden;
+}
+
+/* Contact page specific adjustments */
+@media (max-width: 768px) {
+    /* Ensure content doesn't overlap with fixed menu */
+    .contact-container {
+        margin-top: 20px;
+    }
+    
+    /* Adjust header padding for mobile */
+    .header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(10px);
+    }
+}

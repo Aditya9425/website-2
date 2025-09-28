@@ -2,11 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Contact Us - Shagun Saree Baran</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="navbar-styles.css">
     <link rel="stylesheet" href="contact-mobile.css">
+    <link rel="stylesheet" href="contact-menu-fix.css">
     <link rel="stylesheet" href="footer-mobile.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -156,13 +157,16 @@
                     <span class="logo-text">Shagun Saree</span>
                 </a>
             </div>
-            <div class="nav-links">
+            <div class="nav-links" id="navLinks">
                 <a href="index.html" class="nav-link">Home</a>
                 <a href="collections.html?category=silk" class="nav-link">Silk Sarees</a>
                 <a href="collections.html?category=cotton" class="nav-link">Cotton Sarees</a>
                 <a href="collections.html?category=bridal" class="nav-link">Wedding Sarees</a>
                 <a href="collections.html?category=designer" class="nav-link">Designer Sarees</a>
             </div>
+            <button class="mobile-menu-toggle" id="mobileMenuToggle" onclick="toggleMobileMenu()">
+                <i class="fas fa-bars"></i>
+            </button>
             <div class="nav-actions">
 
                 <a href="cart.html" class="cart-container">
