@@ -493,6 +493,233 @@ body {
     }
 }
 
+/* Elegant Decorative Animations */
+.floating-particles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.floating-particles::before,
+.floating-particles::after {
+    content: '✨';
+    position: absolute;
+    font-size: 20px;
+    color: rgba(255, 215, 0, 0.8);
+    animation: floatGlitter 6s infinite ease-in-out;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.floating-particles::before {
+    top: 15%;
+    left: 8%;
+    animation-delay: -1s;
+}
+
+.floating-particles::after {
+    top: 70%;
+    right: 12%;
+    animation-delay: -3s;
+    color: rgba(255, 182, 193, 0.7);
+    text-shadow: 0 0 8px rgba(255, 182, 193, 0.4);
+}
+
+.paisley-motifs {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.paisley-motifs::before,
+.paisley-motifs::after {
+    content: '🌸';
+    position: absolute;
+    font-size: 28px;
+    opacity: 0.4;
+    animation: floatPaisley 5s infinite ease-in-out;
+    filter: hue-rotate(320deg);
+}
+
+.paisley-motifs::before {
+    left: 20%;
+    animation: floatPaisley 8s infinite linear;
+    animation-delay: -2s;
+}
+
+.paisley-motifs::after {
+    left: 70%;
+    animation: floatPaisley2 10s infinite linear;
+    animation-delay: -5s;
+    filter: hue-rotate(0deg);
+}
+
+.extra-flowers {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.extra-flowers::before,
+.extra-flowers::after {
+    content: '🌺';
+    position: absolute;
+    font-size: 24px;
+    opacity: 0.35;
+}
+
+.extra-flowers::before {
+    left: 40%;
+    animation: floatPaisley 12s infinite linear;
+    animation-delay: -3s;
+    filter: hue-rotate(280deg);
+}
+
+.extra-flowers::after {
+    left: 85%;
+    animation: floatPaisley2 9s infinite linear;
+    animation-delay: -6s;
+    content: '🌼';
+    filter: hue-rotate(40deg);
+}
+
+/* Silk Flow Background */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, 
+        transparent 0%, 
+        rgba(255, 215, 0, 0.08) 25%, 
+        transparent 50%, 
+        rgba(255, 182, 193, 0.06) 75%, 
+        transparent 100%);
+    background-size: 300% 300%;
+    animation: silkFlow 15s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Section Fade-in Animations */
+.featured-sarees,
+.cta-section {
+    opacity: 0;
+    transform: translateY(30px);
+    animation: sectionFadeIn 1s ease-out forwards;
+}
+
+.featured-sarees {
+    animation-delay: 0.5s;
+}
+
+.cta-section {
+    animation-delay: 0.8s;
+}
+
+@keyframes floatGlitter {
+    0%, 100% {
+        transform: translateY(0) translateX(0) scale(0.8);
+        opacity: 0.3;
+    }
+    50% {
+        transform: translateY(-40px) translateX(30px) scale(1.2);
+        opacity: 1;
+    }
+}
+
+@keyframes floatPaisley {
+    0% {
+        transform: translateY(-100vh) translateX(-50px) rotate(0deg) scale(0.8);
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.6;
+    }
+    90% {
+        opacity: 0.4;
+    }
+    100% {
+        transform: translateY(100vh) translateX(100px) rotate(360deg) scale(1.2);
+        opacity: 0;
+    }
+}
+
+@keyframes floatPaisley2 {
+    0% {
+        transform: translateY(-100vh) translateX(80px) rotate(0deg) scale(1);
+        opacity: 0;
+    }
+    15% {
+        opacity: 0.5;
+    }
+    85% {
+        opacity: 0.3;
+    }
+    100% {
+        transform: translateY(100vh) translateX(-120px) rotate(-270deg) scale(0.9);
+        opacity: 0;
+    }
+}
+
+@keyframes silkFlow {
+    0%, 100% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+}
+
+@keyframes sectionFadeIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Reduce animations on mobile for performance */
+@media (max-width: 768px) {
+    .floating-particles::before,
+    .floating-particles::after {
+        animation-duration: 12s;
+    }
+    
+    .paisley-motifs::before,
+    .paisley-motifs::after {
+        font-size: 18px;
+        animation-duration: 15s;
+    }
+    
+    body::before {
+        animation-duration: 30s;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .floating-particles,
+    .paisley-motifs,
+    body::before {
+        animation: none;
+    }
+}
+
 @keyframes fadeIn {
     from {
         opacity: 0;
