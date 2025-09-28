@@ -277,13 +277,20 @@
     
     .add-to-cart-btn, .buy-now-btn {
         width: 100%;
-        padding: 10px;
+        padding: 12px;
         border: none;
         border-radius: 6px;
         font-weight: 600;
         font-size: 14px;
         cursor: pointer;
         transition: all 0.3s ease;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: rgba(0,0,0,0.1);
+        user-select: none;
+        -webkit-user-select: none;
+        position: relative;
+        z-index: 10;
+        min-height: 44px;
     }
     
     .add-to-cart-btn {
@@ -297,7 +304,24 @@
     }
     
     .add-to-cart-btn:active, .buy-now-btn:active {
-        transform: scale(0.98);
+        transform: scale(0.95);
+        background: #e55555;
+    }
+    
+    .buy-now-btn:active {
+        background: #555;
+    }
+    
+    /* Ensure buttons are clickable on mobile */
+    .featured-buttons {
+        pointer-events: auto;
+        position: relative;
+        z-index: 15;
+    }
+    
+    .featured-buttons button {
+        pointer-events: auto;
+        touch-action: manipulation;
     }
     
     /* Color palette mobile */

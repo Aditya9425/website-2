@@ -1559,10 +1559,10 @@ function loadFeaturedProducts() {
                     <div class="featured-buttons">
                         ${product.status === 'out-of-stock' ? 
                             '<div class="out-of-stock-label">Out of Stock</div>' :
-                            `<button class="add-to-cart-btn" data-id="${product.id}" onclick="event.stopPropagation(); addToCart(this)">
+                            `<button class="add-to-cart-btn mobile-touch-btn" data-id="${product.id}" onclick="event.stopPropagation(); addToCart(this)" ontouchstart="this.style.transform='scale(0.95)'" ontouchend="this.style.transform='scale(1)'">
                                 Add to Cart
                             </button>
-                            <button class="buy-now-btn" onclick="event.stopPropagation(); buyNow('${product.id}')">
+                            <button class="buy-now-btn mobile-touch-btn" onclick="event.stopPropagation(); buyNow('${product.id}')" ontouchstart="this.style.transform='scale(0.95)'" ontouchend="this.style.transform='scale(1)'">
                                 Buy Now
                             </button>`
                         }
@@ -1571,6 +1571,9 @@ function loadFeaturedProducts() {
             </div>
             `;
         }).join('');
+        
+        // Add mobile touch event listeners
+        addMobileTouchListeners();
         
         // Initialize carousel animation
         initializeCarousel();
@@ -1921,8 +1924,29 @@ function initializeMobileMenu() {
     });
 }
 
+// Add mobile touch event listeners for better mobile interaction
+function addMobileTouchListeners() {
+    // Add touch event listeners to all buttons in featured products
+    document.querySelectorAll('.mobile-touch-btn').forEach(button => {
+        // Prevent default touch behavior that might interfere
+        button.addEventListener('touchstart', function(e) {
+            e.stopPropagation();
+        }, { passive: true });
+        
+        button.addEventListener('touchend', function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            
+            // Trigger the click event manually for mobile
+            const clickEvent = new Event('click', { bubbles: true });
+            this.dispatchEvent(clickEvent);
+        }, { passive: false });
+    });
+}
+
 // Make functions globally available
 window.toggleMobileMenu = toggleMobileMenu;
+window.addMobileTouchListeners = addMobileTouchListeners;
 
 // Category filter functionality
 function setupCategoryFilters() {

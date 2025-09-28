@@ -3325,6 +3325,33 @@ body::before {
         padding: 16px 20px;
         font-size: 16px;
     }
+    
+    /* Mobile touch button improvements */
+    .mobile-touch-btn {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: rgba(0,0,0,0.1);
+        user-select: none;
+        -webkit-user-select: none;
+        cursor: pointer;
+        position: relative;
+        z-index: 10;
+    }
+    
+    .mobile-touch-btn:active {
+        transform: scale(0.95);
+        transition: transform 0.1s ease;
+    }
+    
+    .featured-buttons {
+        pointer-events: auto;
+        position: relative;
+        z-index: 15;
+    }
+    
+    .featured-card .featured-buttons button {
+        pointer-events: auto;
+        touch-action: manipulation;
+    }
 }
 
 /* ===== MOBILE NAVBAR IMPROVEMENTS ===== */
