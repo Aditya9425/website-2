@@ -2473,10 +2473,21 @@ body::before {
 }
 
 .footer-content {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr;
-    gap: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
     margin-bottom: 30px;
+}
+
+.footer-sections-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 40px;
+}
+
+.footer-sections-row .footer-section {
+    flex: 1;
+    text-align: left;
 }
 
 .footer-section h3 {
@@ -2585,8 +2596,14 @@ body::before {
         padding: 0 15px !important;
     }
     
-    .footer-content {
-        display: block !important;
+    .footer-sections-row {
+        display: flex !important;
+        justify-content: space-between !important;
+        gap: 20px !important;
+    }
+    
+    .footer-sections-row .footer-section {
+        flex: 1 !important;
         text-align: left !important;
     }
     
@@ -2607,27 +2624,14 @@ body::before {
         margin-bottom: 0 !important;
     }
     
-    /* Quick Links and Contact Info side by side */
-    .footer-section:nth-child(2),
-    .footer-section:nth-child(3) {
-        display: inline-block !important;
-        width: 48% !important;
-        vertical-align: top !important;
-        text-align: left !important;
-        margin-bottom: 20px !important;
+    .footer-sections-row {
+        display: flex !important;
+        justify-content: space-between !important;
+        gap: 15px !important;
     }
     
-    .footer-section:nth-child(2) {
-        margin-right: 4% !important;
-    }
-    
-    /* Ensure Contact Info is properly aligned */
-    .footer-section:nth-child(3) .footer-contact {
-        text-align: left !important;
-    }
-    
-    .footer-section:nth-child(3) .footer-contact div {
-        justify-content: flex-start !important;
+    .footer-sections-row .footer-section {
+        flex: 1 !important;
         text-align: left !important;
     }
     
@@ -2690,13 +2694,13 @@ body::before {
         padding: 0 12px !important;
     }
     
-    /* Stack all sections vertically on very small screens */
-    .footer-section:nth-child(2),
-    .footer-section:nth-child(3) {
-        display: block !important;
-        width: 100% !important;
-        margin-right: 0 !important;
-        margin-bottom: 20px !important;
+    .footer-sections-row {
+        flex-direction: row !important;
+        gap: 10px !important;
+    }
+    
+    .footer-sections-row .footer-section {
+        flex: 1 !important;
     }
     
     .footer-section h3 {
