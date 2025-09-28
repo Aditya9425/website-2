@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Test - Shagun Saree</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <a href="index.html" class="logo-container">
+                    <div class="logo-icon">S</div>
+                    <span class="logo-text">Shagun Saree</span>
+                </a>
+            </div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="collections.html" class="nav-link">Collections</a>
+            </div>
+            <div class="nav-actions">
+                <a href="cart.html" class="cart-container">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span class="cart-count">0</span>
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Search Bar Section -->
+    <section class="search-section">
+        <div class="container">
+            <div class="search-container">
+                <input type="text" id="searchInput" class="search-input" placeholder="Search for sarees, categories..." autocomplete="off">
+                <button class="search-btn" id="searchBtn">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+            <div class="search-results" id="searchResults" style="display: none;"></div>
+        </div>
+    </section>
+
+    <!-- Test Content -->
+    <main>
+        <div class="container">
+            <h1>Search Functionality Test</h1>
+            <p>Try searching for:</p>
+            <ul>
+                <li>Silk</li>
+                <li>Cotton</li>
+                <li>Banarasi</li>
+                <li>Designer</li>
+                <li>Red</li>
+                <li>Blue</li>
+            </ul>
+            
+            <div class="test-buttons" style="margin: 20px 0; display: flex; gap: 10px; flex-wrap: wrap;">
+                <button onclick="globalSearch('silk')" class="btn-primary">Search Silk</button>
+                <button onclick="globalSearch('cotton')" class="btn-primary">Search Cotton</button>
+                <button onclick="globalSearch('designer')" class="btn-primary">Search Designer</button>
+                <button onclick="clearSearch()" class="btn-secondary">Clear Search</button>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="main.js"></script>
+</body>
+</html>

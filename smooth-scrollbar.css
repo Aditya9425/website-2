@@ -1,0 +1,48 @@
+/* Water-like Smooth Scrollbar Enhancement */
+.scrollbar-track {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    will-change: transform !important;
+}
+
+.scrollbar-thumb {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    transform: translateX(0) !important;
+    will-change: transform !important;
+}
+
+.scrollbar-thumb:hover {
+    transform: translateX(0) scaleY(1.5) !important;
+    background: linear-gradient(135deg, #E85A4F 0%, #D44638 100%) !important;
+}
+
+.scrollbar-thumb:active {
+    cursor: grabbing !important;
+    transform: translateX(0) scaleY(1.8) !important;
+}
+
+.carousel-wrapper:hover .custom-scrollbar {
+    opacity: 1 !important;
+    animation: fadeInScrollbar 0.3s ease-out !important;
+}
+
+@keyframes fadeInScrollbar {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Enhanced hover effects */
+.scrollbar-track:hover {
+    transform: scaleY(1.2) !important;
+    background: rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Smooth momentum scrolling */
+.carousel-container {
+    scroll-behavior: auto !important;
+}

@@ -226,6 +226,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     updateCartCount();
     loadTrendingProducts();
     loadFeaturedProducts();
+    setupSearchFunctionality();
     
     const currentPage = window.location.pathname.split('/').pop();
     
@@ -2139,6 +2140,174 @@ async function handleFeedbackSubmit(event) {
 // Make functions globally available
 window.openFeedbackModal = openFeedbackModal;
 window.closeFeedbackModal = closeFeedbackModal;
+
+// Search Functionality
+function setupSearchFunctionality() {
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const searchResults = document.getElementById('searchResults');
+    
+    if (!searchInput || !searchBtn || !searchResults) return;
+    
+    let searchTimeout;
+    
+    // Real-time search as user types
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        const query = this.value.trim();
+        
+        if (query.length === 0) {
+            hideSearchResults();
+            return;
+        }
+        
+        // Debounce search to avoid too many calls
+        searchTimeout = setTimeout(() => {
+            performSearch(query);
+        }, 300);
+    });
+    
+    // Search button click
+    searchBtn.addEventListener('click', function() {
+        const query = searchInput.value.trim();
+        if (query) {
+            performSearch(query);
+        }
+    });
+    
+    // Enter key search
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const query = this.value.trim();
+            if (query) {
+                performSearch(query);
+            }
+        }
+    });
+    
+    // Hide results when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.search-container') && !e.target.closest('.search-results')) {
+            hideSearchResults();
+        }
+    });
+    
+    // Show results when focusing on input (if there's a query)
+    searchInput.addEventListener('focus', function() {
+        const query = this.value.trim();
+        if (query && searchResults.innerHTML) {
+            searchResults.style.display = 'block';
+        }
+    });
+}
+
+function performSearch(query) {
+    const searchResults = document.getElementById('searchResults');
+    if (!searchResults || !products || products.length === 0) return;
+    
+    const results = searchProducts(query);
+    displaySearchResults(results, query);
+}
+
+function searchProducts(query) {
+    const searchTerm = query.toLowerCase().trim();
+    
+    return products.filter(product => {
+        // Search in product name
+        const nameMatch = product.name && product.name.toLowerCase().includes(searchTerm);
+        
+        // Search in category
+        const categoryMatch = product.category && product.category.toLowerCase().includes(searchTerm);
+        
+        // Search in fabric
+        const fabricMatch = product.fabric && product.fabric.toLowerCase().includes(searchTerm);
+        
+        // Search in colors
+        const colorMatch = product.colors && product.colors.some(color => 
+            color.toLowerCase().includes(searchTerm)
+        );
+        
+        // Search in description
+        const descriptionMatch = product.description && product.description.toLowerCase().includes(searchTerm);
+        
+        return nameMatch || categoryMatch || fabricMatch || colorMatch || descriptionMatch;
+    }).slice(0, 8); // Limit to 8 results for performance
+}
+
+function displaySearchResults(results, query) {
+    const searchResults = document.getElementById('searchResults');
+    if (!searchResults) return;
+    
+    if (results.length === 0) {
+        searchResults.innerHTML = `
+            <div class="no-results">
+                <i class="fas fa-search"></i>
+                <p>No results found for "${query}"</p>
+                <small>Try searching for sarees, categories, or colors</small>
+            </div>
+        `;
+    } else {
+        searchResults.innerHTML = results.map(product => {
+            let imageUrl;
+            if (product.image && product.image.startsWith('http')) {
+                imageUrl = product.image;
+            } else if (product.image) {
+                imageUrl = `https://jstvadizuzvwhabtfhfs.supabase.co/storage/v1/object/public/Sarees/${product.image}`;
+            } else {
+                imageUrl = `https://via.placeholder.com/60x60/FF6B6B/FFFFFF?text=${encodeURIComponent(product.name?.charAt(0) || 'S')}`;
+            }
+            
+            return `
+                <div class="search-result-item" onclick="navigateToProduct('${product.id}')">
+                    <img src="${imageUrl}" alt="${product.name}" class="search-result-image">
+                    <div class="search-result-info">
+                        <div class="search-result-name">${product.name}</div>
+                        <div class="search-result-price">₹${product.price.toLocaleString()}</div>
+                        <div class="search-result-category">${product.category || 'Saree'}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    searchResults.style.display = 'block';
+}
+
+function hideSearchResults() {
+    const searchResults = document.getElementById('searchResults');
+    if (searchResults) {
+        searchResults.style.display = 'none';
+    }
+}
+
+function navigateToProduct(productId) {
+    hideSearchResults();
+    window.location.href = `product.html?id=${productId}`;
+}
+
+// Clear search
+function clearSearch() {
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.value = '';
+        hideSearchResults();
+    }
+}
+
+// Global search function for external use
+function globalSearch(query) {
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.value = query;
+        performSearch(query);
+    }
+}
+
+// Make functions globally available
+window.navigateToProduct = navigateToProduct;
+window.clearSearch = clearSearch;
+window.globalSearch = globalSearch;
 
 // Add event listener for feedback form when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {

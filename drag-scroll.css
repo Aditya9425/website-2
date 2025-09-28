@@ -1,0 +1,40 @@
+/* Direct Drag Scrolling Styles */
+.carousel-container {
+    cursor: grab !important;
+    user-select: none !important;
+    scroll-behavior: auto !important;
+}
+
+.carousel-container:active {
+    cursor: grabbing !important;
+}
+
+.carousel-track {
+    transition: none !important;
+}
+
+.product-card {
+    pointer-events: none !important;
+}
+
+.product-card * {
+    pointer-events: auto !important;
+}
+
+/* Hide scrollbar completely */
+.custom-scrollbar {
+    display: none !important;
+}
+
+/* Prevent text selection during drag */
+.carousel-container.dragging {
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+}
+
+/* Smooth momentum animation */
+.carousel-container.momentum {
+    scroll-behavior: auto !important;
+}
