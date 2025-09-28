@@ -535,30 +535,40 @@ body {
 
 @media (max-width: 480px) {
     .premium-hero {
-        height: 65vh;
-        min-height: 450px;
+        height: 70vh;
+        min-height: 500px;
+        padding: 20px 0;
     }
     
     .text-backdrop {
-        padding: 30px 20px;
-        margin: 0 15px;
-        max-width: 400px;
+        padding: 25px 18px;
+        margin: 0 10px;
+        max-width: calc(100vw - 20px);
+        border-radius: 18px;
     }
     
     .hero-title {
-        font-size: clamp(2rem, 12vw, 3rem);
+        font-size: clamp(1.8rem, 9vw, 2.5rem);
         letter-spacing: 1px;
+        margin-bottom: 20px;
+        line-height: 1.1;
     }
     
     .hero-subtitle {
-        font-size: 1rem;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        margin-bottom: 25px;
+    }
+    
+    .hero-buttons {
+        gap: 12px;
     }
     
     .btn-explore,
     .btn-shop {
-        padding: 14px 28px;
-        font-size: 15px;
-        width: 180px;
+        padding: 12px 24px;
+        font-size: 14px;
+        width: 160px;
     }
 }
 
