@@ -2520,6 +2520,7 @@ body::before {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    text-align: left;
 }
 
 .footer-contact div {
@@ -2527,12 +2528,15 @@ body::before {
     display: flex;
     align-items: center;
     gap: 8px;
+    text-align: left;
+    justify-content: flex-start;
 }
 
 .footer-contact i {
     color: #FF6B6B;
     width: 16px;
     text-align: center;
+    flex-shrink: 0;
 }
 
 .footer-social {
@@ -2615,6 +2619,16 @@ body::before {
     
     .footer-section:nth-child(2) {
         margin-right: 4% !important;
+    }
+    
+    /* Ensure Contact Info is properly aligned */
+    .footer-section:nth-child(3) .footer-contact {
+        text-align: left !important;
+    }
+    
+    .footer-section:nth-child(3) .footer-contact div {
+        justify-content: flex-start !important;
+        text-align: left !important;
     }
     
     .footer-section h4 {
