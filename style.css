@@ -2554,7 +2554,8 @@ body::before {
 
 .footer-social {
     display: flex;
-    gap: 15px;
+    justify-content: center;
+    margin-top: 10px;
 }
 
 .footer-social a {

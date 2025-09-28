@@ -154,64 +154,52 @@
     </main>
 
     <!-- Footer -->
-    <footer style="background: #2c3e50; color: white; padding: 40px 0 20px;">
-        <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
-            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 30px;">
-                <div>
-                    <h3 style="color: #FF6B6B; margin-bottom: 15px; font-size: 1.5rem;">Shagun Saree Baran</h3>
-                    <p style="color: #ecf0f1; line-height: 1.6; margin: 0;">Your trusted destination for premium Indian sarees. Quality, tradition, and elegance in every piece.</p>
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Shagun Saree Baran</h3>
+                    <p>Your trusted destination for premium Indian sarees. Quality, tradition, and elegance in every piece.</p>
                 </div>
-                <div>
-                    <h4 style="color: white; margin-bottom: 15px; font-size: 1.2rem;">Quick Links</h4>
-                    <div style="display: flex; flex-direction: column; gap: 8px;">
-                        <a href="index.html" style="color: #ecf0f1; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='#FF6B6B'" onmouseout="this.style.color='#ecf0f1'">Home</a>
-                        <a href="collections.html" style="color: #ecf0f1; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='#FF6B6B'" onmouseout="this.style.color='#ecf0f1'">Collections</a>
-                        <a href="cart.html" style="color: #ecf0f1; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='#FF6B6B'" onmouseout="this.style.color='#ecf0f1'">Cart</a>
-                        <a href="contact.html" style="color: #ecf0f1; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='#FF6B6B'" onmouseout="this.style.color='#ecf0f1'">Contact Us</a>
+                <div class="footer-sections-row">
+                    <div class="footer-section">
+                        <h4>Quick Links</h4>
+                        <div class="footer-links">
+                            <a href="index.html">Home</a>
+                            <a href="collections.html">Collections</a>
+                            <a href="cart.html">Cart</a>
+                            <a href="contact.html">Contact Us</a>
+                        </div>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Contact Info</h4>
+                        <div class="footer-contact">
+                            <div><i class="fas fa-envelope"></i>shagunsaree60@gmail.com</div>
+                            <div><i class="fas fa-phone"></i>+91 9636788945</div>
+                            <div><i class="fas fa-map-marker-alt"></i>Krishna Colony, Baran, Rajasthan</div>
+                        </div>
                     </div>
                 </div>
-                <div>
-                    <h4 style="color: white; margin-bottom: 15px; font-size: 1.2rem;">Contact Info</h4>
-                    <div style="display: flex; flex-direction: column; gap: 8px;">
-                        <div style="color: #ecf0f1;"><i class="fas fa-envelope" style="color: #FF6B6B; margin-right: 8px;"></i>shagunsaree60@gmail.com</div>
-                        <div style="color: #ecf0f1;"><i class="fas fa-phone" style="color: #FF6B6B; margin-right: 8px;"></i>+91 9636788945</div>
-                        <div style="color: #ecf0f1;"><i class="fas fa-map-marker-alt" style="color: #FF6B6B; margin-right: 8px;"></i>Krishna Colony, Baran, Rajasthan</div>
-                    </div>
-                </div>
-                <div>
-                    <h4 style="color: white; margin-bottom: 15px; font-size: 1.2rem;">Follow Us</h4>
-                    <div style="display: flex; gap: 15px;">
-                        <a href="https://www.instagram.com/shagun_sareebaran?igsh=cjJoZXozejhhZ2Nh" target="_blank" style="color: #ecf0f1; font-size: 1.5rem; transition: color 0.3s;" onmouseover="this.style.color='#e4405f'" onmouseout="this.style.color='#ecf0f1'"><i class="fab fa-instagram"></i></a>
+                <div class="footer-section">
+                    <h4>Follow Us</h4>
+                    <div class="footer-social">
+                        <a href="https://www.instagram.com/shagun_sareebaran?igsh=cjJoZXozejhhZ2Nh" target="_blank"><i class="fab fa-instagram"></i></a>
                     </div>
                 </div>
             </div>
             <!-- Feedback Section -->
-            <div style="text-align: center; padding: 25px 0; border-top: 1px solid #34495e; margin-bottom: 20px;">
-                <p style="color: #bdc3c7; font-size: 14px; margin: 0 0 15px 0; line-height: 1.5;">
+            <div class="footer-feedback">
+                <p class="feedback-message">
                     The website is in early stages. There may be minor bugs. We appreciate your feedback to help us improve!
                 </p>
-                <button onclick="openFeedbackModal()" style="
-                    background: linear-gradient(135deg, #FF6B6B 0%, #E85A4F 100%);
-                    color: white;
-                    border: none;
-                    padding: 12px 24px;
-                    border-radius: 25px;
-                    cursor: pointer;
-                    font-size: 14px;
-                    font-weight: 600;
-                    transition: all 0.3s ease;
-                    display: inline-flex;
-                    align-items: center;
-                    gap: 8px;
-                    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
-                " onmouseover="this.style.background='linear-gradient(135deg, #E85A4F 0%, #D44638 100%)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='linear-gradient(135deg, #FF6B6B 0%, #E85A4F 100%)'; this.style.transform='translateY(0)';">
-                    <i class="fas fa-comment-dots" style="font-size: 16px;"></i>
+                <button class="feedback-btn" onclick="openFeedbackModal()">
+                    <i class="fas fa-comment-dots"></i>
                     Give Feedback
                 </button>
             </div>
             
-            <div style="border-top: 1px solid #34495e; padding-top: 20px; text-align: center;">
-                <p style="color: #bdc3c7; margin: 0;">&copy; 2025 Shagun Saree Baran. All rights reserved.</p>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Shagun Saree Baran. All rights reserved.</p>
             </div>
         </div>
     </footer>
