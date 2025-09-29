@@ -1,0 +1,78 @@
+/* Out of stock styles for cart items */
+.cart-item.out-of-stock {
+    opacity: 0.7;
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    position: relative;
+}
+
+.cart-item-image-container {
+    position: relative;
+    display: inline-block;
+}
+
+.cart-item.out-of-stock .cart-item-image {
+    filter: grayscale(50%);
+}
+
+.out-of-stock-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(220, 53, 69, 0.9);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    z-index: 2;
+}
+
+.out-of-stock-message {
+    color: #dc3545;
+    font-size: 14px;
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.out-of-stock-message i {
+    color: #ffc107;
+}
+
+.cart-item.out-of-stock .cart-item-name {
+    text-decoration: line-through;
+    color: #6c757d;
+}
+
+.cart-item.out-of-stock .cart-item-price {
+    color: #6c757d;
+}
+
+/* Checkout button disabled state for out of stock items */
+#checkoutBtn:disabled {
+    background-color: #6c757d !important;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+#checkoutBtn:disabled:hover {
+    background-color: #6c757d !important;
+    transform: none;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+    .out-of-stock-overlay {
+        font-size: 10px;
+        padding: 2px 6px;
+    }
+    
+    .out-of-stock-message {
+        font-size: 12px;
+        margin-top: 6px;
+    }
+}

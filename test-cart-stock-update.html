@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Cart Stock Update</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        button { padding: 10px 15px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+    <h1>Cart Stock Update Test</h1>
+    
+    <div class="test-section">
+        <h3>Test Instructions</h3>
+        <p>This page demonstrates the real-time cart stock update functionality:</p>
+        <ol>
+            <li>Add some products to your cart on the main website</li>
+            <li>Open the cart page in another tab</li>
+            <li>Use the buttons below to simulate stock changes</li>
+            <li>Watch the cart update in real-time without page refresh</li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h3>Simulate Stock Changes</h3>
+        <p>Click these buttons to simulate products going out of stock:</p>
+        <button onclick="simulateOutOfStock(1)">Make Product ID 1 Out of Stock</button>
+        <button onclick="simulateOutOfStock(2)">Make Product ID 2 Out of Stock</button>
+        <button onclick="simulateOutOfStock(3)">Make Product ID 3 Out of Stock</button>
+        <br><br>
+        <button onclick="simulateBackInStock(1)">Restore Product ID 1 Stock</button>
+        <button onclick="simulateBackInStock(2)">Restore Product ID 2 Stock</button>
+        <button onclick="simulateBackInStock(3)">Restore Product ID 3 Stock</button>
+    </div>
+
+    <div class="test-section">
+        <h3>Test Results</h3>
+        <div id="testResults"></div>
+    </div>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+        // Supabase Configuration
+        const SUPABASE_URL = 'https://jstvadizuzvwhabtfhfs.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzdHZhZGl6dXp2d2hhYnRmaGZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NjI3NjAsImV4cCI6MjA3MjIzODc2MH0.6btNpJfUh6Fd5PfoivIvu-f31Fj5IXl1vxBLsHz5ISw';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        function showResult(message, type = 'success') {
+            const resultsDiv = document.getElementById('testResults');
+            const resultElement = document.createElement('div');
+            resultElement.className = `status ${type}`;
+            resultElement.innerHTML = `${new Date().toLocaleTimeString()}: ${message}`;
+            resultsDiv.appendChild(resultElement);
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        async function simulateOutOfStock(productId) {
+            try {
+                showResult(`Updating product ${productId} to out of stock...`, 'warning');
+                
+                const { data, error } = await supabase
+                    .from('products')
+                    .update({ 
+                        status: 'out-of-stock',
+                        stock: 0
+                    })
+                    .eq('id', productId);
+
+                if (error) throw error;
+                
+                showResult(`✅ Product ${productId} marked as out of stock`, 'success');
+            } catch (error) {
+                showResult(`❌ Error updating product ${productId}: ${error.message}`, 'error');
+            }
+        }
+
+        async function simulateBackInStock(productId) {
+            try {
+                showResult(`Restoring stock for product ${productId}...`, 'warning');
+                
+                const { data, error } = await supabase
+                    .from('products')
+                    .update({ 
+                        status: 'active',
+                        stock: 10
+                    })
+                    .eq('id', productId);
+
+                if (error) throw error;
+                
+                showResult(`✅ Product ${productId} back in stock`, 'success');
+            } catch (error) {
+                showResult(`❌ Error restoring product ${productId}: ${error.message}`, 'error');
+            }
+        }
+
+        // Show initial message
+        showResult('Test page loaded. Ready to simulate stock changes.', 'success');
+    </script>
+</body>
+</html>

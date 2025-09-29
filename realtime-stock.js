@@ -44,6 +44,19 @@ function handleStockUpdate(payload) {
         }
     }
     
+    // Update cart items if they exist
+    if (typeof cart !== 'undefined' && Array.isArray(cart)) {
+        const cartIndex = cart.findIndex(item => item.id === updatedProduct.id);
+        if (cartIndex !== -1) {
+            cart[cartIndex].status = updatedProduct.status;
+            cart[cartIndex].stock = updatedProduct.stock;
+            if (typeof saveCart === 'function') {
+                saveCart();
+            }
+            console.log(`✅ Updated cart item ${updatedProduct.id}`);
+        }
+    }
+    
     // Refresh product displays on frontend
     if (typeof displayProducts === 'function' && typeof products !== 'undefined') {
         displayProducts(products);
@@ -53,6 +66,11 @@ function handleStockUpdate(payload) {
     }
     if (typeof loadTrendingProducts === 'function') {
         loadTrendingProducts();
+    }
+    
+    // Update cart display if on cart page
+    if (typeof displayCartItems === 'function' && window.location.pathname.includes('cart.html')) {
+        displayCartItems();
     }
     
     // Admin panel refresh
@@ -74,7 +92,7 @@ function handleStockUpdate(payload) {
     
     // Show notification for out-of-stock items
     if (updatedProduct.status === 'out-of-stock' && typeof showNotification === 'function') {
-        showNotification(`${updatedProduct.name} is now out of stock`, 'warning');
+        showNotification(`${updatedProduct.name} is no longer available`, 'warning');
     }
 }
 

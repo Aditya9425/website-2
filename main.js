@@ -470,14 +470,20 @@ function displayCartItems() {
             imageUrl = `https://via.placeholder.com/300x400/FF6B6B/FFFFFF?text=${encodeURIComponent(item.name || 'Product')}`;
         }
         
+        const isOutOfStock = item.status === 'out-of-stock';
+        
         return `
-        <div class="cart-item">
+        <div class="cart-item ${isOutOfStock ? 'out-of-stock' : ''}" data-product-id="${item.id}">
             <div class="cart-item-top">
-                <img src="${imageUrl}" alt="${item.name}" class="cart-item-image">
+                <div class="cart-item-image-container">
+                    <img src="${imageUrl}" alt="${item.name}" class="cart-item-image">
+                    ${isOutOfStock ? '<div class="out-of-stock-overlay">Out of Stock</div>' : ''}
+                </div>
                 <div class="cart-item-info">
                     <h4 class="cart-item-name">${item.name}</h4>
                     <div class="cart-item-price">₹${item.price.toLocaleString()}</div>
                     <div class="cart-item-quantity">Quantity: ${item.quantity}</div>
+                    ${isOutOfStock ? '<div class="out-of-stock-message"><i class="fas fa-exclamation-triangle"></i> This product is no longer available</div>' : ''}
                 </div>
             </div>
             <div class="cart-item-controls">
@@ -499,10 +505,13 @@ function displayCartItems() {
     });
     
     updateOrderSummary();
+    updateCheckoutButtonState();
 }
 
 function updateOrderSummary() {
-    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    // Only include available items in calculation
+    const availableItems = cart.filter(item => item.status !== 'out-of-stock');
+    const subtotal = availableItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const deliveryCharges = 0;
     const total = subtotal + deliveryCharges;
     
@@ -523,11 +532,6 @@ function updateOrderSummary() {
         const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
         cartItemCount.textContent = totalItems;
     }
-    
-    const checkoutBtn = document.getElementById('checkoutBtn');
-    if (checkoutBtn) {
-        checkoutBtn.disabled = cart.length === 0;
-    }
 }
 
 // View Product
@@ -541,11 +545,6 @@ function setupCartPage() {
     
     // Refresh cart from localStorage to ensure we have latest data
     refreshCart();
-    
-    // Initialize real-time stock monitoring
-    if (typeof initializeCartStockMonitoring === 'function') {
-        initializeCartStockMonitoring();
-    }
     
     const clearCartBtn = document.getElementById('clearCartBtn');
     if (clearCartBtn) {
@@ -561,13 +560,6 @@ function setupCartPage() {
         console.log('Checkout button found, setting up click handler');
         checkoutBtn.onclick = () => {
             console.log('Checkout button clicked, cart length:', cart.length);
-            
-            // Check for out-of-stock items
-            const hasOutOfStockItems = cart.some(item => item.status === 'out-of-stock' || item.stock === 0);
-            if (hasOutOfStockItems) {
-                alert('Please remove out-of-stock items from your cart before checkout.');
-                return;
-            }
             
             // Check if user is logged in
             const userSession = localStorage.getItem('userSession');
@@ -591,12 +583,13 @@ function setupCartPage() {
     
     // Load cart items and update display
     console.log('Loading cart items...');
-    if (typeof displayCartItemsWithStock === 'function') {
-        displayCartItemsWithStock();
-    } else {
-        displayCartItems();
-    }
+    displayCartItems();
     updateOrderSummary();
+    
+    // Initialize cart stock monitoring
+    if (typeof initializeCartStockMonitor === 'function') {
+        initializeCartStockMonitor();
+    }
 }
 
 // Setup checkout page interactions
@@ -2044,9 +2037,31 @@ function addMobileTouchListeners() {
     });
 }
 
+// Update checkout button state based on cart contents
+function updateCheckoutButtonState() {
+    const checkoutBtn = document.getElementById('checkoutBtn');
+    if (!checkoutBtn) return;
+    
+    // Check if any cart items are out of stock
+    const hasOutOfStockItems = cart.some(item => item.status === 'out-of-stock');
+    
+    if (hasOutOfStockItems || cart.length === 0) {
+        checkoutBtn.disabled = true;
+        if (hasOutOfStockItems) {
+            checkoutBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Remove unavailable items to checkout';
+        } else {
+            checkoutBtn.innerHTML = '<i class="fas fa-credit-card"></i> Proceed to Checkout';
+        }
+    } else {
+        checkoutBtn.disabled = false;
+        checkoutBtn.innerHTML = '<i class="fas fa-credit-card"></i> Proceed to Checkout';
+    }
+}
+
 // Make functions globally available
 window.toggleMobileMenu = toggleMobileMenu;
 window.addMobileTouchListeners = addMobileTouchListeners;
+window.updateCheckoutButtonState = updateCheckoutButtonState;
 
 // Category filter functionality
 function setupCategoryFilters() {
