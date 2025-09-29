@@ -1615,6 +1615,15 @@ function loadFeaturedProducts() {
                     window.location.href = `product.html?id=${productId}`;
                 }
             });
+            
+            // Add touch event for mobile
+            card.addEventListener('touchend', (e) => {
+                if (!e.target.closest('.add-to-cart-btn') && !e.target.closest('.buy-now-btn') && !e.target.closest('.color-dot')) {
+                    e.preventDefault();
+                    const productId = card.dataset.productId;
+                    window.location.href = `product.html?id=${productId}`;
+                }
+            });
         });
         
         // Add mobile touch event listeners
