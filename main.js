@@ -1916,7 +1916,7 @@ function openProductDetailVariant(variantProduct) {
 
 // Calculate delivery charges based on subtotal
 function calculateDeliveryCharges(subtotal) {
-    return subtotal < 999 ? 100 : 0;
+    return 0;
 }
 
 // Update order summary for Buy Now flow

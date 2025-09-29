@@ -49,7 +49,7 @@
 <body>
     <div class="test-container">
         <h1>Delivery Charges Test</h1>
-        <p>Testing the delivery charges logic: ₹100 for orders below ₹999, FREE for orders ₹999 and above</p>
+        <p>Testing the delivery charges logic: FREE delivery for all orders</p>
         
         <div class="test-case">
             <h3>Test Case 1: Order below ₹999</h3>
@@ -95,7 +95,7 @@
     <script>
         // Delivery charges calculation function (same as in main.js)
         function calculateDeliveryCharges(subtotal) {
-            return subtotal < 999 ? 100 : 0;
+            return 0;
         }
         
         function testDeliveryCharges(amount) {
@@ -141,7 +141,7 @@
         // Auto-run tests on page load
         window.addEventListener('load', function() {
             console.log('Delivery Charges Test Page Loaded');
-            console.log('Logic: Orders below ₹999 = ₹100 delivery, Orders ₹999+ = FREE delivery');
+            console.log('Logic: FREE delivery for all orders');
         });
     </script>
 </body>
