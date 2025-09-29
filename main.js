@@ -1581,7 +1581,7 @@ function loadFeaturedProducts() {
             
             return `
             <div class="featured-card" data-product-id="${product.id}" data-status="${product.status || 'active'}">
-                <div class="featured-image" onclick="window.location.href='product.html?id=${product.id}'">
+                <div class="featured-image">
                     <div class="product-image-container">
                         <img src="${imageUrl}" alt="${product.name}" loading="lazy">
                         ${product.status === 'out-of-stock' ? '<div class="out-of-stock-overlay">Out of Stock</div>' : ''}
@@ -1606,6 +1606,16 @@ function loadFeaturedProducts() {
             </div>
             `;
         }).join('');
+        
+        // Add click listeners for featured cards
+        document.querySelectorAll('.featured-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                if (!e.target.closest('.add-to-cart-btn') && !e.target.closest('.buy-now-btn') && !e.target.closest('.color-dot')) {
+                    const productId = card.dataset.productId;
+                    window.location.href = `product.html?id=${productId}`;
+                }
+            });
+        });
         
         // Add mobile touch event listeners
         addMobileTouchListeners();
