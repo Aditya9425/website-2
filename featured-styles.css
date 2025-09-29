@@ -73,14 +73,11 @@
 .carousel-track {
     display: flex;
     gap: 30px;
-    animation: scroll-horizontal 30s linear infinite;
     width: max-content;
 }
 
-.carousel-track:hover {
-    animation-play-state: paused;
-}
-
+/* Auto-scroll animation removed - manual scrolling only */
+/* 
 @keyframes scroll-horizontal {
     0% {
         transform: translateX(0);
@@ -89,6 +86,7 @@
         transform: translateX(-50%);
     }
 }
+*/
 
 /* Infinite scroll effect */
 .carousel-track {
@@ -214,10 +212,6 @@
     
     .carousel-container::-webkit-scrollbar {
         display: none;
-    }
-    
-    .carousel-track {
-        animation-play-state: running;
     }
 }
 

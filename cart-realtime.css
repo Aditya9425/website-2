@@ -1,0 +1,41 @@
+/* Real-time Cart Out-of-Stock Styles */
+.cart-item.out-of-stock-item {
+    opacity: 0.7;
+    background: #f8f9fa;
+    border: 2px dashed #dc3545;
+    position: relative;
+}
+
+.cart-item-image.grayscale {
+    filter: grayscale(100%);
+}
+
+.out-of-stock-message {
+    color: #dc3545;
+    font-weight: 600;
+    font-size: 14px;
+    margin-top: 8px;
+    padding: 6px 12px;
+    background: rgba(220, 53, 69, 0.1);
+    border-radius: 4px;
+    border-left: 3px solid #dc3545;
+}
+
+.cart-item-total.disabled {
+    color: #999;
+    text-decoration: line-through;
+}
+
+.checkout-btn:disabled {
+    background: #dc3545 !important;
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .out-of-stock-message {
+        font-size: 12px;
+        padding: 4px 8px;
+    }
+}

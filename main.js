@@ -226,6 +226,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     updateCartCount();
     loadTrendingProducts();
     loadFeaturedProducts();
+    loadNewArrivals();
     setupSearchFunctionality();
     
     const currentPage = window.location.pathname.split('/').pop();
@@ -541,6 +542,11 @@ function setupCartPage() {
     // Refresh cart from localStorage to ensure we have latest data
     refreshCart();
     
+    // Initialize real-time stock monitoring
+    if (typeof initializeCartStockMonitoring === 'function') {
+        initializeCartStockMonitoring();
+    }
+    
     const clearCartBtn = document.getElementById('clearCartBtn');
     if (clearCartBtn) {
         console.log('Clear cart button found, adding event listener');
@@ -555,6 +561,13 @@ function setupCartPage() {
         console.log('Checkout button found, setting up click handler');
         checkoutBtn.onclick = () => {
             console.log('Checkout button clicked, cart length:', cart.length);
+            
+            // Check for out-of-stock items
+            const hasOutOfStockItems = cart.some(item => item.status === 'out-of-stock' || item.stock === 0);
+            if (hasOutOfStockItems) {
+                alert('Please remove out-of-stock items from your cart before checkout.');
+                return;
+            }
             
             // Check if user is logged in
             const userSession = localStorage.getItem('userSession');
@@ -578,7 +591,11 @@ function setupCartPage() {
     
     // Load cart items and update display
     console.log('Loading cart items...');
-    displayCartItems();
+    if (typeof displayCartItemsWithStock === 'function') {
+        displayCartItemsWithStock();
+    } else {
+        displayCartItems();
+    }
     updateOrderSummary();
 }
 
@@ -1616,6 +1633,72 @@ function initializeCarousel() {
     
     track.addEventListener('mouseleave', () => {
         track.style.animationPlayState = 'running';
+    });
+}
+
+// Load New Arrivals
+function loadNewArrivals() {
+    const grid = document.getElementById('newArrivalsGrid');
+    if (!grid) return;
+    
+    // Get the latest 6 products (assuming newer products have higher IDs)
+    const newArrivals = products
+        .sort((a, b) => b.id - a.id)
+        .slice(0, 6);
+    
+    grid.innerHTML = newArrivals.map(product => {
+        let imageUrl;
+        if (product.image && product.image.startsWith('http')) {
+            imageUrl = product.image;
+        } else if (product.image) {
+            imageUrl = `https://jstvadizuzvwhabtfhfs.supabase.co/storage/v1/object/public/Sarees/${product.image}`;
+        } else {
+            imageUrl = `https://via.placeholder.com/300x400/FF6B6B/FFFFFF?text=${encodeURIComponent(product.name || 'Product')}`;
+        }
+        
+        const colorPalette = generateColorPalette(product);
+        
+        return `
+        <div class="new-arrival-card" data-product-id="${product.id}" data-status="${product.status || 'active'}">
+            <div class="new-badge">New</div>
+            <div class="new-arrival-image">
+                <img src="${imageUrl}" alt="${product.name}" loading="lazy">
+                ${product.status === 'out-of-stock' ? '<div class="out-of-stock-overlay">Out of Stock</div>' : ''}
+            </div>
+            <div class="new-arrival-info">
+                <h3 class="new-arrival-title">${product.name}</h3>
+                <div class="new-arrival-price">₹${product.price.toLocaleString()}</div>
+                <div class="new-arrival-rating">
+                    <div class="stars">
+                        ${generateStars(product.rating)}
+                    </div>
+                    <span class="rating-text">${product.rating} (${product.reviews})</span>
+                </div>
+                ${colorPalette}
+                <div class="new-arrival-buttons">
+                    ${product.status === 'out-of-stock' ? 
+                        '<div class="out-of-stock-label">Out of Stock</div>' :
+                        `<button class="add-to-cart-btn" data-id="${product.id}" onclick="event.stopPropagation(); addToCart(this)">
+                            Add to Cart
+                        </button>
+                        <button class="buy-now-btn" onclick="event.stopPropagation(); buyNow('${product.id}')">
+                            Buy Now
+                        </button>`
+                    }
+                </div>
+            </div>
+        </div>
+        `;
+    }).join('');
+    
+    // Add click listeners for product cards
+    document.querySelectorAll('.new-arrival-card').forEach(card => {
+        card.addEventListener('click', (e) => {
+            if (!e.target.closest('.add-to-cart-btn') && !e.target.closest('.buy-now-btn') && !e.target.closest('.color-dot')) {
+                const productId = card.dataset.productId;
+                window.location.href = `product.html?id=${productId}`;
+            }
+        });
     });
 }
 
