@@ -1,0 +1,13 @@
+@media (max-width: 768px) {
+    .footer-content > .footer-section:last-child {
+        text-align: center !important;
+    }
+    
+    .footer-content > .footer-section:last-child h4 {
+        text-align: center !important;
+    }
+    
+    .footer-content > .footer-section:last-child .footer-social {
+        justify-content: center !important;
+    }
+}
