@@ -228,7 +228,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     loadFeaturedProducts();
     loadNewArrivals();
     setupSearchFunctionality();
-    clearExistingCoupon();
     
     const currentPage = window.location.pathname.split('/').pop();
     
@@ -513,7 +512,7 @@ function updateOrderSummary() {
     // Only include available items in calculation
     const availableItems = cart.filter(item => item.status !== 'out-of-stock');
     const subtotal = availableItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const deliveryCharges = calculateDeliveryCharges(subtotal, appliedCoupon);
+    const deliveryCharges = calculateDeliveryCharges(subtotal);
     const total = subtotal + deliveryCharges;
     
     const summaryElements = document.querySelectorAll('#subtotal, #deliveryCharges, #total');
@@ -604,9 +603,6 @@ function setupCartPage() {
     } else {
         console.log('Checkout button not found');
     }
-    
-    // Setup coupon functionality
-    setupCouponSection();
     
     // Sync cart with database and load items
     console.log('Loading cart items...');
@@ -798,9 +794,6 @@ function setupAddressPage() {
             handleProceedToCheckout(isBuyNow);
         });
     }
-    
-    // Setup coupon functionality
-    setupCouponSection();
     
     // Load order summary based on flow type
     if (isBuyNow) {
@@ -1248,7 +1241,7 @@ async function processOrder(total, paymentMethod, orderItems = null, isBuyNow = 
     
     // Calculate totals
     const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const deliveryCharges = calculateDeliveryCharges(subtotal, appliedCoupon);
+    const deliveryCharges = calculateDeliveryCharges(subtotal);
     const calculatedTotal = subtotal + deliveryCharges;
     
     try {
@@ -1921,20 +1914,8 @@ function openProductDetailVariant(variantProduct) {
     document.body.style.overflow = 'hidden';
 }
 
-// Global coupon state
-let appliedCoupon = null;
-
-// Clear any existing coupon on page load
-function clearExistingCoupon() {
-    appliedCoupon = null;
-    localStorage.removeItem('appliedCoupon');
-}
-
-// Calculate delivery charges based on subtotal and coupon
-function calculateDeliveryCharges(subtotal, coupon = null) {
-    if (coupon && coupon.code === 'Adityabathla252209#Admin') {
-        return 0; // Free delivery for admin coupon
-    }
+// Calculate delivery charges based on subtotal
+function calculateDeliveryCharges(subtotal) {
     return subtotal < 999 ? 100 : 0;
 }
 
@@ -1949,7 +1930,7 @@ function updateBuyNowOrderSummary() {
     }
     
     const subtotal = buyNowItem.price * buyNowItem.quantity;
-    const deliveryCharges = calculateDeliveryCharges(subtotal, appliedCoupon);
+    const deliveryCharges = calculateDeliveryCharges(subtotal);
     const total = subtotal + deliveryCharges;
     
     console.log('Buy Now calculated values - Subtotal:', subtotal, 'Delivery:', deliveryCharges, 'Total:', total);
@@ -1978,149 +1959,9 @@ function updateBuyNowOrderSummary() {
     }
 }
 
-// Coupon functionality
-function setupCouponSection() {
-    const applyCouponBtn = document.getElementById('applyCouponBtn');
-    const couponInput = document.getElementById('couponCode');
-    const couponMessage = document.getElementById('couponMessage');
-    
-    if (applyCouponBtn && couponInput) {
-        applyCouponBtn.addEventListener('click', () => {
-            const couponCode = couponInput.value.trim();
-            applyCoupon(couponCode);
-        });
-        
-        // Allow Enter key to apply coupon
-        couponInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                const couponCode = couponInput.value.trim();
-                applyCoupon(couponCode);
-            }
-        });
-    }
-}
-
-function applyCoupon(couponCode) {
-    const couponMessage = document.getElementById('couponMessage');
-    
-    if (!couponCode) {
-        showCouponMessage('Please enter a coupon code', 'error');
-        return;
-    }
-    
-    // Check if coupon is valid
-    if (couponCode === 'Adityabathla252209#Admin') {
-        appliedCoupon = {
-            code: couponCode,
-            type: 'free_delivery',
-            description: 'Free delivery'
-        };
-        
-        // Save applied coupon to localStorage
-        localStorage.setItem('appliedCoupon', JSON.stringify(appliedCoupon));
-        
-        showCouponMessage('Coupon applied successfully! Free delivery activated.', 'success');
-        
-        // Update order summary
-        const urlParams = new URLSearchParams(window.location.search);
-        const isBuyNow = urlParams.get('buyNow') === 'true';
-        
-        if (isBuyNow) {
-            updateBuyNowOrderSummary();
-        } else {
-            updateOrderSummary();
-        }
-        
-        // Change button to remove option
-        const couponInput = document.getElementById('couponCode');
-        const applyCouponBtn = document.getElementById('applyCouponBtn');
-        if (applyCouponBtn) {
-            applyCouponBtn.textContent = 'Remove';
-            applyCouponBtn.onclick = () => removeCoupon();
-        }
-    } else {
-        showCouponMessage('Invalid coupon code. Please try again.', 'error');
-    }
-}
-
-function showCouponMessage(message, type) {
-    const couponMessage = document.getElementById('couponMessage');
-    if (couponMessage) {
-        couponMessage.textContent = message;
-        couponMessage.className = `coupon-message ${type}`;
-        couponMessage.style.display = 'block';
-        
-        // Hide message after 5 seconds for success, 3 seconds for error
-        setTimeout(() => {
-            couponMessage.style.display = 'none';
-        }, type === 'success' ? 5000 : 3000);
-    }
-}
-
-// Load applied coupon from localStorage on page load
-function loadAppliedCoupon() {
-    const savedCoupon = localStorage.getItem('appliedCoupon');
-    if (savedCoupon) {
-        try {
-            appliedCoupon = JSON.parse(savedCoupon);
-            
-            // Update UI to show applied coupon
-            const couponInput = document.getElementById('couponCode');
-            const applyCouponBtn = document.getElementById('applyCouponBtn');
-            
-            if (couponInput && appliedCoupon) {
-                couponInput.value = appliedCoupon.code;
-                couponInput.disabled = true;
-            }
-            if (applyCouponBtn && appliedCoupon) {
-                applyCouponBtn.disabled = true;
-                applyCouponBtn.textContent = 'Applied';
-            }
-        } catch (error) {
-            console.error('Error loading applied coupon:', error);
-            localStorage.removeItem('appliedCoupon');
-        }
-    }
-}
-
-function removeCoupon() {
-    appliedCoupon = null;
-    localStorage.removeItem('appliedCoupon');
-    
-    const couponInput = document.getElementById('couponCode');
-    const applyCouponBtn = document.getElementById('applyCouponBtn');
-    
-    if (couponInput) {
-        couponInput.value = '';
-        couponInput.disabled = false;
-    }
-    if (applyCouponBtn) {
-        applyCouponBtn.textContent = 'Apply';
-        applyCouponBtn.onclick = () => {
-            const couponCode = couponInput.value.trim();
-            applyCoupon(couponCode);
-        };
-    }
-    
-    // Update order summary
-    const urlParams = new URLSearchParams(window.location.search);
-    const isBuyNow = urlParams.get('buyNow') === 'true';
-    
-    if (isBuyNow) {
-        updateBuyNowOrderSummary();
-    } else {
-        updateOrderSummary();
-    }
-    
-    showCouponMessage('Coupon removed successfully', 'success');
-}
-
 window.logout = logout;
 window.openColorVariant = openColorVariant;
 window.initializeCarousel = initializeCarousel;
-window.applyCoupon = applyCoupon;
-window.setupCouponSection = setupCouponSection;
-window.removeCoupon = removeCoupon;
 
 // Mobile Menu Toggle Functionality
 function toggleMobileMenu() {
