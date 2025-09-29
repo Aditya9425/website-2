@@ -377,7 +377,7 @@ function loadTrendingProducts() {
                 imageUrl = `https://via.placeholder.com/300x400/FF6B6B/FFFFFF?text=${encodeURIComponent(product.name || 'Product')}`;
             }
             
-            // const colorPalette = generateColorPalette(product);
+            const colorPalette = generateColorPalette(product);
             
             return `
             <div class="product-card" data-product-id="${product.id}" data-status="${product.status || 'active'}">
@@ -394,7 +394,7 @@ function loadTrendingProducts() {
                         </div>
                         <span>${product.rating} (${product.reviews})</span>
                     </div>
-                    <!-- ${colorPalette} -->
+                    ${colorPalette}
                     ${product.status === 'out-of-stock' ? 
                         '<div class="out-of-stock-label">Out of Stock</div>' :
                         `<button class="add-to-cart add-to-cart-btn" data-id="${product.id}" onclick="event.stopPropagation()">
@@ -1440,15 +1440,15 @@ function openProductDetail(productId) {
     displayModalImageGallery(imagesToShow, product.name);
     
     // Show colors
-    // const colorsContainer = document.querySelector('#productColors .colors-list');
-    // if (product.colors && product.colors.length > 0) {
-    //     colorsContainer.innerHTML = product.colors.map(color => 
-    //         `<span class="color-tag">${color}</span>`
-    //     ).join('');
-    //     document.getElementById('productColors').style.display = 'block';
-    // } else {
-    //     document.getElementById('productColors').style.display = 'none';
-    // }
+    const colorsContainer = document.querySelector('#productColors .colors-list');
+    if (product.colors && product.colors.length > 0) {
+        colorsContainer.innerHTML = product.colors.map(color => 
+            `<span class="color-tag">${color}</span>`
+        ).join('');
+        document.getElementById('productColors').style.display = 'block';
+    } else {
+        document.getElementById('productColors').style.display = 'none';
+    }
     
     // Show modal
     document.getElementById('productModal').style.display = 'flex';
@@ -1577,7 +1577,7 @@ function loadFeaturedProducts() {
                 imageUrl = `https://via.placeholder.com/300x400/FF6B6B/FFFFFF?text=${encodeURIComponent(product.name || 'Product')}`;
             }
             
-            // const colorPalette = generateColorPalette(product);
+            const colorPalette = generateColorPalette(product);
             
             return `
             <div class="featured-card" data-product-id="${product.id}" data-status="${product.status || 'active'}">
@@ -1590,7 +1590,7 @@ function loadFeaturedProducts() {
                 <div class="featured-info">
                     <h3 class="featured-title">${product.name}</h3>
                     <div class="featured-price">₹${product.price.toLocaleString()}</div>
-                    <!-- ${colorPalette} -->
+                    ${colorPalette}
                     <div class="featured-buttons">
                         ${product.status === 'out-of-stock' ? 
                             '<div class="out-of-stock-label">Out of Stock</div>' :
@@ -1674,7 +1674,7 @@ function loadNewArrivals() {
             imageUrl = `https://via.placeholder.com/300x400/FF6B6B/FFFFFF?text=${encodeURIComponent(product.name || 'Product')}`;
         }
         
-        // const colorPalette = generateColorPalette(product);
+        const colorPalette = generateColorPalette(product);
         
         return `
         <div class="new-arrival-card" data-product-id="${product.id}" data-status="${product.status || 'active'}">
@@ -1692,7 +1692,7 @@ function loadNewArrivals() {
                     </div>
                     <span class="rating-text">${product.rating} (${product.reviews})</span>
                 </div>
-                <!-- ${colorPalette} -->
+                ${colorPalette}
                 <div class="new-arrival-buttons">
                     ${product.status === 'out-of-stock' ? 
                         '<div class="out-of-stock-label">Out of Stock</div>' :
@@ -2202,7 +2202,7 @@ function displayProducts(productsToShow) {
                 imageUrl = `https://via.placeholder.com/300x400/FF6B6B/FFFFFF?text=${encodeURIComponent(product.name || 'Product')}`;
             }
             
-            // const colorPalette = generateColorPalette(product);
+            const colorPalette = generateColorPalette(product);
             
             return `
             <div class="product-card" data-product-id="${product.id}" data-status="${product.status || 'active'}">
@@ -2219,7 +2219,7 @@ function displayProducts(productsToShow) {
                         </div>
                         <span>${product.rating} (${product.reviews})</span>
                     </div>
-                    <!-- ${colorPalette} -->
+                    ${colorPalette}
                     <div class="action-buttons">
                         ${product.status === 'out-of-stock' ? 
                             '<div class="out-of-stock-label">Out of Stock</div>' :

@@ -751,7 +751,7 @@ class AdminPanel {
                 <div class="variant-basic-info">
                     <div class="form-group">
                         <label>Color Name</label>
-                        <input type="text" placeholder="e.g., Red, Blue, Green" class="color-name" name="colorNames[]" required>
+                        <input type="text" placeholder="e.g., Red, Blue, Green" class="color-name" name="colorNames[]">
                     </div>
                     <div class="form-group">
                         <label>Color Code</label>
@@ -846,7 +846,7 @@ class AdminPanel {
                     <div class="variant-basic-info">
                         <div class="form-group">
                             <label>Color Name</label>
-                            <input type="text" placeholder="e.g., Red, Blue, Green" class="color-name" name="colorNames[]" value="${variant.color || ''}" required>
+                            <input type="text" placeholder="e.g., Red, Blue, Green" class="color-name" name="colorNames[]" value="${variant.color || ''}">
                         </div>
                         <div class="form-group">
                             <label>Color Code</label>
@@ -979,41 +979,42 @@ class AdminPanel {
                 const colorName = item.querySelector('.color-name')?.value?.trim();
                 const colorCode = item.querySelector('.color-picker')?.value;
                 
-                if (colorName) {
-                    // Handle color variant images
-                    const colorImageInputs = item.querySelectorAll('.color-image-input');
-                    const colorImageUrls = [];
-                    
-                    // Get existing images for this variant (in edit mode)
-                    const existingImages = item.querySelectorAll('.existing-variant-image img');
-                    existingImages.forEach(img => {
-                        if (!img.closest('.existing-variant-image').dataset.deleted) {
-                            colorImageUrls.push(img.src);
-                        }
-                    });
-                    
-                    // Upload new color variant images
-                    for (const input of colorImageInputs) {
-                        if (input.files.length > 0) {
-                            try {
-                                for (const file of input.files) {
-                                    const imageUrl = await uploadImageToSupabase(file, `${productName}_${colorName}`);
-                                    colorImageUrls.push(imageUrl);
-                                }
-                            } catch (error) {
-                                console.error('Color variant image upload error:', error);
-                                this.showMessage(`Failed to upload image for ${colorName}: ${error.message}`, 'error');
-                                return;
+                // Handle color variant images
+                const colorImageInputs = item.querySelectorAll('.color-image-input');
+                const colorImageUrls = [];
+                
+                // Get existing images for this variant (in edit mode)
+                const existingImages = item.querySelectorAll('.existing-variant-image img');
+                existingImages.forEach(img => {
+                    if (!img.closest('.existing-variant-image').dataset.deleted) {
+                        colorImageUrls.push(img.src);
+                    }
+                });
+                
+                // Upload new color variant images
+                for (const input of colorImageInputs) {
+                    if (input.files.length > 0) {
+                        try {
+                            for (const file of input.files) {
+                                const uploadName = colorName ? `${productName}_${colorName}` : productName;
+                                const imageUrl = await uploadImageToSupabase(file, uploadName);
+                                colorImageUrls.push(imageUrl);
                             }
+                        } catch (error) {
+                            console.error('Color variant image upload error:', error);
+                            const errorColorName = colorName || 'variant';
+                            this.showMessage(`Failed to upload image for ${errorColorName}: ${error.message}`, 'error');
+                            return;
                         }
                     }
-                    
-                    colorVariants.push({
-                        color: colorName,
-                        colorCode: colorCode || '#FF0000',
-                        images: colorImageUrls
-                    });
                 }
+                
+                // Add color variant even if name is empty (optional)
+                colorVariants.push({
+                    color: colorName || '', // Allow empty color name
+                    colorCode: colorCode || '#FF0000',
+                    images: colorImageUrls
+                });
             }
             
             // Prepare product data with proper stock handling
@@ -2022,7 +2023,7 @@ class AdminPanel {
                 <div class="variant-basic-info">
                     <div class="form-group">
                         <label>Color Name</label>
-                        <input type="text" placeholder="e.g., Red, Blue, Green" class="color-name" name="colorNames[]" required>
+                        <input type="text" placeholder="e.g., Red, Blue, Green" class="color-name" name="colorNames[]">
                     </div>
                     <div class="form-group">
                         <label>Color Code</label>
