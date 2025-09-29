@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="new-arrivals.css">
     <link rel="stylesheet" href="search-mobile-fix.css">
     <link rel="stylesheet" href="footer-alignment-fix.css">
+    <link rel="stylesheet" href="carousel-arrows.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -112,11 +113,17 @@
                     <p class="section-subtitle">Handpicked beauties from our collection ✨</p>
                 </div>
                 <div class="carousel-wrapper">
+                    <button class="carousel-btn carousel-btn-left" id="carouselLeft">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
                     <div class="carousel-container" id="carouselContainer">
                         <div class="carousel-track" id="featuredProducts">
                             <!-- Featured products will be loaded here -->
                         </div>
                     </div>
+                    <button class="carousel-btn carousel-btn-right" id="carouselRight">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
                 </div>
             </div>
         </section>

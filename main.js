@@ -1634,42 +1634,57 @@ function loadFeaturedProducts() {
     }
 }
 
-// Initialize carousel with proper animation timing
+// Initialize carousel with manual navigation
 function initializeCarousel() {
     const track = document.getElementById('featuredProducts');
-    if (!track) return;
+    const leftBtn = document.getElementById('carouselLeft');
+    const rightBtn = document.getElementById('carouselRight');
+    const container = document.getElementById('carouselContainer');
+    
+    if (!track || !leftBtn || !rightBtn || !container) return;
     
     const cards = track.querySelectorAll('.featured-card');
     const cardWidth = 350 + 30; // card width + gap
-    const totalWidth = cards.length * cardWidth;
+    let currentPosition = 0;
+    const maxPosition = -(cards.length - 3) * cardWidth; // Show 3 cards at a time
     
-    // Adjust animation duration based on content length
-    const duration = Math.max(30, totalWidth / 50); // Minimum 30s, adjust speed as needed
-    track.style.animationDuration = `${duration}s`;
+    // Disable auto-animation
+    track.style.animation = 'none';
+    track.style.transform = `translateX(${currentPosition}px)`;
+    track.style.transition = 'transform 0.3s ease';
     
-    // Add touch/mouse interaction for mobile
-    let isScrolling = false;
+    // Prevent all manual scrolling
+    const preventScroll = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+    };
     
-    track.addEventListener('touchstart', () => {
-        isScrolling = true;
-        track.style.animationPlayState = 'paused';
+    // Disable mouse wheel scrolling
+    container.addEventListener('wheel', preventScroll, { passive: false });
+    
+    // Disable touch scrolling
+    container.addEventListener('touchstart', preventScroll, { passive: false });
+    container.addEventListener('touchmove', preventScroll, { passive: false });
+    
+    // Disable drag scrolling
+    container.addEventListener('mousedown', preventScroll);
+    container.addEventListener('dragstart', preventScroll);
+    
+    // Left arrow click
+    leftBtn.addEventListener('click', () => {
+        if (currentPosition < 0) {
+            currentPosition += cardWidth;
+            track.style.transform = `translateX(${currentPosition}px)`;
+        }
     });
     
-    track.addEventListener('touchend', () => {
-        setTimeout(() => {
-            if (isScrolling) {
-                track.style.animationPlayState = 'running';
-                isScrolling = false;
-            }
-        }, 2000); // Resume after 2 seconds
-    });
-    
-    track.addEventListener('mouseenter', () => {
-        track.style.animationPlayState = 'paused';
-    });
-    
-    track.addEventListener('mouseleave', () => {
-        track.style.animationPlayState = 'running';
+    // Right arrow click
+    rightBtn.addEventListener('click', () => {
+        if (currentPosition > maxPosition) {
+            currentPosition -= cardWidth;
+            track.style.transform = `translateX(${currentPosition}px)`;
+        }
     });
 }
 
