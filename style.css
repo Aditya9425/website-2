@@ -5082,6 +5082,10 @@ body {
     color: #333;
     outline: none;
     font-family: inherit;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    touch-action: manipulation;
 }
 
 .search-input::placeholder {
@@ -5103,12 +5107,18 @@ body {
     margin-right: 4px;
     min-width: 52px;
     height: 52px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .search-btn:hover {
     background: linear-gradient(135deg, #E85A75 0%, #A05D68 100%);
     transform: scale(1.05);
     box-shadow: 0 4px 15px rgba(252, 108, 133, 0.4);
+}
+
+.search-btn:active {
+    transform: scale(0.95);
 }
 
 .search-btn i {
@@ -5211,17 +5221,26 @@ body {
         max-width: 100%;
         margin: 0 15px;
         border-radius: 25px;
+        min-height: 50px;
     }
     
     .search-input {
         padding: 14px 20px;
         font-size: 16px;
+        min-height: 48px;
+        box-sizing: border-box;
+        -webkit-user-select: text;
+        -moz-user-select: text;
+        -ms-user-select: text;
+        user-select: text;
     }
     
     .search-btn {
         padding: 14px 18px;
         min-width: 48px;
         height: 48px;
+        min-height: 48px;
+        flex-shrink: 0;
     }
     
     .search-results {
@@ -5229,16 +5248,22 @@ body {
         left: 0;
         right: 0;
         border-radius: 15px;
+        position: absolute;
+        z-index: 1001;
     }
     
     .search-result-item {
         padding: 12px 15px;
+        min-height: 48px;
+        display: flex;
+        align-items: center;
     }
     
     .search-result-image {
         width: 50px;
         height: 50px;
         margin-right: 12px;
+        flex-shrink: 0;
     }
     
     .search-result-name {
@@ -5262,21 +5287,29 @@ body {
     
     .search-container {
         margin: 0 10px;
+        min-height: 48px;
     }
     
     .search-input {
         padding: 12px 18px;
-        font-size: 15px;
+        font-size: 16px;
+        min-height: 44px;
+        box-sizing: border-box;
     }
     
     .search-btn {
         padding: 12px 16px;
         min-width: 44px;
         height: 44px;
+        min-height: 44px;
     }
     
     .search-btn i {
         font-size: 16px;
+    }
+    
+    .search-results {
+        margin: 10px 10px 0 10px;
     }
 }
 

@@ -2192,6 +2192,11 @@ function setupSearchFunctionality() {
     
     let searchTimeout;
     
+    // Mobile-friendly input handling
+    searchInput.addEventListener('touchstart', function(e) {
+        e.stopPropagation();
+    }, { passive: true });
+    
     // Real-time search as user types
     searchInput.addEventListener('input', function() {
         clearTimeout(searchTimeout);
@@ -2208,8 +2213,20 @@ function setupSearchFunctionality() {
         }, 300);
     });
     
-    // Search button click
-    searchBtn.addEventListener('click', function() {
+    // Search button click with mobile support
+    searchBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const query = searchInput.value.trim();
+        if (query) {
+            performSearch(query);
+        }
+    });
+    
+    // Touch support for search button
+    searchBtn.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
         const query = searchInput.value.trim();
         if (query) {
             performSearch(query);
@@ -2234,6 +2251,13 @@ function setupSearchFunctionality() {
         }
     });
     
+    // Touch outside to hide results
+    document.addEventListener('touchstart', function(e) {
+        if (!e.target.closest('.search-container') && !e.target.closest('.search-results')) {
+            hideSearchResults();
+        }
+    });
+    
     // Show results when focusing on input (if there's a query)
     searchInput.addEventListener('focus', function() {
         const query = this.value.trim();
@@ -2241,6 +2265,13 @@ function setupSearchFunctionality() {
             searchResults.style.display = 'block';
         }
     });
+    
+    // Prevent zoom on iOS when focusing input
+    if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+        searchInput.addEventListener('focus', function() {
+            this.style.fontSize = '16px';
+        });
+    }
 }
 
 function performSearch(query) {
@@ -2300,7 +2331,7 @@ function displaySearchResults(results, query) {
             }
             
             return `
-                <div class="search-result-item" onclick="navigateToProduct('${product.id}')">
+                <div class="search-result-item" onclick="navigateToProduct('${product.id}')" ontouchend="navigateToProduct('${product.id}')">
                     <img src="${imageUrl}" alt="${product.name}" class="search-result-image">
                     <div class="search-result-info">
                         <div class="search-result-name">${product.name}</div>
@@ -2324,6 +2355,11 @@ function hideSearchResults() {
 
 function navigateToProduct(productId) {
     hideSearchResults();
+    // Clear search input on mobile after selection
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput && window.innerWidth <= 768) {
+        searchInput.blur();
+    }
     window.location.href = `product.html?id=${productId}`;
 }
 
