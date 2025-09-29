@@ -539,6 +539,29 @@ function viewProduct(productId) {
     window.location.href = `product.html?id=${productId}`;
 }
 
+// Sync cart with database stock status
+async function syncCartWithDatabase() {
+    if (!cart || cart.length === 0) return;
+    
+    for (let item of cart) {
+        try {
+            const { data, error } = await supabase
+                .from('products')
+                .select('status, stock')
+                .eq('id', item.id)
+                .single();
+            
+            if (data) {
+                item.status = data.status;
+                item.stock = data.stock;
+            }
+        } catch (error) {
+            console.log('Error syncing item:', item.id);
+        }
+    }
+    saveCart();
+}
+
 // Setup cart page interactions
 function setupCartPage() {
     console.log('Setting up cart page...');
@@ -581,10 +604,12 @@ function setupCartPage() {
         console.log('Checkout button not found');
     }
     
-    // Load cart items and update display
+    // Sync cart with database and load items
     console.log('Loading cart items...');
-    displayCartItems();
-    updateOrderSummary();
+    syncCartWithDatabase().then(() => {
+        displayCartItems();
+        updateOrderSummary();
+    });
     
     // Initialize cart stock monitoring
     if (typeof initializeCartStockMonitor === 'function') {
@@ -1539,95 +1564,99 @@ function updateCartCount() {
 function loadFeaturedProducts() {
     const carousel = document.getElementById('featuredProducts');
     if (carousel) {
-        // Use all products for infinite scroll effect
-        const allProducts = [...products, ...products]; // Duplicate for seamless loop
-        
-        carousel.innerHTML = allProducts.map(product => {
-            let imageUrl;
-            if (product.image && product.image.startsWith('http')) {
-                imageUrl = product.image;
-            } else if (product.image) {
-                imageUrl = `https://jstvadizuzvwhabtfhfs.supabase.co/storage/v1/object/public/Sarees/${product.image}`;
-            } else {
-                imageUrl = `https://via.placeholder.com/300x400/FF6B6B/FFFFFF?text=${encodeURIComponent(product.name || 'Product')}`;
-            }
-            
-            const colorPalette = generateColorPalette(product);
-            
-            return `
-            <div class="featured-card" data-product-id="${product.id}" data-status="${product.status || 'active'}">
-                <div class="featured-image" onclick="window.location.href='product.html?id=${product.id}'">
-                    <div class="product-image-container">
-                        <img src="${imageUrl}" alt="${product.name}" loading="lazy">
-                        ${product.status === 'out-of-stock' ? '<div class="out-of-stock-overlay">Out of Stock</div>' : ''}
-                    </div>
+        // Show loading state
+        carousel.innerHTML = Array(6).fill(0).map(() => `
+            <div class="featured-card loading">
+                <div class="featured-image">
+                    <div class="product-image-container" style="height: 280px; background: #f0f0f0;"></div>
                 </div>
                 <div class="featured-info">
-                    <h3 class="featured-title">${product.name}</h3>
-                    <div class="featured-price">₹${product.price.toLocaleString()}</div>
-                    ${colorPalette}
-                    <div class="featured-buttons">
-                        ${product.status === 'out-of-stock' ? 
-                            '<div class="out-of-stock-label">Out of Stock</div>' :
-                            `<button class="add-to-cart-btn mobile-touch-btn" data-id="${product.id}" onclick="event.stopPropagation(); addToCart(this)" ontouchstart="this.style.transform='scale(0.95)'" ontouchend="this.style.transform='scale(1)'">
-                                Add to Cart
-                            </button>
-                            <button class="buy-now-btn mobile-touch-btn" onclick="event.stopPropagation(); buyNow('${product.id}')" ontouchstart="this.style.transform='scale(0.95)'" ontouchend="this.style.transform='scale(1)'">
-                                Buy Now
-                            </button>`
-                        }
-                    </div>
+                    <div style="height: 20px; background: #e0e0e0; margin-bottom: 10px; border-radius: 4px;"></div>
+                    <div style="height: 16px; background: #e0e0e0; width: 60%; border-radius: 4px;"></div>
                 </div>
             </div>
-            `;
-        }).join('');
+        `).join('');
         
-        // Add mobile touch event listeners
-        addMobileTouchListeners();
-        
-        // Initialize carousel animation
-        initializeCarousel();
+        // Use requestAnimationFrame for smooth rendering
+        requestAnimationFrame(() => {
+            const featuredProducts = products.slice(0, 8); // Limit to 8 products for better performance
+            
+            carousel.innerHTML = featuredProducts.map((product, index) => {
+                let imageUrl;
+                if (product.image && product.image.startsWith('http')) {
+                    imageUrl = product.image;
+                } else if (product.image) {
+                    imageUrl = `https://jstvadizuzvwhabtfhfs.supabase.co/storage/v1/object/public/Sarees/${product.image}`;
+                } else {
+                    imageUrl = `https://via.placeholder.com/300x400/FF6B6B/FFFFFF?text=${encodeURIComponent(product.name || 'Product')}`;
+                }
+                
+                const colorPalette = generateColorPalette(product);
+                
+                return `
+                <div class="featured-card" data-product-id="${product.id}" data-status="${product.status || 'active'}" style="animation-delay: ${index * 0.1}s">
+                    <div class="featured-image" onclick="window.location.href='product.html?id=${product.id}'">
+                        <div class="product-image-container">
+                            <img src="${imageUrl}" alt="${product.name}" loading="lazy" decoding="async">
+                            ${product.status === 'out-of-stock' ? '<div class="out-of-stock-overlay">Out of Stock</div>' : ''}
+                        </div>
+                    </div>
+                    <div class="featured-info">
+                        <h3 class="featured-title">${product.name}</h3>
+                        <div class="featured-price">₹${product.price.toLocaleString()}</div>
+                        ${colorPalette}
+                        <div class="featured-buttons">
+                            ${product.status === 'out-of-stock' ? 
+                                '<div class="out-of-stock-label">Out of Stock</div>' :
+                                `<button class="add-to-cart-btn mobile-touch-btn" data-id="${product.id}" onclick="event.stopPropagation(); addToCart(this)" ontouchstart="this.style.transform='scale(0.95)'" ontouchend="this.style.transform='scale(1)'">
+                                    Add to Cart
+                                </button>
+                                <button class="buy-now-btn mobile-touch-btn" onclick="event.stopPropagation(); buyNow('${product.id}')" ontouchstart="this.style.transform='scale(0.95)'" ontouchend="this.style.transform='scale(1)'">
+                                    Buy Now
+                                </button>`
+                            }
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+            
+            // Add intersection observer for lazy loading animations
+            setupIntersectionObserver();
+            
+            // Add mobile touch event listeners
+            addMobileTouchListeners();
+        });
     }
 }
 
-// Initialize carousel with proper animation timing
-function initializeCarousel() {
-    const track = document.getElementById('featuredProducts');
-    if (!track) return;
-    
-    const cards = track.querySelectorAll('.featured-card');
-    const cardWidth = 350 + 30; // card width + gap
-    const totalWidth = cards.length * cardWidth;
-    
-    // Adjust animation duration based on content length
-    const duration = Math.max(30, totalWidth / 50); // Minimum 30s, adjust speed as needed
-    track.style.animationDuration = `${duration}s`;
-    
-    // Add touch/mouse interaction for mobile
-    let isScrolling = false;
-    
-    track.addEventListener('touchstart', () => {
-        isScrolling = true;
-        track.style.animationPlayState = 'paused';
-    });
-    
-    track.addEventListener('touchend', () => {
-        setTimeout(() => {
-            if (isScrolling) {
-                track.style.animationPlayState = 'running';
-                isScrolling = false;
-            }
-        }, 2000); // Resume after 2 seconds
-    });
-    
-    track.addEventListener('mouseenter', () => {
-        track.style.animationPlayState = 'paused';
-    });
-    
-    track.addEventListener('mouseleave', () => {
-        track.style.animationPlayState = 'running';
-    });
+// Setup intersection observer for performance
+function setupIntersectionObserver() {
+    if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.1,
+            rootMargin: '50px'
+        });
+        
+        document.querySelectorAll('.featured-card').forEach(card => {
+            observer.observe(card);
+        });
+    } else {
+        // Fallback for browsers without IntersectionObserver
+        document.querySelectorAll('.featured-card').forEach(card => {
+            card.classList.add('visible');
+        });
+    }
 }
+
+
 
 // Load New Arrivals
 function loadNewArrivals() {
@@ -1931,7 +1960,6 @@ function updateBuyNowOrderSummary() {
 
 window.logout = logout;
 window.openColorVariant = openColorVariant;
-window.initializeCarousel = initializeCarousel;
 
 // Mobile Menu Toggle Functionality
 function toggleMobileMenu() {
