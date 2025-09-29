@@ -81,7 +81,7 @@
 
             <div class="checkout-content">
                 <!-- Checkout Steps -->
-                <div class="checkout-steps" onclick="scrollToPayNow()" style="cursor: pointer;">
+                <div class="checkout-steps">
                     <div class="step active">
                         <div class="step-number">1</div>
                         <div class="step-info">
@@ -115,7 +115,7 @@
                 <!-- Checkout Forms -->
                 <div class="checkout-forms">
                     <!-- Payment Method Section -->
-                    <section class="payment-method-section" onclick="scrollToPayNow()" style="cursor: pointer;">
+                    <section class="payment-method-section">
                         <div class="form-card">
                             <h2>Secure Payment</h2>
                             <div class="razorpay-info">
@@ -481,14 +481,14 @@
                     if (buyNowItem) {
                         orderItems = [buyNowItem];
                         const subtotal = buyNowItem.price * buyNowItem.quantity;
-                        const deliveryCharges = 0;
+                        const deliveryCharges = subtotal < 999 ? 100 : 0;
                         total = subtotal + deliveryCharges;
                     }
                 } else {
                     const cart = JSON.parse(localStorage.getItem('cart') || '[]');
                     orderItems = cart;
                     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                    const deliveryCharges = 0;
+                    const deliveryCharges = subtotal < 999 ? 100 : 0;
                     total = subtotal + deliveryCharges;
                 }
                 
@@ -618,7 +618,7 @@
                 }
                 orderItems = [buyNowItem];
                 const subtotal = buyNowItem.price * buyNowItem.quantity;
-                const deliveryCharges = 0; // Set to 0 for testing
+                const deliveryCharges = subtotal < 999 ? 100 : 0;
                 total = subtotal + deliveryCharges;
             } else {
                 const cart = JSON.parse(localStorage.getItem('cart') || '[]');
@@ -628,7 +628,7 @@
                 }
                 orderItems = cart;
                 const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                const deliveryCharges = 0; // Set to 0 for testing
+                const deliveryCharges = subtotal < 999 ? 100 : 0;
                 total = subtotal + deliveryCharges;
             }
             
@@ -668,12 +668,9 @@
             }
         }
         
-        // Scroll to Pay Now button function
+        // Manual scroll function (disabled)
         function scrollToPayNow() {
-            const payNowBtn = document.getElementById('payNowBtn');
-            if (payNowBtn) {
-                payNowBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
+            // Disabled to prevent automatic scrolling
         }
         
         // Debug function for testing

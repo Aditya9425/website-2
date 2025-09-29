@@ -127,12 +127,20 @@
                             <span id="total">₹0</span>
                         </div>
 
+                        <!-- Coupon Section -->
+                        <div class="coupon-section">
+                            <div class="coupon-input-container">
+                                <input type="text" id="couponCode" placeholder="Enter coupon code" class="coupon-input">
+                                <button type="button" id="applyCouponBtn" class="apply-coupon-btn">Apply</button>
+                            </div>
+                            <div id="couponMessage" class="coupon-message" style="display: none;"></div>
+                        </div>
+
                         <div class="delivery-info">
                             <div class="delivery-item">
                                 <i class="fas fa-truck"></i>
                                 <div>
-                                    <strong>Free Delivery</strong>
-                                    <p>On orders above ₹999</p>
+                                    <strong style="color: #28a745;">Free delivery on orders above ₹999</strong>
                                 </div>
                             </div>
                         </div>
@@ -148,25 +156,7 @@
                         </div>
                     </div>
 
-                    <!-- Coupon Section -->
-                    <div class="coupon-section">
-                        <h4>Apply Coupon</h4>
-                        <div class="coupon-input">
-                            <input type="text" placeholder="Enter coupon code" id="couponInput">
-                            <button class="apply-coupon-btn" id="applyCouponBtn">
-                                <i class="fas fa-tag"></i>
-                                Apply
-                            </button>
-                        </div>
-                        <div class="available-coupons">
-                            <p>Available Coupons:</p>
-                            <div class="coupon-tags">
-                                <span class="coupon-tag" data-code="WELCOME10">WELCOME10 - 10% OFF</span>
-                                <span class="coupon-tag" data-code="FIRST20">FIRST20 - 20% OFF</span>
-                                <span class="coupon-tag" data-code="FREEDEL">FREEDEL - Free Delivery</span>
-                            </div>
-                        </div>
-                    </div>
+
                 </aside>
             </div>
 

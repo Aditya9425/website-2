@@ -10,14 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Smooth scroll to pay button when sections are clicked
-    const clickableElements = document.querySelectorAll('[onclick*="scrollToPayNow"]');
-    clickableElements.forEach(element => {
-        element.addEventListener('touchstart', function(e) {
-            e.preventDefault();
-            scrollToPayNow();
-        });
-    });
+    // Remove automatic scrolling - now manual only
     
     // Optimize touch interactions for payment button
     const payNowBtn = document.getElementById('payNowBtn');
@@ -31,25 +24,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Auto-hide address bar on mobile scroll
-    let lastScrollTop = 0;
-    window.addEventListener('scroll', function() {
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        if (scrollTop > lastScrollTop && scrollTop > 100) {
-            // Scrolling down - hide address bar
-            window.scrollTo(0, scrollTop + 1);
-        }
-        lastScrollTop = scrollTop;
-    }, { passive: true });
+    // Removed auto-scroll functionality
 });
 
-// Enhanced scroll to pay now function
+// Manual scroll to pay now function (only when explicitly called)
 function scrollToPayNow() {
     const payNowSection = document.querySelector('.pay-now-section');
     if (payNowSection) {
         payNowSection.scrollIntoView({ 
             behavior: 'smooth', 
-            block: 'end',
+            block: 'center',
             inline: 'nearest'
         });
     }

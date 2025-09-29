@@ -228,6 +228,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     loadFeaturedProducts();
     loadNewArrivals();
     setupSearchFunctionality();
+    clearExistingCoupon();
     
     const currentPage = window.location.pathname.split('/').pop();
     
@@ -512,7 +513,7 @@ function updateOrderSummary() {
     // Only include available items in calculation
     const availableItems = cart.filter(item => item.status !== 'out-of-stock');
     const subtotal = availableItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const deliveryCharges = 0;
+    const deliveryCharges = calculateDeliveryCharges(subtotal, appliedCoupon);
     const total = subtotal + deliveryCharges;
     
     const summaryElements = document.querySelectorAll('#subtotal, #deliveryCharges, #total');
@@ -603,6 +604,9 @@ function setupCartPage() {
     } else {
         console.log('Checkout button not found');
     }
+    
+    // Setup coupon functionality
+    setupCouponSection();
     
     // Sync cart with database and load items
     console.log('Loading cart items...');
@@ -794,6 +798,9 @@ function setupAddressPage() {
             handleProceedToCheckout(isBuyNow);
         });
     }
+    
+    // Setup coupon functionality
+    setupCouponSection();
     
     // Load order summary based on flow type
     if (isBuyNow) {
@@ -1128,7 +1135,7 @@ function handlePlaceOrderWithPayment(isBuyNow = false) {
         }
         orderItems = [buyNowItem];
         const subtotal = buyNowItem.price * buyNowItem.quantity;
-        const deliveryCharges = 0; // Set to 0 for testing
+        const deliveryCharges = calculateDeliveryCharges(subtotal);
         total = subtotal + deliveryCharges;
     } else {
         // Regular cart flow
@@ -1141,7 +1148,7 @@ function handlePlaceOrderWithPayment(isBuyNow = false) {
         }
         orderItems = [...cart];
         const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const deliveryCharges = 0; // Set to 0 for testing
+        const deliveryCharges = calculateDeliveryCharges(subtotal);
         total = subtotal + deliveryCharges;
     }
     
@@ -1241,7 +1248,7 @@ async function processOrder(total, paymentMethod, orderItems = null, isBuyNow = 
     
     // Calculate totals
     const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const deliveryCharges = 0;
+    const deliveryCharges = calculateDeliveryCharges(subtotal, appliedCoupon);
     const calculatedTotal = subtotal + deliveryCharges;
     
     try {
@@ -1564,99 +1571,95 @@ function updateCartCount() {
 function loadFeaturedProducts() {
     const carousel = document.getElementById('featuredProducts');
     if (carousel) {
-        // Show loading state
-        carousel.innerHTML = Array(6).fill(0).map(() => `
-            <div class="featured-card loading">
-                <div class="featured-image">
-                    <div class="product-image-container" style="height: 280px; background: #f0f0f0;"></div>
+        // Use all products for infinite scroll effect
+        const allProducts = [...products, ...products]; // Duplicate for seamless loop
+        
+        carousel.innerHTML = allProducts.map(product => {
+            let imageUrl;
+            if (product.image && product.image.startsWith('http')) {
+                imageUrl = product.image;
+            } else if (product.image) {
+                imageUrl = `https://jstvadizuzvwhabtfhfs.supabase.co/storage/v1/object/public/Sarees/${product.image}`;
+            } else {
+                imageUrl = `https://via.placeholder.com/300x400/FF6B6B/FFFFFF?text=${encodeURIComponent(product.name || 'Product')}`;
+            }
+            
+            const colorPalette = generateColorPalette(product);
+            
+            return `
+            <div class="featured-card" data-product-id="${product.id}" data-status="${product.status || 'active'}">
+                <div class="featured-image" onclick="window.location.href='product.html?id=${product.id}'">
+                    <div class="product-image-container">
+                        <img src="${imageUrl}" alt="${product.name}" loading="lazy">
+                        ${product.status === 'out-of-stock' ? '<div class="out-of-stock-overlay">Out of Stock</div>' : ''}
+                    </div>
                 </div>
                 <div class="featured-info">
-                    <div style="height: 20px; background: #e0e0e0; margin-bottom: 10px; border-radius: 4px;"></div>
-                    <div style="height: 16px; background: #e0e0e0; width: 60%; border-radius: 4px;"></div>
+                    <h3 class="featured-title">${product.name}</h3>
+                    <div class="featured-price">₹${product.price.toLocaleString()}</div>
+                    ${colorPalette}
+                    <div class="featured-buttons">
+                        ${product.status === 'out-of-stock' ? 
+                            '<div class="out-of-stock-label">Out of Stock</div>' :
+                            `<button class="add-to-cart-btn mobile-touch-btn" data-id="${product.id}" onclick="event.stopPropagation(); addToCart(this)" ontouchstart="this.style.transform='scale(0.95)'" ontouchend="this.style.transform='scale(1)'">
+                                Add to Cart
+                            </button>
+                            <button class="buy-now-btn mobile-touch-btn" onclick="event.stopPropagation(); buyNow('${product.id}')" ontouchstart="this.style.transform='scale(0.95)'" ontouchend="this.style.transform='scale(1)'">
+                                Buy Now
+                            </button>`
+                        }
+                    </div>
                 </div>
             </div>
-        `).join('');
+            `;
+        }).join('');
         
-        // Use requestAnimationFrame for smooth rendering
-        requestAnimationFrame(() => {
-            const featuredProducts = products.slice(0, 8); // Limit to 8 products for better performance
-            
-            carousel.innerHTML = featuredProducts.map((product, index) => {
-                let imageUrl;
-                if (product.image && product.image.startsWith('http')) {
-                    imageUrl = product.image;
-                } else if (product.image) {
-                    imageUrl = `https://jstvadizuzvwhabtfhfs.supabase.co/storage/v1/object/public/Sarees/${product.image}`;
-                } else {
-                    imageUrl = `https://via.placeholder.com/300x400/FF6B6B/FFFFFF?text=${encodeURIComponent(product.name || 'Product')}`;
-                }
-                
-                const colorPalette = generateColorPalette(product);
-                
-                return `
-                <div class="featured-card" data-product-id="${product.id}" data-status="${product.status || 'active'}" style="animation-delay: ${index * 0.1}s">
-                    <div class="featured-image" onclick="window.location.href='product.html?id=${product.id}'">
-                        <div class="product-image-container">
-                            <img src="${imageUrl}" alt="${product.name}" loading="lazy" decoding="async">
-                            ${product.status === 'out-of-stock' ? '<div class="out-of-stock-overlay">Out of Stock</div>' : ''}
-                        </div>
-                    </div>
-                    <div class="featured-info">
-                        <h3 class="featured-title">${product.name}</h3>
-                        <div class="featured-price">₹${product.price.toLocaleString()}</div>
-                        ${colorPalette}
-                        <div class="featured-buttons">
-                            ${product.status === 'out-of-stock' ? 
-                                '<div class="out-of-stock-label">Out of Stock</div>' :
-                                `<button class="add-to-cart-btn mobile-touch-btn" data-id="${product.id}" onclick="event.stopPropagation(); addToCart(this)" ontouchstart="this.style.transform='scale(0.95)'" ontouchend="this.style.transform='scale(1)'">
-                                    Add to Cart
-                                </button>
-                                <button class="buy-now-btn mobile-touch-btn" onclick="event.stopPropagation(); buyNow('${product.id}')" ontouchstart="this.style.transform='scale(0.95)'" ontouchend="this.style.transform='scale(1)'">
-                                    Buy Now
-                                </button>`
-                            }
-                        </div>
-                    </div>
-                </div>
-                `;
-            }).join('');
-            
-            // Add intersection observer for lazy loading animations
-            setupIntersectionObserver();
-            
-            // Add mobile touch event listeners
-            addMobileTouchListeners();
-        });
+        // Add mobile touch event listeners
+        addMobileTouchListeners();
+        
+        // Initialize carousel animation
+        initializeCarousel();
     }
 }
 
-// Setup intersection observer for performance
-function setupIntersectionObserver() {
-    if ('IntersectionObserver' in window) {
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                    observer.unobserve(entry.target);
-                }
-            });
-        }, {
-            threshold: 0.1,
-            rootMargin: '50px'
-        });
-        
-        document.querySelectorAll('.featured-card').forEach(card => {
-            observer.observe(card);
-        });
-    } else {
-        // Fallback for browsers without IntersectionObserver
-        document.querySelectorAll('.featured-card').forEach(card => {
-            card.classList.add('visible');
-        });
-    }
+// Initialize carousel with proper animation timing
+function initializeCarousel() {
+    const track = document.getElementById('featuredProducts');
+    if (!track) return;
+    
+    const cards = track.querySelectorAll('.featured-card');
+    const cardWidth = 350 + 30; // card width + gap
+    const totalWidth = cards.length * cardWidth;
+    
+    // Adjust animation duration based on content length
+    const duration = Math.max(30, totalWidth / 50); // Minimum 30s, adjust speed as needed
+    track.style.animationDuration = `${duration}s`;
+    
+    // Add touch/mouse interaction for mobile
+    let isScrolling = false;
+    
+    track.addEventListener('touchstart', () => {
+        isScrolling = true;
+        track.style.animationPlayState = 'paused';
+    });
+    
+    track.addEventListener('touchend', () => {
+        setTimeout(() => {
+            if (isScrolling) {
+                track.style.animationPlayState = 'running';
+                isScrolling = false;
+            }
+        }, 2000); // Resume after 2 seconds
+    });
+    
+    track.addEventListener('mouseenter', () => {
+        track.style.animationPlayState = 'paused';
+    });
+    
+    track.addEventListener('mouseleave', () => {
+        track.style.animationPlayState = 'running';
+    });
 }
-
-
 
 // Load New Arrivals
 function loadNewArrivals() {
@@ -1918,6 +1921,23 @@ function openProductDetailVariant(variantProduct) {
     document.body.style.overflow = 'hidden';
 }
 
+// Global coupon state
+let appliedCoupon = null;
+
+// Clear any existing coupon on page load
+function clearExistingCoupon() {
+    appliedCoupon = null;
+    localStorage.removeItem('appliedCoupon');
+}
+
+// Calculate delivery charges based on subtotal and coupon
+function calculateDeliveryCharges(subtotal, coupon = null) {
+    if (coupon && coupon.code === 'Adityabathla252209#Admin') {
+        return 0; // Free delivery for admin coupon
+    }
+    return subtotal < 999 ? 100 : 0;
+}
+
 // Update order summary for Buy Now flow
 function updateBuyNowOrderSummary() {
     console.log('updateBuyNowOrderSummary called');
@@ -1929,7 +1949,7 @@ function updateBuyNowOrderSummary() {
     }
     
     const subtotal = buyNowItem.price * buyNowItem.quantity;
-    const deliveryCharges = 0; // Set to 0 for testing
+    const deliveryCharges = calculateDeliveryCharges(subtotal, appliedCoupon);
     const total = subtotal + deliveryCharges;
     
     console.log('Buy Now calculated values - Subtotal:', subtotal, 'Delivery:', deliveryCharges, 'Total:', total);
@@ -1958,8 +1978,149 @@ function updateBuyNowOrderSummary() {
     }
 }
 
+// Coupon functionality
+function setupCouponSection() {
+    const applyCouponBtn = document.getElementById('applyCouponBtn');
+    const couponInput = document.getElementById('couponCode');
+    const couponMessage = document.getElementById('couponMessage');
+    
+    if (applyCouponBtn && couponInput) {
+        applyCouponBtn.addEventListener('click', () => {
+            const couponCode = couponInput.value.trim();
+            applyCoupon(couponCode);
+        });
+        
+        // Allow Enter key to apply coupon
+        couponInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const couponCode = couponInput.value.trim();
+                applyCoupon(couponCode);
+            }
+        });
+    }
+}
+
+function applyCoupon(couponCode) {
+    const couponMessage = document.getElementById('couponMessage');
+    
+    if (!couponCode) {
+        showCouponMessage('Please enter a coupon code', 'error');
+        return;
+    }
+    
+    // Check if coupon is valid
+    if (couponCode === 'Adityabathla252209#Admin') {
+        appliedCoupon = {
+            code: couponCode,
+            type: 'free_delivery',
+            description: 'Free delivery'
+        };
+        
+        // Save applied coupon to localStorage
+        localStorage.setItem('appliedCoupon', JSON.stringify(appliedCoupon));
+        
+        showCouponMessage('Coupon applied successfully! Free delivery activated.', 'success');
+        
+        // Update order summary
+        const urlParams = new URLSearchParams(window.location.search);
+        const isBuyNow = urlParams.get('buyNow') === 'true';
+        
+        if (isBuyNow) {
+            updateBuyNowOrderSummary();
+        } else {
+            updateOrderSummary();
+        }
+        
+        // Change button to remove option
+        const couponInput = document.getElementById('couponCode');
+        const applyCouponBtn = document.getElementById('applyCouponBtn');
+        if (applyCouponBtn) {
+            applyCouponBtn.textContent = 'Remove';
+            applyCouponBtn.onclick = () => removeCoupon();
+        }
+    } else {
+        showCouponMessage('Invalid coupon code. Please try again.', 'error');
+    }
+}
+
+function showCouponMessage(message, type) {
+    const couponMessage = document.getElementById('couponMessage');
+    if (couponMessage) {
+        couponMessage.textContent = message;
+        couponMessage.className = `coupon-message ${type}`;
+        couponMessage.style.display = 'block';
+        
+        // Hide message after 5 seconds for success, 3 seconds for error
+        setTimeout(() => {
+            couponMessage.style.display = 'none';
+        }, type === 'success' ? 5000 : 3000);
+    }
+}
+
+// Load applied coupon from localStorage on page load
+function loadAppliedCoupon() {
+    const savedCoupon = localStorage.getItem('appliedCoupon');
+    if (savedCoupon) {
+        try {
+            appliedCoupon = JSON.parse(savedCoupon);
+            
+            // Update UI to show applied coupon
+            const couponInput = document.getElementById('couponCode');
+            const applyCouponBtn = document.getElementById('applyCouponBtn');
+            
+            if (couponInput && appliedCoupon) {
+                couponInput.value = appliedCoupon.code;
+                couponInput.disabled = true;
+            }
+            if (applyCouponBtn && appliedCoupon) {
+                applyCouponBtn.disabled = true;
+                applyCouponBtn.textContent = 'Applied';
+            }
+        } catch (error) {
+            console.error('Error loading applied coupon:', error);
+            localStorage.removeItem('appliedCoupon');
+        }
+    }
+}
+
+function removeCoupon() {
+    appliedCoupon = null;
+    localStorage.removeItem('appliedCoupon');
+    
+    const couponInput = document.getElementById('couponCode');
+    const applyCouponBtn = document.getElementById('applyCouponBtn');
+    
+    if (couponInput) {
+        couponInput.value = '';
+        couponInput.disabled = false;
+    }
+    if (applyCouponBtn) {
+        applyCouponBtn.textContent = 'Apply';
+        applyCouponBtn.onclick = () => {
+            const couponCode = couponInput.value.trim();
+            applyCoupon(couponCode);
+        };
+    }
+    
+    // Update order summary
+    const urlParams = new URLSearchParams(window.location.search);
+    const isBuyNow = urlParams.get('buyNow') === 'true';
+    
+    if (isBuyNow) {
+        updateBuyNowOrderSummary();
+    } else {
+        updateOrderSummary();
+    }
+    
+    showCouponMessage('Coupon removed successfully', 'success');
+}
+
 window.logout = logout;
 window.openColorVariant = openColorVariant;
+window.initializeCarousel = initializeCarousel;
+window.applyCoupon = applyCoupon;
+window.setupCouponSection = setupCouponSection;
+window.removeCoupon = removeCoupon;
 
 // Mobile Menu Toggle Functionality
 function toggleMobileMenu() {
