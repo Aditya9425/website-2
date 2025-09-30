@@ -1,0 +1,147 @@
+/* ===== FOOTER ALIGNMENT FINAL FIX ===== */
+/* Fix Instagram logo and feedback button alignment to match the image */
+
+@media (max-width: 768px) {
+    /* Follow Us section - Center the Instagram logo properly */
+    .footer-section:last-of-type {
+        text-align: center !important;
+        margin-bottom: 20px !important;
+        width: 100% !important;
+    }
+    
+    .footer-section:last-of-type h4 {
+        text-align: center !important;
+        margin-bottom: 15px !important;
+        font-size: 1.1rem !important;
+    }
+    
+    /* Instagram logo - Center alignment */
+    .footer-social {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    .footer-social a {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 44px !important;
+        height: 44px !important;
+        font-size: 1.4rem !important;
+        color: #ecf0f1 !important;
+        transition: color 0.3s ease !important;
+        padding: 8px !important;
+        border-radius: 50% !important;
+        margin: 0 !important;
+    }
+    
+    .footer-social a:hover {
+        color: #e4405f !important;
+        background: rgba(228, 64, 95, 0.1) !important;
+    }
+    
+    /* Feedback section - Center alignment */
+    .footer-feedback {
+        text-align: center !important;
+        padding: 20px 0 !important;
+        border-top: 1px solid #34495e !important;
+        margin-bottom: 20px !important;
+        width: 100% !important;
+    }
+    
+    .feedback-message {
+        color: #bdc3c7 !important;
+        font-size: 13px !important;
+        margin: 0 0 12px 0 !important;
+        line-height: 1.5 !important;
+        text-align: center !important;
+        padding: 0 10px !important;
+    }
+    
+    .feedback-btn {
+        background: linear-gradient(135deg, #FF6B6B 0%, #E85A4F 100%) !important;
+        color: white !important;
+        border: none !important;
+        padding: 10px 20px !important;
+        border-radius: 25px !important;
+        cursor: pointer !important;
+        font-size: 13px !important;
+        font-weight: 600 !important;
+        transition: all 0.3s ease !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3) !important;
+        min-height: 40px !important;
+        margin: 0 auto !important;
+    }
+    
+    .feedback-btn:hover {
+        background: linear-gradient(135deg, #E85A4F 0%, #D44638 100%) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4) !important;
+    }
+    
+    .feedback-btn i {
+        font-size: 14px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Extra small screens - maintain center alignment */
+    .footer-social a {
+        width: 40px !important;
+        height: 40px !important;
+        font-size: 1.3rem !important;
+    }
+    
+    .feedback-message {
+        font-size: 12px !important;
+        margin-bottom: 10px !important;
+        padding: 0 8px !important;
+    }
+    
+    .feedback-btn {
+        padding: 8px 16px !important;
+        font-size: 12px !important;
+        min-height: 36px !important;
+    }
+    
+    .feedback-btn i {
+        font-size: 13px !important;
+    }
+}
+
+/* Ensure proper stacking order */
+.footer-content {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 20px !important;
+}
+
+/* Make sure the Follow Us section comes after the two-column layout */
+@media (max-width: 768px) {
+    .footer-content > .footer-section:nth-child(1) {
+        order: 1; /* Company info first */
+    }
+    
+    .footer-sections-row {
+        order: 2; /* Quick Links and Contact Info second */
+    }
+    
+    .footer-content > .footer-section:last-of-type {
+        order: 3; /* Follow Us third */
+    }
+    
+    .footer-feedback {
+        order: 4; /* Feedback fourth */
+    }
+    
+    .footer-bottom {
+        order: 5; /* Copyright last */
+    }
+}
