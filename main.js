@@ -2230,6 +2230,7 @@ function displayCategoryDescription(category) {
     if (!descriptionContainer || !descriptionText) return;
     
     const categoryDescriptions = {
+        'all': 'Explore our complete collection of premium sarees featuring silk, cotton, designer, and bridal varieties. Each piece is carefully curated for quality and elegance. We\'re stocking up more beautiful pieces — stay tuned! 💫',
         'silk': 'Discover our exquisite collection of silk sarees, crafted with the finest materials and traditional techniques. Each piece embodies elegance and sophistication. We\'re stocking up more beautiful pieces — stay tuned! 💫',
         'cotton': 'Explore our comfortable and breathable cotton sarees, perfect for daily wear and casual occasions. Made with premium cotton for ultimate comfort. We\'re stocking up more beautiful pieces — stay tuned! 💫',
         'designer': 'Browse our exclusive designer sarees featuring contemporary designs and modern aesthetics. Each piece is a work of art created by talented designers. We\'re stocking up more beautiful pieces — stay tuned! 💫',
@@ -2239,7 +2240,7 @@ function displayCategoryDescription(category) {
     const description = categoryDescriptions[category.toLowerCase()];
     
     if (description) {
-        descriptionText.innerHTML = `<p style="margin: 0; font-size: 16px; color: #666; line-height: 1.6;">${description}</p>`;
+        descriptionText.innerHTML = `<p style="margin: 0; font-size: 14px; color: #666; line-height: 1.5; padding: 0 5px;">${description}</p>`;
         descriptionContainer.style.display = 'block';
     } else {
         descriptionContainer.style.display = 'none';
