@@ -303,6 +303,13 @@
                 };
                 
                 checkAndFilter();
+            } else {
+                // Show "all" category description when no specific category is selected
+                setTimeout(() => {
+                    if (typeof displayCategoryDescription === 'function') {
+                        displayCategoryDescription('all');
+                    }
+                }, 500);
             }
         });
     </script>
