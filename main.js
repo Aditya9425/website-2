@@ -2219,7 +2219,31 @@ function filterProducts(category) {
     console.log('All products:', products);
     console.log('Filtered products:', filteredProducts);
     
+    displayCategoryDescription(category);
     displayProducts(filteredProducts);
+}
+
+function displayCategoryDescription(category) {
+    const descriptionContainer = document.getElementById('categoryDescription');
+    const descriptionText = document.getElementById('categoryDescriptionText');
+    
+    if (!descriptionContainer || !descriptionText) return;
+    
+    const categoryDescriptions = {
+        'silk': 'Discover our exquisite collection of silk sarees, crafted with the finest materials and traditional techniques. Each piece embodies elegance and sophistication. We\'re stocking up more beautiful pieces — stay tuned! 💫',
+        'cotton': 'Explore our comfortable and breathable cotton sarees, perfect for daily wear and casual occasions. Made with premium cotton for ultimate comfort. We\'re stocking up more beautiful pieces — stay tuned! 💫',
+        'designer': 'Browse our exclusive designer sarees featuring contemporary designs and modern aesthetics. Each piece is a work of art created by talented designers. We\'re stocking up more beautiful pieces — stay tuned! 💫',
+        'bridal': 'Find your perfect wedding saree from our stunning bridal collection. These sarees are designed to make your special day unforgettable. We\'re stocking up more beautiful pieces — stay tuned! 💫'
+    };
+    
+    const description = categoryDescriptions[category.toLowerCase()];
+    
+    if (description) {
+        descriptionText.innerHTML = `<p style="margin: 0; font-size: 16px; color: #666; line-height: 1.6;">${description}</p>`;
+        descriptionContainer.style.display = 'block';
+    } else {
+        descriptionContainer.style.display = 'none';
+    }
 }
 
 // New function to display products with Buy Now button

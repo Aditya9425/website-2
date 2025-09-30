@@ -1,23 +1,41 @@
 /* ===== ADDRESS PAGE MOBILE OPTIMIZATION ===== */
 
+/* Prevent zoom on mobile devices */
+@viewport {
+    width: device-width;
+    zoom: 1.0;
+}
+
+/* Global mobile optimizations */
+* {
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
 @media (max-width: 768px) {
     /* Main layout adjustments */
     .address-main {
-        padding: 15px 0;
+        padding: 10px 0;
         background: #f8f9fa;
     }
 
     .container {
-        padding: 0 15px;
+        padding: 0 10px;
         max-width: 100%;
+        width: 100%;
+        box-sizing: border-box;
     }
 
     /* Breadcrumb mobile styling */
     .breadcrumb {
-        font-size: 13px;
-        margin-bottom: 15px;
-        padding: 8px 0;
+        font-size: 12px;
+        margin-bottom: 12px;
+        padding: 6px 0;
         color: #666;
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
     }
 
     .breadcrumb a {
@@ -28,22 +46,23 @@
     /* Page header mobile optimization */
     .page-header {
         text-align: center;
-        margin-bottom: 25px;
-        padding: 15px 0;
+        margin-bottom: 20px;
+        padding: 12px 0;
     }
 
     .page-header h1 {
-        font-size: 24px;
-        margin-bottom: 8px;
+        font-size: 22px;
+        margin-bottom: 6px;
         color: #333;
         font-weight: 600;
+        line-height: 1.2;
     }
 
     .page-header p {
-        font-size: 14px;
+        font-size: 13px;
         color: #666;
         margin: 0;
-        line-height: 1.5;
+        line-height: 1.4;
     }
 
     /* Address content - stack vertically on mobile */
@@ -57,49 +76,51 @@
     .address-form-section {
         order: 1;
         background: white;
-        border-radius: 12px;
-        padding: 20px;
+        border-radius: 8px;
+        padding: 15px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin: 0 5px;
     }
 
     .form-card h2 {
-        font-size: 20px;
-        margin-bottom: 20px;
+        font-size: 18px;
+        margin-bottom: 15px;
         text-align: center;
         color: #333;
         font-weight: 600;
+        line-height: 1.3;
     }
 
     /* Form sections */
     .form-section {
-        margin-bottom: 30px;
+        margin-bottom: 25px;
     }
 
     .form-section h3 {
-        font-size: 18px;
-        margin-bottom: 15px;
+        font-size: 16px;
+        margin-bottom: 12px;
         color: #333;
         font-weight: 600;
-        padding-bottom: 8px;
-        border-bottom: 2px solid #f0f0f0;
+        padding-bottom: 6px;
+        border-bottom: 1px solid #f0f0f0;
     }
 
     /* Form rows - stack on mobile */
     .form-row {
         display: flex;
         flex-direction: column;
-        gap: 15px;
-        margin-bottom: 15px;
+        gap: 12px;
+        margin-bottom: 12px;
     }
 
     /* Form groups */
     .form-group {
-        margin-bottom: 15px;
+        margin-bottom: 12px;
     }
 
     .form-group label {
         display: block;
-        margin-bottom: 8px;
+        margin-bottom: 6px;
         font-weight: 600;
         color: #333;
         font-size: 14px;
@@ -110,14 +131,17 @@
     .form-group select,
     .form-group textarea {
         width: 100%;
-        padding: 14px 16px;
-        border: 2px solid #e9ecef;
-        border-radius: 8px;
+        padding: 12px 14px;
+        border: 1px solid #e9ecef;
+        border-radius: 6px;
         font-size: 16px;
         transition: border-color 0.3s ease;
         background: white;
         box-sizing: border-box;
-        min-height: 50px;
+        min-height: 48px;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
     }
 
     .form-group input:focus,
@@ -217,15 +241,16 @@
     .order-summary-sidebar {
         order: 2;
         position: static;
-        margin-top: 20px;
+        margin-top: 15px;
     }
 
     .summary-card {
         background: white;
-        border-radius: 12px;
-        padding: 20px;
+        border-radius: 8px;
+        padding: 15px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        margin-bottom: 20px;
+        margin-bottom: 15px;
+        margin: 0 5px 15px 5px;
     }
 
     .summary-card h3 {
@@ -428,11 +453,95 @@
 /* Extra small screens */
 @media (max-width: 375px) {
     .container {
-        padding: 0 10px;
+        padding: 0 8px;
     }
 
     .address-main {
+        padding: 8px 0;
+    }
+
+    .address-form-section,
+    .summary-card,
+    .saved-addresses {
+        padding: 12px;
+        margin: 0 2px;
+    }
+
+    .page-header {
         padding: 10px 0;
+        margin-bottom: 20px;
+    }
+
+    .page-header h1 {
+        font-size: 18px;
+    }
+
+    .page-header p {
+        font-size: 13px;
+    }
+
+    .form-section {
+        margin-bottom: 20px;
+    }
+
+    .form-section h3 {
+        font-size: 15px;
+        margin-bottom: 10px;
+    }
+
+    .form-group {
+        margin-bottom: 10px;
+    }
+
+    .form-group label {
+        font-size: 13px;
+        margin-bottom: 5px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        padding: 10px 12px;
+        font-size: 16px;
+        min-height: 44px;
+        border-radius: 4px;
+    }
+
+    .btn-primary,
+    .btn-secondary {
+        padding: 12px 16px;
+        font-size: 14px;
+        min-height: 48px;
+    }
+
+    .security-notice {
+        padding: 15px;
+        margin: 20px 0;
+    }
+
+    .security-content {
+        gap: 10px;
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .security-content i {
+        font-size: 1.8rem;
+    }
+
+    .security-content h3 {
+        font-size: 15px;
+    }
+
+    .security-content p {
+        font-size: 12px;
+    }
+}
+
+/* Landscape orientation on mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+    .address-main {
+        padding: 8px 0;
     }
 
     .address-form-section,
@@ -441,72 +550,35 @@
         padding: 15px;
     }
 
-    .page-header h1 {
-        font-size: 20px;
-    }
-
-    .form-section h3 {
-        font-size: 16px;
-    }
-
-    .form-group input,
-    .form-group select,
-    .form-group textarea {
-        padding: 12px 14px;
-        font-size: 15px;
-        min-height: 48px;
-    }
-
-    .btn-primary,
-    .btn-secondary {
-        padding: 14px 18px;
-        font-size: 15px;
-        min-height: 52px;
-    }
-
-    .security-content {
-        gap: 12px;
-    }
-
-    .security-content i {
-        font-size: 2rem;
-    }
-
-    .security-content h3 {
-        font-size: 16px;
-    }
-
-    .security-content p {
-        font-size: 13px;
-    }
-}
-
-/* Landscape orientation on mobile */
-@media (max-width: 768px) and (orientation: landscape) {
-    .address-main {
-        padding: 10px 0;
-    }
-
-    .address-form-section,
-    .summary-card,
-    .saved-addresses {
-        padding: 18px;
-    }
-
     .security-notice {
-        padding: 18px;
-        margin: 25px 0;
+        padding: 15px;
+        margin: 20px 0;
     }
 
     .form-actions {
         flex-direction: row;
-        gap: 15px;
+        gap: 12px;
     }
 
     .btn-primary,
     .btn-secondary {
         width: auto;
         flex: 1;
+        padding: 10px 16px;
+        font-size: 14px;
+    }
+
+    .page-header {
+        padding: 8px 0;
+        margin-bottom: 15px;
+    }
+
+    .page-header h1 {
+        font-size: 20px;
+    }
+
+    .form-section {
+        margin-bottom: 20px;
     }
 }
 
@@ -529,5 +601,20 @@
     select,
     textarea {
         min-height: 44px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: rgba(0,0,0,0.1);
+    }
+
+    /* Prevent zoom on input focus */
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    select,
+    textarea {
+        font-size: 16px !important;
+        transform: translateZ(0);
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
     }
 }
