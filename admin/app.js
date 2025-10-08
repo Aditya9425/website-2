@@ -614,7 +614,25 @@ class AdminPanel {
                 </td>
                 <td>
                     <div class="action-buttons">
-                        <button class="btn-primary btn-small" onclick="window.adminPanel.editProduct('${product.id}')" title="Edit Product">
+                        <button class="btn-primary btn-small" onclick="
+                            document.getElementById('productName').value='${product.name || ''}';
+                            document.getElementById('productCategory').value='${product.category || ''}';
+                            document.getElementById('productPrice').value='${product.price || ''}';
+                            document.getElementById('productStock').value='${product.stock || 0}';
+                            document.getElementById('productDescription').value='${(product.description || '').replace(/'/g, "\\'")}';
+                            document.getElementById('designDetails').value='${(product.design_details || '').replace(/'/g, "\\'")}';
+                            document.getElementById('blouseInfo').value='${(product.blouse_info || '').replace(/'/g, "\\'")}';
+                            document.getElementById('ornamentation').value='${(product.ornamentation || '').replace(/'/g, "\\'")}';
+                            document.getElementById('border').value='${(product.border || '').replace(/'/g, "\\'")}';
+                            document.getElementById('blouseFabric').value='${(product.blouse_fabric || '').replace(/'/g, "\\'")}';
+                            document.getElementById('blouseType').value='${(product.blouse_type || '').replace(/'/g, "\\'")}';
+                            document.getElementById('sareeFabric').value='${(product.saree_fabric || '').replace(/'/g, "\\'")}';
+                            document.getElementById('washCare').value='${(product.wash_care || '').replace(/'/g, "\\'")}';
+                            document.getElementById('completeLook').value='${(product.complete_look || '').replace(/'/g, "\\'")}';
+                            document.getElementById('productModalTitle').textContent='Edit Product';
+                            document.getElementById('productForm').dataset.productId='${product.id}';
+                            document.getElementById('productModal').style.display='flex';
+                        " title="Edit Product">
                             <i class="fas fa-edit"></i>
                         </button>
                         <button class="btn-danger btn-small" onclick="window.adminPanel.deleteProduct('${product.id}')" title="Delete Product">
@@ -814,10 +832,19 @@ class AdminPanel {
                 description: description,
                 images: imageUrls,
                 image: imageUrls[0] || null,
-                fabric: category, // Use category as fabric for simplicity
+                fabric: category,
                 colors: [],
                 color_variants: [],
-                linked_variants: null
+                linked_variants: null,
+                design_details: formData.get('designDetails')?.trim() || null,
+                blouse_info: formData.get('blouseInfo')?.trim() || null,
+                ornamentation: formData.get('ornamentation')?.trim() || null,
+                border: formData.get('border')?.trim() || null,
+                blouse_fabric: formData.get('blouseFabric')?.trim() || null,
+                blouse_type: formData.get('blouseType')?.trim() || null,
+                saree_fabric: formData.get('sareeFabric')?.trim() || null,
+                wash_care: formData.get('washCare')?.trim() || null,
+                complete_look: formData.get('completeLook')?.trim() || null
             };
             
             console.log('Product data before save:', productData);

@@ -175,7 +175,7 @@
                 <section id="productsSection" class="content-section">
                     <div class="section-header">
                         <h2>Product Management</h2>
-                        <button id="addProductBtn" class="btn-primary">
+                        <button id="addProductBtn" class="btn-primary" onclick="document.getElementById('productModal').style.display='flex'">
                             <i class="fas fa-plus"></i> Add Product
                         </button>
                     </div>
@@ -448,11 +448,11 @@
     </div>
 
     <!-- Add/Edit Product Modal -->
-    <div id="productModal" class="modal" style="display: none;">
+    <div id="productModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
         <div class="modal-content product-modal">
             <div class="modal-header">
                 <h3 id="productModalTitle">Add New Product</h3>
-                <button id="closeProductModal" class="close-btn">&times;</button>
+                <button id="closeProductModal" class="close-btn" onclick="document.getElementById('productModal').style.display='none'">&times;</button>
             </div>
             
             <form id="productForm" class="product-form">
@@ -585,7 +585,7 @@
 
                 
                 <div class="modal-actions">
-                    <button type="button" id="cancelProductBtn" class="btn-cancel">
+                    <button type="button" id="cancelProductBtn" class="btn-cancel" onclick="document.getElementById('productModal').style.display='none'">
                         <i class="fas fa-times"></i> Cancel
                     </button>
                     <button type="submit" class="btn-save">
@@ -619,5 +619,22 @@
     <script src="../test-admin-refresh.js"></script>
     <script src="app.js"></script>
     <script src="fix-admin-backend.js"></script>
+    <script>
+        // Ensure add product button works
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                const btn = document.getElementById('addProductBtn');
+                if (btn && !btn.hasAttribute('data-listener-added')) {
+                    btn.addEventListener('click', function() {
+                        console.log('Add product button clicked - direct handler');
+                        if (window.adminPanel) {
+                            window.adminPanel.openProductModal();
+                        }
+                    });
+                    btn.setAttribute('data-listener-added', 'true');
+                }
+            }, 1000);
+        });
+    </script>
 </body>
 </html>

@@ -156,6 +156,73 @@
             margin-top: 5px;
             font-style: italic;
         }
+        .policy-section {
+            margin: 40px 0;
+        }
+        .policy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .policy-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+        }
+        .policy-card h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 1.1rem;
+        }
+        .policy-card p {
+            margin: 0;
+            color: #666;
+            line-height: 1.5;
+        }
+        .return-policy {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            margin: 30px 0;
+        }
+        .return-policy h3 {
+            margin: 0 0 20px 0;
+            color: #333;
+            font-size: 1.5rem;
+        }
+        .return-policy p {
+            margin: 15px 0;
+            color: #555;
+            line-height: 1.6;
+        }
+        .policy-points {
+            margin: 20px 0;
+        }
+        .policy-points p {
+            margin: 10px 0;
+            color: #28a745;
+        }
+        .contact-support {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .contact-support a {
+            color: #FF6B6B;
+            text-decoration: none;
+        }
+        .contact-support a:hover {
+            text-decoration: underline;
+        }
+        .thank-you {
+            text-align: center;
+            font-size: 1.1rem;
+            color: #FF6B6B;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -248,15 +315,56 @@
                 <p>We'll get back to your query within the next 24 hours. Thank you for reaching out!</p>
             </div>
 
-        
+            <!-- Shipping & Policy Information -->
+            <div class="policy-section">
+                <div class="policy-grid">
+                    <div class="policy-card">
+                        <h4>📦 Shipping Time</h4>
+                        <p>We usually dispatch within 2 working days. Delivery in 4–7 days depending on location.</p>
+                    </div>
+                    <div class="policy-card">
+                        <h4>🔁 Return Policy</h4>
+                        <p>Returns accepted within 7 days of delivery if product is unused and in original condition.</p>
+                    </div>
+                    <div class="policy-card">
+                        <h4>💸 Refunds</h4>
+                        <p>Refunds for prepaid or partial COD orders are processed within 2–3 working days to your original payment method.</p>
+                    </div>
+                    <div class="policy-card">
+                        <h4>🤔 Partial COD</h4>
+                        <p>If you chose Partial COD, only the advance ₹200 is paid online. Remaining is paid on delivery.</p>
+                    </div>
+                </div>
             </div>
+
+            <!-- Return & Refund Policy -->
+            <div class="return-policy">
+                <h3>📝 Return & Refund Policy</h3>
+                <p>We only accept returns in case of <strong>genuine product damage or wrong item received</strong>.</p>
+                <p>To ensure a smooth and fair resolution, we <strong>strongly urge you to record a video while unboxing the package</strong>. This helps us verify any damage claims easily and quickly.</p>
+                
+                <div class="policy-points">
+                    <p>✅ Return requests must be raised within <strong>7 days</strong> of delivery.</p>
+                    <p>✅ Product must be <strong>unused and in original packaging</strong>.</p>
+                    <p>✅ Refunds will be processed only <strong>after the returned product is received and verified</strong> by our team.</p>
+                </div>
+                
+                <div class="contact-support">
+                    <p>For any return-related queries, feel free to contact us on WhatsApp or email:</p>
+                    <p>📧 <a href="mailto:shagunsaree60@gmail.com">shagunsaree60@gmail.com</a></p>
+                    <p>📲 +91-9636788945</p>
+                </div>
+                
+                <p class="thank-you">Thank you for shopping with <strong>Shagun Saree</strong> 💖</p>
+            </div>
+        </div>
 
             <!-- Social Section -->
             <div class="social-section">
                 <h3>📷 Follow us</h3>
                 <a href="https://www.instagram.com/shagun_sareebaran?igsh=cjJoZXozejhhZ2Nh" target="_blank" class="social-link">
                     <i class="fab fa-instagram"></i>
-                    @shagunsareebaran
+                    @shagunsaree.shop
                 </a>
             </div>
         </div>

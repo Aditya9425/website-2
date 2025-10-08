@@ -25,6 +25,84 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/brands.min.css" rel="stylesheet">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        .customer-info {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .info-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .info-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        .info-item i {
+            color: #FF6B6B;
+            font-size: 1.2rem;
+            margin-top: 2px;
+        }
+        .info-item strong {
+            color: #333;
+            font-size: 14px;
+            margin-bottom: 5px;
+            display: block;
+        }
+        .info-item p {
+            color: #666;
+            font-size: 13px;
+            line-height: 1.4;
+            margin: 0;
+        }
+        .info-item a {
+            color: #FF6B6B;
+            text-decoration: none;
+        }
+        .info-item a:hover {
+            text-decoration: underline;
+        }
+        .why-choose-us-product {
+            background: #fff;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .why-choose-us-product h4 {
+            color: #333;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .reasons-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        .reason-short {
+            color: #555;
+            font-size: 13px;
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border-radius: 20px;
+            text-align: center;
+            border: 1px solid #e9ecef;
+        }
+        @media (max-width: 768px) {
+            .reasons-list {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Header -->
@@ -159,22 +237,51 @@
                         </div>
                     </div>
 
-                    <!-- Delivery Info -->
-                    <div class="delivery-info">
-                        <div class="delivery-item">
-                            <i class="fas fa-truck"></i>
+                    <!-- Customer Info -->
+                    <div class="customer-info">
+                        <div class="info-item">
+                            <i class="fas fa-shipping-fast"></i>
                             <div>
-                                <strong>Free Delivery</strong>
-                                <p>On orders above ₹999</p>
+                                <strong>📦 Shipping Time</strong>
+                                <p>Dispatched within 2 working days. Delivery in 4–7 days.</p>
                             </div>
                         </div>
 
-                        <div class="delivery-item">
-                            <i class="fas fa-shield-alt"></i>
+                        <div class="info-item">
+                            <i class="fas fa-undo-alt"></i>
                             <div>
-                                <strong>Secure Payment</strong>
-                                <p>100% secure checkout</p>
+                                <strong>🔁 Return Policy</strong>
+                                <p>Returns accepted only in case of genuine product damage or wrong item. Recording a video while unboxing the package is mandatory for all return requests. Refunds will be processed only after verification.</p>
                             </div>
+                        </div>
+
+                        <div class="info-item">
+                            <i class="fas fa-money-bill-wave"></i>
+                            <div>
+                                <strong>🤔 Partial COD</strong>
+                                <p>Only ₹200 paid online as advance, rest on delivery.</p>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <i class="fas fa-headset"></i>
+                            <div>
+                                <strong>📲 Contact Support</strong>
+                                <p><a href="https://wa.me/919636788945" target="_blank">WhatsApp</a> | <a href="mailto:shagunsaree60@gmail.com">Email</a> | +91-9636788945</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Why Choose Us -->
+                    <div class="why-choose-us-product">
+                        <h4>✨ Why Choose Us?</h4>
+                        <div class="reasons-list">
+                            <div class="reason-short">🏆 Premium Quality Fabrics</div>
+                            <div class="reason-short">🔒 Secure Payment (Razorpay + Partial COD)</div>
+                            <div class="reason-short">🚀 Fast Shipping (2-7 days)</div>
+                            <div class="reason-short">✅ Genuine Product Guarantee</div>
+                            <div class="reason-short">🔄 Easy Returns (Video proof)</div>
+                            <div class="reason-short">📞 24/7 Customer Support</div>
                         </div>
                     </div>
                 </div>
@@ -419,7 +526,16 @@
                     fabric: data.fabric,
                     reviews: data.reviews || 50,
                     stock: data.stock || 0,
-                    status: data.status || 'active'
+                    status: data.status || 'active',
+                    design_details: data.design_details,
+                    blouse_info: data.blouse_info,
+                    ornamentation: data.ornamentation,
+                    border: data.border,
+                    blouse_fabric: data.blouse_fabric,
+                    blouse_type: data.blouse_type,
+                    saree_fabric: data.saree_fabric,
+                    wash_care: data.wash_care,
+                    complete_look: data.complete_look
                 };
                 
                 displayProductDetails(product, selectedColor);
@@ -498,6 +614,9 @@
             
             // Update page title
             document.title = `${product.name} - Shagun Saree Baran`;
+            
+            // Display product details in tabs
+            displayProductTabs(product);
         }
         
         function displayImageGallery(images, productName) {
@@ -642,6 +761,54 @@
         // Make changeMainImage globally available
         window.changeMainImage = changeMainImage;
         
+        function displayProductTabs(product) {
+            // Design Details
+            const designDetailsList = document.getElementById('designDetailsList');
+            if (product.design_details) {
+                designDetailsList.innerHTML = `<p>${product.design_details}</p>`;
+            } else {
+                designDetailsList.innerHTML = '<p>No design details available.</p>';
+            }
+            
+            // Blouse Info
+            const blouseInfo = document.getElementById('blouseInfo');
+            if (product.blouse_info) {
+                blouseInfo.innerHTML = `<h4>Blouse Information</h4><p>${product.blouse_info}</p>`;
+            } else {
+                blouseInfo.innerHTML = '';
+            }
+            
+            // Specifications
+            const specificationsGrid = document.getElementById('specificationsGrid');
+            const specs = [];
+            
+            if (product.ornamentation) specs.push(['Ornamentation', product.ornamentation]);
+            if (product.border) specs.push(['Border', product.border]);
+            if (product.blouse_fabric) specs.push(['Blouse Fabric', product.blouse_fabric]);
+            if (product.blouse_type) specs.push(['Blouse', product.blouse_type]);
+            if (product.saree_fabric) specs.push(['Saree Fabric', product.saree_fabric]);
+            if (product.wash_care) specs.push(['Wash Care', product.wash_care]);
+            
+            if (specs.length > 0) {
+                specificationsGrid.innerHTML = specs.map(([label, value]) => `
+                    <div class="spec-item">
+                        <strong>${label}:</strong>
+                        <span>${value}</span>
+                    </div>
+                `).join('');
+            } else {
+                specificationsGrid.innerHTML = '<p>No specifications available.</p>';
+            }
+            
+            // Complete Look
+            const completeLook = document.getElementById('completeLook');
+            if (product.complete_look) {
+                completeLook.innerHTML = `<h4>Complete The Look</h4><p>${product.complete_look}</p>`;
+            } else {
+                completeLook.innerHTML = '';
+            }
+        }
+        
         // Share functionality
         function openShareModal() {
             const modal = document.getElementById('shareModal');
@@ -727,6 +894,7 @@
         window.shareToInstagram = shareToInstagram;
         window.shareToTelegram = shareToTelegram;
         window.copyProductLink = copyProductLink;
+        window.displayProductTabs = displayProductTabs;
     </script>
 </body>
 </html>
