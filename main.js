@@ -1149,7 +1149,7 @@ function handlePlaceOrderWithPayment(isBuyNow = false) {
     
     // Check payment type
     const paymentType = getSelectedPaymentType();
-    const paymentAmount = paymentType === 'partial' ? 1 : total;
+    const paymentAmount = paymentType === 'partial' ? 200 : total;
     
     console.log('Order validation passed. Total:', total, 'Payment Type:', paymentType, 'Payment Amount:', paymentAmount);
     console.log('Order items:', orderItems.length);
@@ -1171,7 +1171,7 @@ function handlePlaceOrderWithPayment(isBuyNow = false) {
         // Re-enable button
         if (activeBtn) {
             activeBtn.disabled = false;
-            const buttonText = paymentType === 'partial' ? 'Pay ₹1 Now' : 'Pay Now with Razorpay';
+            const buttonText = paymentType === 'partial' ? 'Pay ₹200 Now' : 'Pay Now with Razorpay';
             activeBtn.innerHTML = `<i class="fas fa-credit-card"></i> ${buttonText}`;
         }
         return false;
@@ -1314,8 +1314,8 @@ async function processOrder(total, paymentMethod, orderItems = null, isBuyNow = 
             status: paymentMethod === 'cod' ? 'pending' : 'confirmed',
             payment_method: paymentMethod,
             payment_id: paymentId,
-            partial_payment_amount: paymentType === 'partial' ? 1 : null,
-            remaining_due: paymentType === 'partial' ? calculatedTotal - 1 : null,
+            partial_payment_amount: paymentType === 'partial' ? 200 : null,
+            remaining_due: paymentType === 'partial' ? calculatedTotal - 200 : null,
             payment_type: paymentType
         };
         

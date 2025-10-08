@@ -152,7 +152,7 @@
                                             <span>Partial COD</span>
                                             <span class="popular-badge">Popular</span>
                                         </div>
-                                        <div class="payment-desc">Pay ₹1 now, rest on delivery</div>
+                                        <div class="payment-desc">Pay ₹200 now, rest on delivery</div>
                                     </label>
                                 </div>
                             </div>
@@ -219,7 +219,7 @@
                                     <div class="breakdown-header">Payment Breakdown:</div>
                                     <div class="breakdown-row">
                                         <span>Pay Now:</span>
-                                        <span id="payNowAmount">₹1</span>
+                                        <span id="payNowAmount">₹200</span>
                                     </div>
                                     <div class="breakdown-row">
                                         <span>Pay on Delivery:</span>
@@ -584,8 +584,8 @@
             
             const paymentInfo = paymentType === 'partial' 
                 ? `<div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 6px; padding: 12px; margin: 15px 0; color: #856404;">
-                     <strong>Partial Payment:</strong> ₹1 paid now<br>
-                     <strong>Balance on Delivery:</strong> ₹${(total - 1).toLocaleString()}
+                     <strong>Partial Payment:</strong> ₹200 paid now<br>
+                     <strong>Balance on Delivery:</strong> ₹${(total - 200).toLocaleString()}
                    </div>`
                 : `<p style="color: #666; margin-bottom: 25px;">
                      Total Amount: <strong>₹${total.toLocaleString()}</strong>
@@ -754,8 +754,8 @@
                 if (isPartial) {
                     // Show breakdown
                     if (paymentBreakdown) paymentBreakdown.style.display = 'block';
-                    if (payOnDeliveryAmount) payOnDeliveryAmount.textContent = `₹${(totalAmount - 1).toLocaleString()}`;
-                    if (payButtonText) payButtonText.textContent = 'Pay ₹1 Now';
+                    if (payOnDeliveryAmount) payOnDeliveryAmount.textContent = `₹${(totalAmount - 200).toLocaleString()}`;
+                    if (payButtonText) payButtonText.textContent = 'Pay ₹200 Now';
                 } else {
                     // Hide breakdown
                     if (paymentBreakdown) paymentBreakdown.style.display = 'none';
