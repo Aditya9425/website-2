@@ -1,0 +1,352 @@
+/* Product Header with Share Button */
+.product-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    gap: 16px;
+}
+
+.product-header h1 {
+    margin: 0;
+    flex: 1;
+}
+
+/* Share Button beside Title */
+.share-btn-title {
+    background: transparent;
+    color: #333;
+    border: 1px solid #ddd;
+    padding: 8px 16px;
+    border-radius: 25px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-weight: 500;
+    height: 36px;
+}
+
+.share-btn-title:hover {
+    background: #f5f5f5;
+    border-color: #bbb;
+    transform: translateY(-1px);
+}
+
+.share-btn-title i {
+    font-size: 14px;
+    color: #333;
+}
+
+/* Share Modal Styles */
+.share-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    align-items: center;
+    justify-content: center;
+}
+
+.share-modal .modal-content {
+    background: white;
+    border-radius: 16px;
+    padding: 0;
+    width: 90%;
+    max-width: 450px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.share-modal .modal-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.share-modal .modal-header h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+}
+
+.share-modal .modal-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #666;
+    padding: 4px;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.share-modal .modal-close:hover {
+    background: #f5f5f5;
+    color: #333;
+}
+
+.share-modal .modal-body {
+    padding: 24px;
+}
+
+/* Share Options Grid */
+.share-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.share-option {
+    background: white;
+    border: 2px solid #f0f0f0;
+    border-radius: 12px;
+    padding: 16px 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #333;
+    text-decoration: none;
+}
+
+.share-option:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.share-option i {
+    font-size: 24px;
+    margin-bottom: 4px;
+}
+
+/* Platform-specific colors */
+.share-option:nth-child(1):hover { /* WhatsApp */
+    border-color: #25D366;
+    background: linear-gradient(135deg, #25D366, #128C7E);
+    color: white;
+}
+
+.share-option:nth-child(2):hover { /* Facebook */
+    border-color: #1877F2;
+    background: linear-gradient(135deg, #1877F2, #42A5F5);
+    color: white;
+}
+
+.share-option:nth-child(3):hover { /* Twitter */
+    border-color: #1DA1F2;
+    background: linear-gradient(135deg, #1DA1F2, #0D8BD9);
+    color: white;
+}
+
+.share-option:nth-child(4):hover { /* Instagram */
+    border-color: #E4405F;
+    background: linear-gradient(135deg, #E4405F, #C13584, #833AB4);
+    color: white;
+}
+
+.share-option:nth-child(5):hover { /* Telegram */
+    border-color: #0088CC;
+    background: linear-gradient(135deg, #0088CC, #0066AA);
+    color: white;
+}
+
+/* Copy Link Section */
+.copy-link-section {
+    border-top: 1px solid #eee;
+    padding-top: 20px;
+}
+
+.copy-link-container {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.copy-link-container input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    background: #f8f9fa;
+    color: #666;
+}
+
+.copy-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.copy-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.copy-success {
+    color: #28a745;
+    font-size: 13px;
+    text-align: center;
+    margin: 0;
+    padding: 8px;
+    background: #d4edda;
+    border-radius: 6px;
+    border: 1px solid #c3e6cb;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .share-modal .modal-content {
+        width: 95%;
+        margin: 20px;
+    }
+    
+    .share-modal .modal-header {
+        padding: 16px 20px 12px;
+    }
+    
+    .share-modal .modal-header h3 {
+        font-size: 18px;
+    }
+    
+    .share-modal .modal-body {
+        padding: 20px;
+    }
+    
+    .share-options {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+    
+    .share-option {
+        padding: 14px 10px;
+        font-size: 12px;
+    }
+    
+    .share-option i {
+        font-size: 20px;
+    }
+    
+    .copy-link-container {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .copy-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .product-header {
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .share-btn-title {
+        padding: 6px 12px;
+        font-size: 13px;
+        height: 32px;
+        border-radius: 20px;
+    }
+    
+    .share-btn-title i {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .share-options {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    
+    .share-option {
+        padding: 12px 8px;
+        font-size: 11px;
+    }
+    
+    .share-option i {
+        font-size: 18px;
+    }
+    
+    .product-header {
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .share-btn-title {
+        padding: 5px 10px;
+        font-size: 12px;
+        height: 28px;
+        border-radius: 18px;
+    }
+    
+    .share-btn-title i {
+        font-size: 11px;
+    }
+}
+
+/* Product Actions Layout Update */
+.product-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 20px 0;
+}
+
+@media (max-width: 768px) {
+    .product-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .product-actions button {
+        width: 100%;
+    }
+}

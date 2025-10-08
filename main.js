@@ -388,12 +388,6 @@ function loadTrendingProducts() {
                 <div class="product-info">
                     <h3 class="product-name">${product.name}</h3>
                     <div class="product-price">₹${product.price.toLocaleString()}</div>
-                    <div class="product-rating">
-                        <div class="stars">
-                            ${generateStars(product.rating)}
-                        </div>
-                        <span>${product.rating} (${product.reviews})</span>
-                    </div>
                     ${colorPalette}
                     ${product.status === 'out-of-stock' ? 
                         '<div class="out-of-stock-label">Out of Stock</div>' :
@@ -1720,12 +1714,7 @@ function loadNewArrivals() {
             <div class="new-arrival-info">
                 <h3 class="new-arrival-title">${product.name}</h3>
                 <div class="new-arrival-price">₹${product.price.toLocaleString()}</div>
-                <div class="new-arrival-rating">
-                    <div class="stars">
-                        ${generateStars(product.rating)}
-                    </div>
-                    <span class="rating-text">${product.rating} (${product.reviews})</span>
-                </div>
+
                 ${colorPalette}
                 <div class="new-arrival-buttons">
                     ${product.status === 'out-of-stock' ? 
@@ -2272,12 +2261,7 @@ function displayProducts(productsToShow) {
                 <div class="product-info">
                     <h3 class="product-name">${product.name}</h3>
                     <div class="product-price">₹${product.price.toLocaleString()}</div>
-                    <div class="product-rating">
-                        <div class="stars">
-                            ${generateStars(product.rating)}
-                        </div>
-                        <span>${product.rating} (${product.reviews})</span>
-                    </div>
+
                     ${colorPalette}
                     <div class="action-buttons">
                         ${product.status === 'out-of-stock' ? 
