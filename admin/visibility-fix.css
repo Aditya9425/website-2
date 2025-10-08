@@ -1,0 +1,201 @@
+/* Admin Panel Visibility Fix - Replace problematic blue colors with black/white */
+
+/* Override ALL problematic blue accent colors */
+:root {
+    --accent-primary: #000000 !important;
+    --primary-gradient: linear-gradient(135deg, #000000 0%, #333333 100%) !important;
+}
+
+/* Fix ALL blue backgrounds that make text invisible */
+.btn-primary,
+.btn-login,
+.nav-link.active,
+.status-confirmed {
+    background: #000000 !important;
+    color: #ffffff !important;
+    border-color: #333333 !important;
+}
+
+/* Force fix ALL text elements that might have blue gradients */
+h1, h2, h3, h4, h5, h6 {
+    background: transparent !important;
+    color: #ffffff !important;
+    -webkit-background-clip: unset !important;
+    -webkit-text-fill-color: #ffffff !important;
+    background-clip: unset !important;
+}
+
+/* Fix section titles and headers */
+.section-header h2,
+.analytics-section h3,
+.chart-card h3,
+.chart-card h4,
+.table-card h4,
+.modal-header h3,
+.form-section .section-header h4,
+#pageTitle,
+.header-left h2 {
+    background: transparent !important;
+    color: #ffffff !important;
+    -webkit-background-clip: unset !important;
+    -webkit-text-fill-color: #ffffff !important;
+    background-clip: unset !important;
+}
+
+/* Specifically target management section headers */
+#productsSection .section-header h2,
+#ordersSection .section-header h2,
+#customersSection .section-header h2,
+#analyticsSection .section-header h2,
+#dashboardSection .section-header h2 {
+    background: transparent !important;
+    color: #ffffff !important;
+    -webkit-background-clip: unset !important;
+    -webkit-text-fill-color: #ffffff !important;
+    background-clip: unset !important;
+}
+
+/* Fix blue text that might be invisible */
+.nav-link.active {
+    background: #000000 !important;
+    color: #ffffff !important;
+    border-left-color: #000000 !important;
+}
+
+/* Fix ANY element with gradient text */
+*[style*="background-clip: text"],
+*[style*="-webkit-background-clip: text"] {
+    background: transparent !important;
+    color: #ffffff !important;
+    -webkit-background-clip: unset !important;
+    -webkit-text-fill-color: #ffffff !important;
+    background-clip: unset !important;
+}
+
+/* Fix any blue borders or accents */
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus,
+.search-input:focus,
+.filter-select:focus,
+.filter-input:focus {
+    border-color: #000000 !important;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Fix ALL stats card icons */
+.stats-icon,
+.stats-card .stats-icon {
+    background: #000000 !important;
+    color: #ffffff !important;
+}
+
+/* Fix any other blue elements */
+.sidebar-toggle:hover {
+    background: #000000 !important;
+    color: #ffffff !important;
+}
+
+/* Fix status badges */
+.status-confirmed {
+    background: rgba(0, 0, 0, 0.2) !important;
+    color: #000000 !important;
+    border: 1px solid #000000 !important;
+}
+
+/* Fix any gradient backgrounds that use blue */
+.btn-primary:hover,
+.btn-login:hover {
+    background: #333333 !important;
+}
+
+/* Ensure text is always visible on dark backgrounds */
+.nav-link.active,
+.btn-primary,
+.btn-login,
+.stats-icon {
+    color: #ffffff !important;
+}
+
+/* Fix focus outlines */
+*:focus {
+    outline: 2px solid #000000 !important;
+    outline-offset: 2px;
+}
+
+/* Fix selection color */
+::selection {
+    background: #000000 !important;
+    color: #ffffff !important;
+}
+
+/* Fix logos and icons with gradient text */
+.login-header .logo,
+.sidebar-header .logo,
+.section-header h4 i {
+    background: transparent !important;
+    color: #ffffff !important;
+    -webkit-background-clip: unset !important;
+    -webkit-text-fill-color: #ffffff !important;
+    background-clip: unset !important;
+}
+
+/* Override any CSS variable usage */
+* {
+    --primary-gradient: none !important;
+    --accent-primary: #000000 !important;
+}
+
+/* Force override any inline styles or computed styles */
+[style*="background"][style*="clip"] {
+    background: transparent !important;
+    color: #ffffff !important;
+    -webkit-background-clip: unset !important;
+    -webkit-text-fill-color: #ffffff !important;
+    background-clip: unset !important;
+}
+
+/* Fix dashboard recent orders visibility */
+#dashboardSection .order-id,
+#dashboardSection .order-customer,
+#dashboardSection .order-total,
+.recent-orders .order-id,
+.recent-orders .order-customer,
+.recent-orders .order-total {
+    background: transparent !important;
+    color: #ffffff !important;
+    -webkit-background-clip: unset !important;
+    -webkit-text-fill-color: #ffffff !important;
+    background-clip: unset !important;
+}
+
+/* Fix dashboard order card spacing and alignment */
+#dashboardSection .order-card,
+.recent-orders .order-card {
+    margin-bottom: 15px !important;
+    padding: 20px !important;
+}
+
+#dashboardSection .order-header,
+.recent-orders .order-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-bottom: 15px !important;
+    padding-bottom: 10px !important;
+}
+
+#dashboardSection .order-body,
+.recent-orders .order-body {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr 1fr !important;
+    gap: 15px !important;
+    margin-bottom: 15px !important;
+}
+
+#dashboardSection .order-info-item,
+.recent-orders .order-info-item {
+    padding: 10px !important;
+    text-align: center !important;
+    border-radius: 8px !important;
+}

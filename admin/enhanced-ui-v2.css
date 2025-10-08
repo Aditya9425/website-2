@@ -101,10 +101,7 @@
     margin-bottom: 25px;
     font-size: 1.3rem;
     font-weight: 700;
-    background: var(--bright-blue);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: #ffffff;
 }
 
 /* Enhanced Orders Section */
@@ -158,10 +155,7 @@
 .order-id {
     font-size: 1.2rem;
     font-weight: 700;
-    background: var(--bright-blue);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: #ffffff;
 }
 
 .order-status {
@@ -204,17 +198,11 @@
 }
 
 .order-customer {
-    background: var(--bright-green);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: #ffffff;
 }
 
 .order-total {
-    background: var(--bright-purple);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: #ffffff;
 }
 
 .order-actions {
