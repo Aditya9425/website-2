@@ -376,8 +376,6 @@ function loadTrendingProducts() {
                 imageUrl = `https://via.placeholder.com/300x400/FF6B6B/FFFFFF?text=${encodeURIComponent(product.name || 'Product')}`;
             }
             
-            const colorPalette = generateColorPalette(product);
-            
             return `
             <div class="product-card" data-product-id="${product.id}" data-status="${product.status || 'active'}">
                 <div class="product-image-container">
@@ -387,7 +385,6 @@ function loadTrendingProducts() {
                 <div class="product-info">
                     <h3 class="product-name">${product.name}</h3>
                     <div class="product-price">₹${product.price.toLocaleString()}</div>
-                    ${colorPalette}
                     ${product.status === 'out-of-stock' ? 
                         '<div class="out-of-stock-label">Out of Stock</div>' :
                         `<button class="add-to-cart add-to-cart-btn" data-id="${product.id}" onclick="event.stopPropagation()">
@@ -1067,8 +1064,8 @@ function showOrderConfirmation(order) {
 }
 
 // Enhanced Razorpay integration using new backend
-function initializeRazorpay(orderAmount, orderItems = null, isBuyNow = false) {
-    console.log('Initializing Razorpay with amount:', orderAmount, 'isBuyNow:', isBuyNow);
+function initializeRazorpay(orderAmount, orderItems = null, isBuyNow = false, paymentType = 'full', totalAmount = null) {
+    console.log('Initializing Razorpay with amount:', orderAmount, 'isBuyNow:', isBuyNow, 'paymentType:', paymentType);
     
     // Get customer details from address data
     const addressData = JSON.parse(localStorage.getItem('deliveryAddress') || '{}');
@@ -1084,7 +1081,9 @@ function initializeRazorpay(orderAmount, orderItems = null, isBuyNow = false) {
         items: orderItems || [],
         isBuyNow: isBuyNow,
         address: addressData,
-        customerDetails: customerDetails
+        customerDetails: customerDetails,
+        paymentType: paymentType,
+        totalAmount: totalAmount || orderAmount
     };
     
     // Use new payment manager if available
@@ -1148,10 +1147,11 @@ function handlePlaceOrderWithPayment(isBuyNow = false) {
         return false;
     }
     
-    // For simplified checkout (Razorpay only), skip payment method validation
-    const paymentMethod = 'razorpay';
+    // Check payment type
+    const paymentType = getSelectedPaymentType();
+    const paymentAmount = paymentType === 'partial' ? 1 : total;
     
-    console.log('Order validation passed. Total:', total);
+    console.log('Order validation passed. Total:', total, 'Payment Type:', paymentType, 'Payment Amount:', paymentAmount);
     console.log('Order items:', orderItems.length);
     
     // Disable the button to prevent double clicks
@@ -1162,8 +1162,8 @@ function handlePlaceOrderWithPayment(isBuyNow = false) {
     }
     
     try {
-        // Initialize Razorpay payment
-        initializeRazorpay(total, orderItems, isBuyNow);
+        // Initialize Razorpay payment with appropriate amount
+        initializeRazorpay(paymentAmount, orderItems, isBuyNow, paymentType, total);
     } catch (error) {
         console.error('Error in handlePlaceOrderWithPayment:', error);
         alert('There was an error processing your order. Please try again.');
@@ -1171,14 +1171,26 @@ function handlePlaceOrderWithPayment(isBuyNow = false) {
         // Re-enable button
         if (activeBtn) {
             activeBtn.disabled = false;
-            activeBtn.innerHTML = '<i class="fas fa-credit-card"></i> Pay Now with Razorpay';
+            const buttonText = paymentType === 'partial' ? 'Pay ₹1 Now' : 'Pay Now with Razorpay';
+            activeBtn.innerHTML = `<i class="fas fa-credit-card"></i> ${buttonText}`;
         }
         return false;
     }
 }
 
+// Get selected payment type
+function getSelectedPaymentType() {
+    const fullPayment = document.getElementById('fullPayment');
+    const partialCOD = document.getElementById('partialCOD');
+    
+    if (partialCOD && partialCOD.checked) {
+        return 'partial';
+    }
+    return 'full';
+}
+
 // Process order after payment (or for COD)
-async function processOrder(total, paymentMethod, orderItems = null, isBuyNow = false, paymentId = null) {
+async function processOrder(total, paymentMethod, orderItems = null, isBuyNow = false, paymentId = null, paymentType = 'full') {
     console.log('🚀 === PROCESSING ORDER START ===');
     console.log('Total:', total);
     console.log('Payment method:', paymentMethod);
@@ -1301,7 +1313,10 @@ async function processOrder(total, paymentMethod, orderItems = null, isBuyNow = 
             },
             status: paymentMethod === 'cod' ? 'pending' : 'confirmed',
             payment_method: paymentMethod,
-            payment_id: paymentId
+            payment_id: paymentId,
+            partial_payment_amount: paymentType === 'partial' ? 1 : null,
+            remaining_due: paymentType === 'partial' ? calculatedTotal - 1 : null,
+            payment_type: paymentType
         };
         
         console.log('📋 Order created:', order);
@@ -1432,15 +1447,10 @@ function openProductDetail(productId) {
     
     displayModalImageGallery(imagesToShow, product.name);
     
-    // Show colors
-    const colorsContainer = document.querySelector('#productColors .colors-list');
-    if (product.colors && product.colors.length > 0) {
-        colorsContainer.innerHTML = product.colors.map(color => 
-            `<span class="color-tag">${color}</span>`
-        ).join('');
-        document.getElementById('productColors').style.display = 'block';
-    } else {
-        document.getElementById('productColors').style.display = 'none';
+    // Hide colors section
+    const productColors = document.getElementById('productColors');
+    if (productColors) {
+        productColors.style.display = 'none';
     }
     
     // Show modal
@@ -1630,8 +1640,6 @@ function loadNewArrivals() {
             imageUrl = `https://via.placeholder.com/300x400/FF6B6B/FFFFFF?text=${encodeURIComponent(product.name || 'Product')}`;
         }
         
-        const colorPalette = generateColorPalette(product);
-        
         return `
         <div class="new-arrival-card" data-product-id="${product.id}" data-status="${product.status || 'active'}">
             <div class="new-badge">New</div>
@@ -1642,8 +1650,6 @@ function loadNewArrivals() {
             <div class="new-arrival-info">
                 <h3 class="new-arrival-title">${product.name}</h3>
                 <div class="new-arrival-price">₹${product.price.toLocaleString()}</div>
-
-                ${colorPalette}
                 <div class="new-arrival-buttons">
                     ${product.status === 'out-of-stock' ? 
                         '<div class="out-of-stock-label">Out of Stock</div>' :
@@ -1855,10 +1861,11 @@ function openProductDetailVariant(variantProduct) {
     }
     document.getElementById('mainProductImage').src = imageUrl;
     
-    // Show selected color
-    const colorsContainer = document.querySelector('#productColors .colors-list');
-    colorsContainer.innerHTML = `<span class="selected-color">${variantProduct.selectedColor}</span>`;
-    document.getElementById('productColors').style.display = 'block';
+    // Hide colors section
+    const productColors = document.getElementById('productColors');
+    if (productColors) {
+        productColors.style.display = 'none';
+    }
     
     // Show modal
     document.getElementById('productModal').style.display = 'flex';
@@ -2178,8 +2185,6 @@ function displayProducts(productsToShow) {
                 imageUrl = `https://via.placeholder.com/300x400/FF6B6B/FFFFFF?text=${encodeURIComponent(product.name || 'Product')}`;
             }
             
-            const colorPalette = generateColorPalette(product);
-            
             return `
             <div class="product-card" data-product-id="${product.id}" data-status="${product.status || 'active'}">
                 <div class="product-image-container">
@@ -2189,8 +2194,6 @@ function displayProducts(productsToShow) {
                 <div class="product-info">
                     <h3 class="product-name">${product.name}</h3>
                     <div class="product-price">₹${product.price.toLocaleString()}</div>
-
-                    ${colorPalette}
                     <div class="action-buttons">
                         ${product.status === 'out-of-stock' ? 
                             '<div class="out-of-stock-label">Out of Stock</div>' :

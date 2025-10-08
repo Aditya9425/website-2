@@ -116,10 +116,7 @@ class AdminPanel {
             this.closeProductModal();
         });
 
-        // Color variant management
-        document.getElementById('addColorVariant').addEventListener('click', () => {
-            this.addColorVariant();
-        });
+
         
         // Stock update modal handlers
         const stockModal = document.getElementById('stockUpdateModal');
@@ -141,7 +138,7 @@ class AdminPanel {
 
         // File input change handlers
         document.addEventListener('change', (e) => {
-            if (e.target.classList.contains('product-image-input') || e.target.classList.contains('color-image-input')) {
+            if (e.target.classList.contains('product-image-input')) {
                 this.updateFileInputLabel(e.target);
             }
         });
@@ -718,72 +715,9 @@ class AdminPanel {
         
         // Show existing images
         this.showExistingImages(product.images || []);
-        
-        // Populate color variants
-        this.populateColorVariants(product.color_variants || []);
-        
-        // Populate linked variants
-        const linkedVariantsSelect = document.getElementById('linkedVariants');
-        if (product.linked_variants && linkedVariantsSelect) {
-            Array.from(linkedVariantsSelect.options).forEach(option => {
-                option.selected = product.linked_variants.includes(option.value);
-            });
-        }
     }
 
-    addColorVariant() {
-        const container = document.getElementById('colorVariants');
-        const variantCount = container.children.length + 1;
-        const randomColor = this.getRandomColor();
-        const variantItem = document.createElement('div');
-        variantItem.className = 'color-variant-card';
-        variantItem.innerHTML = `
-            <div class="variant-header">
-                <div class="variant-title">
-                    <i class="fas fa-circle" style="color: ${randomColor};"></i>
-                    <span>Color Variant ${variantCount}</span>
-                </div>
-                <button type="button" class="remove-variant-btn" onclick="removeColorVariant(this)">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
-            <div class="variant-content">
-                <div class="variant-basic-info">
-                    <div class="form-group">
-                        <label>Color Name</label>
-                        <input type="text" placeholder="e.g., Red, Blue, Green" class="color-name" name="colorNames[]">
-                    </div>
-                    <div class="form-group">
-                        <label>Color Code</label>
-                        <input type="color" class="color-picker" name="colorCodes[]" value="${randomColor}">
-                    </div>
-                </div>
-                <div class="variant-images">
-                    <label>Images for this color</label>
-                    <div class="color-image-inputs">
-                        <div class="color-image-input-item">
-                            <div class="file-input-wrapper">
-                                <input type="file" accept="image/*" class="color-image-input" name="colorImages[]">
-                                <div class="file-input-label">
-                                    <i class="fas fa-image"></i>
-                                    <span>Choose Image</span>
-                                </div>
-                            </div>
-                            <button type="button" class="remove-color-image-btn" onclick="removeColorImageInput(this)" style="display: none;">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <button type="button" class="add-color-image-btn" onclick="addColorImageInput(this)">
-                        <i class="fas fa-plus"></i> Add Image
-                    </button>
-                </div>
-            </div>
-        `;
-        container.appendChild(variantItem);
-        this.updateColorVariantEvents(variantItem);
-        this.updateRemoveButtons();
-    }
+
 
     updateRemoveButtons() {
         const items = document.querySelectorAll('.color-variant-card');
@@ -798,107 +732,9 @@ class AdminPanel {
         this.updateImageRemoveButtons();
     }
 
-    populateColorVariants(colorVariants) {
-        const container = document.getElementById('colorVariants');
-        container.innerHTML = '';
-        
-        if (colorVariants.length === 0) {
-            // Add default empty variant
-            this.addDefaultColorVariant();
-            return;
-        }
-        
-        colorVariants.forEach((variant, index) => {
-            const variantItem = document.createElement('div');
-            variantItem.className = 'color-variant-card';
-            
-            // Create existing images HTML with proper image display
-            const existingImagesHTML = variant.images && variant.images.length > 0 ? 
-                `<div class="existing-variant-images" style="display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;">
-                    <label style="width: 100%; font-weight: 500; margin-bottom: 5px; color: #333;">Existing Images:</label>
-                    ${variant.images.map((img, imgIndex) => `
-                        <div class="existing-variant-image" style="position: relative; display: inline-block;">
-                            <img src="${img}" alt="${variant.color} - Image ${imgIndex + 1}" 
-                                 style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 2px solid #28a745; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" 
-                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                            <div style="display: none; width: 80px; height: 80px; background: #f8f9fa; border: 2px dashed #dee2e6; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #6c757d;">Image not found</div>
-                            <span style="position: absolute; top: -8px; right: -8px; background: #28a745; color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">✓</span>
-                            <button type="button" onclick="this.closest('.existing-variant-image').remove()" 
-                                    style="position: absolute; top: -8px; left: -8px; background: #dc3545; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);" 
-                                    title="Remove this image">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                    `).join('')}
-                </div>` : '';
-            
-            variantItem.innerHTML = `
-                <div class="variant-header">
-                    <div class="variant-title">
-                        <i class="fas fa-circle" style="color: ${variant.colorCode || '#FF0000'};"></i>
-                        <span>Color Variant ${index + 1} - ${variant.color || 'Unnamed'}</span>
-                    </div>
-                    <button type="button" class="remove-variant-btn" onclick="removeColorVariant(this)">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-                <div class="variant-content">
-                    <div class="variant-basic-info">
-                        <div class="form-group">
-                            <label>Color Name</label>
-                            <input type="text" placeholder="e.g., Red, Blue, Green" class="color-name" name="colorNames[]" value="${variant.color || ''}">
-                        </div>
-                        <div class="form-group">
-                            <label>Color Code</label>
-                            <input type="color" class="color-picker" name="colorCodes[]" value="${variant.colorCode || '#FF0000'}">
-                        </div>
-                    </div>
-                    <div class="variant-images">
-                        <label style="font-weight: 600; margin-bottom: 10px; display: block;">Images for this color variant</label>
-                        ${existingImagesHTML}
-                        <div class="color-image-inputs" style="margin-top: ${variant.images && variant.images.length > 0 ? '15px' : '0px'};">
-                            <label style="font-weight: 500; margin-bottom: 8px; display: block; color: #666;">Add new images:</label>
-                            <div class="color-image-input-item">
-                                <div class="file-input-wrapper">
-                                    <input type="file" accept="image/*" class="color-image-input" name="colorImages[]">
-                                    <div class="file-input-label">
-                                        <i class="fas fa-image"></i>
-                                        <span>Choose Image</span>
-                                    </div>
-                                </div>
-                                <button type="button" class="remove-color-image-btn" onclick="removeColorImageInput(this)" style="display: none;">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <button type="button" class="add-color-image-btn" onclick="addColorImageInput(this)" style="margin-top: 10px;">
-                            <i class="fas fa-plus"></i> Add Another Image
-                        </button>
-                    </div>
-                </div>
-            `;
-            container.appendChild(variantItem);
-            this.updateColorVariantEvents(variantItem);
-        });
-        
-        this.updateRemoveButtons();
-    }
 
-    populateLinkedVariantsDropdown(excludeProductId = null) {
-        const select = document.getElementById('linkedVariants');
-        if (!select) return;
-        
-        select.innerHTML = '';
-        
-        this.products.forEach(product => {
-            if (product.id != excludeProductId) {
-                const option = document.createElement('option');
-                option.value = product.id;
-                option.textContent = `${product.name} (₹${product.price})`;
-                select.appendChild(option);
-            }
-        });
-    }
+
+
 
     async handleProductSubmit() {
         const form = document.getElementById('productForm');
@@ -966,56 +802,7 @@ class AdminPanel {
                 // return;
             }
             
-            // Get linked variants
-            const linkedVariantsSelect = document.getElementById('linkedVariants');
-            const linkedVariants = linkedVariantsSelect ? 
-                Array.from(linkedVariantsSelect.selectedOptions).map(option => option.value) : [];
-            
-            // Process color variants with image uploads
-            const colorVariants = [];
-            const colorItems = document.querySelectorAll('.color-variant-card');
-            
-            for (const item of colorItems) {
-                const colorName = item.querySelector('.color-name')?.value?.trim();
-                const colorCode = item.querySelector('.color-picker')?.value;
-                
-                // Handle color variant images
-                const colorImageInputs = item.querySelectorAll('.color-image-input');
-                const colorImageUrls = [];
-                
-                // Get existing images for this variant (in edit mode)
-                const existingImages = item.querySelectorAll('.existing-variant-image img');
-                existingImages.forEach(img => {
-                    if (!img.closest('.existing-variant-image').dataset.deleted) {
-                        colorImageUrls.push(img.src);
-                    }
-                });
-                
-                // Upload new color variant images
-                for (const input of colorImageInputs) {
-                    if (input.files.length > 0) {
-                        try {
-                            for (const file of input.files) {
-                                const uploadName = colorName ? `${productName}_${colorName}` : productName;
-                                const imageUrl = await uploadImageToSupabase(file, uploadName);
-                                colorImageUrls.push(imageUrl);
-                            }
-                        } catch (error) {
-                            console.error('Color variant image upload error:', error);
-                            const errorColorName = colorName || 'variant';
-                            this.showMessage(`Failed to upload image for ${errorColorName}: ${error.message}`, 'error');
-                            return;
-                        }
-                    }
-                }
-                
-                // Add color variant even if name is empty (optional)
-                colorVariants.push({
-                    color: colorName || '', // Allow empty color name
-                    colorCode: colorCode || '#FF0000',
-                    images: colorImageUrls
-                });
-            }
+
             
             // Prepare product data with proper stock handling
             const productData = {
@@ -1028,9 +815,9 @@ class AdminPanel {
                 images: imageUrls,
                 image: imageUrls[0] || null,
                 fabric: category, // Use category as fabric for simplicity
-                colors: colorVariants.map(v => v.color).filter(c => c),
-                color_variants: colorVariants,
-                linked_variants: linkedVariants.length > 0 ? linkedVariants : null
+                colors: [],
+                color_variants: [],
+                linked_variants: null
             };
             
             console.log('Product data before save:', productData);
@@ -1985,104 +1772,14 @@ class AdminPanel {
             `;
         }
         
-        // Reset color variants to single variant
-        this.resetColorVariants();
+
         
-        // Clear linked variants
-        const linkedVariants = document.getElementById('linkedVariants');
-        if (linkedVariants) {
-            Array.from(linkedVariants.options).forEach(option => {
-                option.selected = false;
-            });
-        }
+
     }
 
-    // Reset color variants to default state
-    resetColorVariants() {
-        const container = document.getElementById('colorVariants');
-        container.innerHTML = '';
-        this.addDefaultColorVariant();
-    }
 
-    // Add default color variant
-    addDefaultColorVariant() {
-        const container = document.getElementById('colorVariants');
-        const variantItem = document.createElement('div');
-        variantItem.className = 'color-variant-card';
-        variantItem.innerHTML = `
-            <div class="variant-header">
-                <div class="variant-title">
-                    <i class="fas fa-circle" style="color: #FF0000;"></i>
-                    <span>Color Variant 1</span>
-                </div>
-                <button type="button" class="remove-variant-btn" onclick="removeColorVariant(this)" style="display: none;">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
-            <div class="variant-content">
-                <div class="variant-basic-info">
-                    <div class="form-group">
-                        <label>Color Name</label>
-                        <input type="text" placeholder="e.g., Red, Blue, Green" class="color-name" name="colorNames[]">
-                    </div>
-                    <div class="form-group">
-                        <label>Color Code</label>
-                        <input type="color" class="color-picker" name="colorCodes[]" value="#FF0000">
-                    </div>
-                </div>
-                <div class="variant-images">
-                    <label>Images for this color</label>
-                    <div class="color-image-inputs">
-                        <div class="color-image-input-item">
-                            <div class="file-input-wrapper">
-                                <input type="file" accept="image/*" class="color-image-input" name="colorImages[]">
-                                <div class="file-input-label">
-                                    <i class="fas fa-image"></i>
-                                    <span>Choose Image</span>
-                                </div>
-                            </div>
-                            <button type="button" class="remove-color-image-btn" onclick="removeColorImageInput(this)" style="display: none;">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <button type="button" class="add-color-image-btn" onclick="addColorImageInput(this)">
-                        <i class="fas fa-plus"></i> Add Image
-                    </button>
-                </div>
-            </div>
-        `;
-        container.appendChild(variantItem);
-        this.updateColorVariantEvents(variantItem);
-    }
 
-    // Get random color for new variants
-    getRandomColor() {
-        const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F'];
-        return colors[Math.floor(Math.random() * colors.length)];
-    }
 
-    // Update color variant events
-    updateColorVariantEvents(variantItem) {
-        const colorPicker = variantItem.querySelector('.color-picker');
-        const colorIcon = variantItem.querySelector('.variant-title i');
-        const colorNameInput = variantItem.querySelector('.color-name');
-        const variantTitle = variantItem.querySelector('.variant-title span');
-        
-        if (colorPicker && colorIcon) {
-            colorPicker.addEventListener('change', (e) => {
-                colorIcon.style.color = e.target.value;
-            });
-        }
-        
-        if (colorNameInput && variantTitle) {
-            colorNameInput.addEventListener('input', (e) => {
-                const variantNumber = variantTitle.textContent.match(/Color Variant (\d+)/)?.[1] || '1';
-                const colorName = e.target.value.trim() || 'Unnamed';
-                variantTitle.textContent = `Color Variant ${variantNumber} - ${colorName}`;
-            });
-        }
-    }
 
     // Update file input label when file is selected
     updateFileInputLabel(input) {
@@ -2114,16 +1811,7 @@ class AdminPanel {
         this.updateImageRemoveButtons();
     }
 
-    // Renumber color variants after removal
-    renumberColorVariants() {
-        const items = document.querySelectorAll('.color-variant-card');
-        items.forEach((item, index) => {
-            const titleSpan = item.querySelector('.variant-title span');
-            if (titleSpan) {
-                titleSpan.textContent = `Color Variant ${index + 1}`;
-            }
-        });
-    }
+
     
     // Stock Update Modal Functions
     openStockUpdateModal(productId, currentStock) {
@@ -2297,18 +1985,7 @@ class AdminPanel {
     }
 }
 
-// Global function for removing color variants
-function removeColorVariant(button) {
-    const item = button.closest('.color-variant-card');
-    const container = document.getElementById('colorVariants');
-    
-    if (container.children.length > 1) {
-        item.remove();
-        window.adminPanel.updateRemoveButtons();
-        // Renumber remaining variants
-        window.adminPanel.renumberColorVariants();
-    }
-}
+
 
 // Global function for removing image inputs
 function removeImageInput(button) {
@@ -2321,48 +1998,7 @@ function removeImageInput(button) {
     }
 }
 
-// Global function for adding color image inputs
-function addColorImageInput(button) {
-    const variantItem = button.closest('.color-variant-card');
-    const container = variantItem.querySelector('.color-image-inputs');
-    const inputItem = document.createElement('div');
-    inputItem.className = 'color-image-input-item';
-    inputItem.innerHTML = `
-        <div class="file-input-wrapper">
-            <input type="file" accept="image/*" class="color-image-input" name="colorImages[]">
-            <div class="file-input-label">
-                <i class="fas fa-image"></i>
-                <span>Choose Image</span>
-            </div>
-        </div>
-        <button type="button" class="remove-color-image-btn" onclick="removeColorImageInput(this)">
-            <i class="fas fa-times"></i>
-        </button>
-    `;
-    container.appendChild(inputItem);
-    updateColorImageRemoveButtons(variantItem);
-}
 
-// Global function for removing color image inputs
-function removeColorImageInput(button) {
-    const item = button.closest('.color-image-input-item');
-    const variantItem = button.closest('.color-variant-card');
-    const container = variantItem.querySelector('.color-image-inputs');
-    
-    if (container.children.length > 1) {
-        item.remove();
-        updateColorImageRemoveButtons(variantItem);
-    }
-}
-
-// Update color image remove buttons visibility
-function updateColorImageRemoveButtons(variantItem) {
-    const items = variantItem.querySelectorAll('.color-image-input-item');
-    items.forEach((item, index) => {
-        const removeBtn = item.querySelector('.remove-color-image-btn');
-        removeBtn.style.display = items.length > 1 ? 'inline-block' : 'none';
-    });
-}
 
 // Initialize admin panel when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {

@@ -582,75 +582,7 @@
                     </div>
                 </div>
                 
-                <!-- Color Variants Section -->
-                <div class="form-section">
-                    <div class="section-header">
-                        <h4><i class="fas fa-palette"></i> Color Variants</h4>
-                        <small>Add different color options with their specific images</small>
-                    </div>
-                    <div id="colorVariants" class="color-variants-container">
-                        <div class="color-variant-card">
-                            <div class="variant-header">
-                                <div class="variant-title">
-                                    <i class="fas fa-circle" style="color: #FF0000;"></i>
-                                    <span>Color Variant 1</span>
-                                </div>
-                                <button type="button" class="remove-variant-btn" onclick="removeColorVariant(this)" style="display: none;">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                            <div class="variant-content">
-                                <div class="variant-basic-info">
-                                    <div class="form-group">
-                                        <label>Color Name</label>
-                                        <input type="text" placeholder="e.g., Red, Blue, Green" class="color-name" name="colorNames[]">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Color Code</label>
-                                        <input type="color" class="color-picker" name="colorCodes[]" value="#FF0000">
-                                    </div>
-                                </div>
-                                <div class="variant-images">
-                                    <label>Images for this color</label>
-                                    <div class="color-image-inputs">
-                                        <div class="color-image-input-item">
-                                            <div class="file-input-wrapper">
-                                                <input type="file" accept="image/*" class="color-image-input" name="colorImages[]">
-                                                <div class="file-input-label">
-                                                    <i class="fas fa-image"></i>
-                                                    <span>Choose Image</span>
-                                                </div>
-                                            </div>
-                                            <button type="button" class="remove-color-image-btn" onclick="removeColorImageInput(this)" style="display: none;">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <button type="button" class="add-color-image-btn" onclick="addColorImageInput(this)">
-                                        <i class="fas fa-plus"></i> Add Image
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <button type="button" id="addColorVariant" class="btn-add-variant">
-                        <i class="fas fa-plus"></i> Add Another Color Variant
-                    </button>
-                </div>
-                
-                <!-- Linked Variants Section -->
-                <div class="form-section">
-                    <div class="section-header">
-                        <h4><i class="fas fa-link"></i> Linked Variants (Optional)</h4>
-                        <small>Link this product with other color variants</small>
-                    </div>
-                    <div class="form-group">
-                        <select id="linkedVariants" name="linkedVariants" multiple class="linked-variants-select">
-                            <!-- Options will be populated dynamically -->
-                        </select>
-                        <small class="form-help">Hold Ctrl/Cmd to select multiple products</small>
-                    </div>
-                </div>
+
                 
                 <div class="modal-actions">
                     <button type="button" id="cancelProductBtn" class="btn-cancel">

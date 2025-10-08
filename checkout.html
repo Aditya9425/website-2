@@ -22,6 +22,7 @@
     <link rel="stylesheet" href="checkout-mobile-optimized-final.css">
     <link rel="stylesheet" href="footer-mobile.css">
     <link rel="stylesheet" href="footer-mobile-optimized.css">
+    <link rel="stylesheet" href="partial-cod-styles.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
@@ -128,12 +129,38 @@
                     <!-- Payment Method Section -->
                     <section class="payment-method-section">
                         <div class="form-card">
-                            <h2>Secure Payment</h2>
+                            <h2>Choose Payment Method</h2>
+                            
+                            <!-- Payment Options -->
+                            <div class="payment-methods">
+                                <div class="payment-option">
+                                    <input type="radio" id="fullPayment" name="paymentType" value="full" checked>
+                                    <label for="fullPayment" class="payment-label">
+                                        <div class="payment-header">
+                                            <i class="fas fa-credit-card"></i>
+                                            <span>Pay Full Amount</span>
+                                        </div>
+                                        <div class="payment-desc">Pay complete amount via Razorpay</div>
+                                    </label>
+                                </div>
+                                
+                                <div class="payment-option">
+                                    <input type="radio" id="partialCOD" name="paymentType" value="partial">
+                                    <label for="partialCOD" class="payment-label">
+                                        <div class="payment-header">
+                                            <i class="fas fa-hand-holding-usd"></i>
+                                            <span>Partial COD</span>
+                                            <span class="popular-badge">Popular</span>
+                                        </div>
+                                        <div class="payment-desc">Pay ₹1 now, rest on delivery</div>
+                                    </label>
+                                </div>
+                            </div>
+                            
                             <div class="razorpay-info">
                                 <div class="payment-gateway">
                                     <img src="https://razorpay.com/assets/razorpay-logo.svg" alt="Razorpay" style="height: 40px; margin-bottom: 15px;">
-                                    <h3>Pay Securely with Razorpay</h3>
-                                    <p>We accept all major payment methods including:</p>
+                                    <h3>Secure Payment Gateway</h3>
                                     <div class="payment-options">
                                         <span class="payment-badge"><i class="fas fa-credit-card"></i> Cards</span>
                                         <span class="payment-badge"><i class="fas fa-mobile-alt"></i> UPI</span>
@@ -188,6 +215,17 @@
                                     <span>Total:</span>
                                     <span id="total">₹0</span>
                                 </div>
+                                <div id="partialPaymentBreakdown" class="payment-breakdown" style="display: none;">
+                                    <div class="breakdown-header">Payment Breakdown:</div>
+                                    <div class="breakdown-row">
+                                        <span>Pay Now:</span>
+                                        <span id="payNowAmount">₹1</span>
+                                    </div>
+                                    <div class="breakdown-row">
+                                        <span>Pay on Delivery:</span>
+                                        <span id="payOnDeliveryAmount">₹0</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </section>
@@ -198,7 +236,7 @@
                             <div class="pay-now-content">
                                 <button class="pay-now-btn place-order-btn" id="payNowBtn">
                                     <i class="fas fa-credit-card"></i>
-                                    Pay Now with Razorpay
+                                    <span id="payButtonText">Pay Now with Razorpay</span>
                                 </button>
                                 <div class="payment-warning" style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 12px; margin: 15px 0 10px 0; text-align: center;">
                                     <p style="color: #dc3545; font-weight: bold; margin: 0; font-size: 14px;">
@@ -483,6 +521,7 @@
                 // Get order data
                 const urlParams = new URLSearchParams(window.location.search);
                 const isBuyNow = urlParams.get('buyNow') === 'true';
+                const paymentType = getSelectedPaymentType();
                 
                 let orderItems = [];
                 let total = 0;
@@ -503,16 +542,16 @@
                     total = subtotal + deliveryCharges;
                 }
                 
-                console.log('📦 Processing order with items:', orderItems.length, 'Total:', total);
+                console.log('📦 Processing order with items:', orderItems.length, 'Total:', total, 'Payment Type:', paymentType);
                 
                 // Process the order and get the actual order_id from database
                 if (typeof processOrder === 'function') {
                     console.log('🔄 Calling processOrder function...');
-                    const orderResult = await processOrder(total, 'razorpay', orderItems, isBuyNow, paymentId);
+                    const orderResult = await processOrder(total, 'razorpay', orderItems, isBuyNow, paymentId, paymentType);
                     if (orderResult && orderResult.id) {
                         console.log('✅ Order processed successfully with ID:', orderResult.id);
                         // Show confirmation with actual database order_id
-                        showOrderConfirmationWithId(orderResult.id, total);
+                        showOrderConfirmationWithId(orderResult.id, total, paymentType);
                     } else {
                         console.warn('⚠️ processOrder did not return order ID');
                         showSimpleSuccess(paymentId, total);
@@ -528,7 +567,7 @@
         }
         
         // Show order confirmation with actual order_id
-        function showOrderConfirmationWithId(orderId, total) {
+        function showOrderConfirmationWithId(orderId, total, paymentType = 'full') {
             const popup = document.createElement('div');
             popup.style.cssText = `
                 position: fixed;
@@ -542,6 +581,15 @@
                 justify-content: center;
                 align-items: center;
             `;
+            
+            const paymentInfo = paymentType === 'partial' 
+                ? `<div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 6px; padding: 12px; margin: 15px 0; color: #856404;">
+                     <strong>Partial Payment:</strong> ₹1 paid now<br>
+                     <strong>Balance on Delivery:</strong> ₹${(total - 1).toLocaleString()}
+                   </div>`
+                : `<p style="color: #666; margin-bottom: 25px;">
+                     Total Amount: <strong>₹${total.toLocaleString()}</strong>
+                   </p>`;
             
             popup.innerHTML = `
                 <div style="
@@ -569,9 +617,7 @@
                     ">
                         <strong style="color: #333; font-size: 18px;">${orderId}</strong>
                     </div>
-                    <p style="color: #666; margin-bottom: 25px;">
-                        Total Amount: <strong>₹${total.toLocaleString()}</strong>
-                    </p>
+                    ${paymentInfo}
                     <button onclick="this.parentElement.parentElement.remove(); window.location.href='index.html';" 
                             style="
                                 background: #FF6B6B;
@@ -692,12 +738,59 @@
             handlePaymentCompletion(testPaymentId, testOrderId);
         };
         
+        // Setup payment type change handlers
+        function setupPaymentTypeHandlers() {
+            const fullPayment = document.getElementById('fullPayment');
+            const partialCOD = document.getElementById('partialCOD');
+            const paymentBreakdown = document.getElementById('partialPaymentBreakdown');
+            const payButtonText = document.getElementById('payButtonText');
+            const payOnDeliveryAmount = document.getElementById('payOnDeliveryAmount');
+            const total = document.getElementById('total');
+            
+            function updatePaymentUI() {
+                const isPartial = partialCOD && partialCOD.checked;
+                const totalAmount = parseFloat(total.textContent.replace('₹', '').replace(',', '')) || 0;
+                
+                if (isPartial) {
+                    // Show breakdown
+                    if (paymentBreakdown) paymentBreakdown.style.display = 'block';
+                    if (payOnDeliveryAmount) payOnDeliveryAmount.textContent = `₹${(totalAmount - 1).toLocaleString()}`;
+                    if (payButtonText) payButtonText.textContent = 'Pay ₹1 Now';
+                } else {
+                    // Hide breakdown
+                    if (paymentBreakdown) paymentBreakdown.style.display = 'none';
+                    if (payButtonText) payButtonText.textContent = 'Pay Now with Razorpay';
+                }
+                
+                // Auto-scroll to pay now button
+                setTimeout(() => {
+                    const payNowSection = document.querySelector('.pay-now-section');
+                    if (payNowSection) {
+                        payNowSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }, 300);
+            }
+            
+            if (fullPayment) {
+                fullPayment.addEventListener('change', updatePaymentUI);
+            }
+            if (partialCOD) {
+                partialCOD.addEventListener('change', updatePaymentUI);
+            }
+            
+            // Initial update
+            updatePaymentUI();
+        }
+        
         // Modal functionality
         document.addEventListener('DOMContentLoaded', function() {
             const modal = document.getElementById('orderConfirmationModal');
             const modalClose = document.getElementById('modalClose');
             const viewOrderBtn = document.getElementById('viewOrderBtn');
             const placeOrderBtn = document.getElementById('placeOrderBtn');
+            
+            // Setup payment type handlers
+            setupPaymentTypeHandlers();
             
             // Override pay now button
             const payNowBtn = document.getElementById('payNowBtn');

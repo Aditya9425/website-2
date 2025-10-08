@@ -106,17 +106,7 @@
                         </div>
                     </div>
 
-                    <!-- Color Selection -->
-                    <div class="product-options">
-                        <div class="option-group">
-                            <h4>Color</h4>
-                            <div class="color-options" id="colorOptions">
-                                <!-- Color options will be loaded dynamically -->
-                            </div>
-                        </div>
 
-
-                    </div>
 
                     <!-- Action Buttons -->
                     <div class="product-actions">
@@ -502,25 +492,7 @@
                 document.getElementById('discount').textContent = `${discount}% OFF`;
             }
             
-            // Load colors (prioritize color variants if available)
-            const colorOptions = document.getElementById('colorOptions');
-            let availableColors = [];
-            
-            if (product.color_variants && product.color_variants.length > 0) {
-                availableColors = product.color_variants.map(v => v.color);
-            } else if (product.colors && product.colors.length > 0) {
-                availableColors = product.colors;
-            }
-            
-            if (availableColors.length > 0) {
-                colorOptions.innerHTML = availableColors.map(color => {
-                    const isSelected = color === selectedColor ? 'selected' : '';
-                    const variant = product.color_variants ? product.color_variants.find(v => v.color === color) : null;
-                    const colorCode = variant ? variant.colorCode : getColorCodeFromName(color);
-                    const style = colorCode ? `style="background-color: ${colorCode}; color: ${getContrastColor(colorCode)};"` : '';
-                    return `<div class="color-option ${isSelected}" data-color="${color}" ${style} onclick="selectColor('${color}')">${color}</div>`;
-                }).join('');
-            }
+            // Color selection removed
             
 
             
