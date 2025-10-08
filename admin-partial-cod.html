@@ -168,6 +168,23 @@
             </div>
         </div>
         
+        <!-- Payment Summary -->
+        <div class="orders-section" style="margin-bottom: 20px;">
+            <div class="section-header">
+                <i class="fas fa-calculator"></i> Payment Summary
+            </div>
+            <div style="padding: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; text-align: center;">
+                    <div style="color: #28a745; font-size: 24px; font-weight: bold;" id="totalPaidAmount">₹0</div>
+                    <div style="color: #666; font-size: 14px;">Total Amount Paid</div>
+                </div>
+                <div style="background: #fff3cd; padding: 15px; border-radius: 8px; text-align: center;">
+                    <div style="color: #856404; font-size: 24px; font-weight: bold;" id="totalToCollect">₹0</div>
+                    <div style="color: #666; font-size: 14px;">Total to Collect on Delivery</div>
+                </div>
+            </div>
+        </div>
+        
         <!-- Partial COD Orders -->
         <div class="orders-section">
             <div class="section-header">
@@ -284,10 +301,13 @@
             const partialOrders = orders.filter(order => order.payment_type === 'partial');
             const fullOrders = orders.filter(order => order.payment_type !== 'partial');
             const pendingAmount = partialOrders.reduce((sum, order) => sum + (order.remaining_due || 0), 0);
+            const totalPaid = partialOrders.reduce((sum, order) => sum + (order.partial_payment_amount || 0), 0);
             
             document.getElementById('partialCount').textContent = partialOrders.length;
             document.getElementById('fullCount').textContent = fullOrders.length;
             document.getElementById('pendingAmount').textContent = `₹${pendingAmount.toLocaleString()}`;
+            document.getElementById('totalPaidAmount').textContent = `₹${totalPaid.toLocaleString()}`;
+            document.getElementById('totalToCollect').textContent = `₹${pendingAmount.toLocaleString()}`;
         }
         
         // Load orders on page load
