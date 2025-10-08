@@ -1,0 +1,56 @@
+.explore-collection-section {
+    padding: 40px 0;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    text-align: center;
+}
+
+.explore-collection-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.btn-explore-collection {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, #FF6B6B 0%, #FF5252 100%);
+    color: white;
+    padding: 15px 30px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+    border: none;
+    cursor: pointer;
+}
+
+.btn-explore-collection:hover {
+    background: linear-gradient(135deg, #FF5252 0%, #FF4444 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+.btn-explore-collection i {
+    font-size: 18px;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .explore-collection-section {
+        padding: 30px 0;
+    }
+    
+    .btn-explore-collection {
+        padding: 12px 25px;
+        font-size: 15px;
+    }
+    
+    .btn-explore-collection i {
+        font-size: 16px;
+    }
+}

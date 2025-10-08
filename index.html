@@ -34,6 +34,7 @@
     <link rel="stylesheet" href="footer-alignment-final-fix.css">
     <link rel="stylesheet" href="carousel-arrows.css">
     <link rel="stylesheet" href="image-sizing-fix.css">
+    <link rel="stylesheet" href="explore-collection-button.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -107,7 +108,7 @@
                     <p class="hero-subtitle">Discover the timeless beauty of traditional Indian sarees with contemporary styling. Each piece tells a story of craftsmanship and heritage that spans generations.</p>
                     <div class="hero-buttons">
                         <a href="collections.html" class="btn-explore">Explore Collection</a>
-                        <a href="#categories" class="btn-shop">Shop Now</a>
+                        <a href="#newArrivals" class="btn-shop">Shop Now</a>
                     </div>
                 </div>
             </div>
@@ -117,28 +118,7 @@
         <div class="floating-particles"></div>
         <div class="paisley-motifs"></div>
         
-        <!-- Featured Sarees Section -->
-        <section class="featured-sarees" id="categories">
-            <div class="container">
-                <div class="section-header">
-                    <h2 class="section-title">Our Featured Sarees</h2>
-                    <p class="section-subtitle">Handpicked beauties from our collection ✨</p>
-                </div>
-                <div class="carousel-wrapper">
-                    <button class="carousel-btn carousel-btn-left" id="carouselLeft">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <div class="carousel-container" id="carouselContainer">
-                        <div class="carousel-track" id="featuredProducts">
-                            <!-- Featured products will be loaded here -->
-                        </div>
-                    </div>
-                    <button class="carousel-btn carousel-btn-right" id="carouselRight">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
-                </div>
-            </div>
-        </section>
+
 
         <!-- New Arrivals Section -->
         <section class="new-arrivals" id="newArrivals">
@@ -149,6 +129,18 @@
                 </div>
                 <div class="new-arrivals-grid" id="newArrivalsGrid">
                     <!-- New arrival products will be loaded here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Explore Collection Button Section -->
+        <section class="explore-collection-section">
+            <div class="container">
+                <div class="explore-collection-content">
+                    <a href="collections.html" class="btn-explore-collection">
+                        <i class="fas fa-eye"></i>
+                        Explore Full Collection
+                    </a>
                 </div>
             </div>
         </section>

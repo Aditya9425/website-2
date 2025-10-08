@@ -225,7 +225,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     await fetchProducts();
     updateCartCount();
     loadTrendingProducts();
-    loadFeaturedProducts();
     loadNewArrivals();
     setupSearchFunctionality();
     
@@ -1555,78 +1554,7 @@ function updateCartCount() {
     });
 }
 
-function loadFeaturedProducts() {
-    const carousel = document.getElementById('featuredProducts');
-    if (carousel) {
-        // Use all products for infinite scroll effect
-        const allProducts = [...products, ...products]; // Duplicate for seamless loop
-        
-        carousel.innerHTML = allProducts.map(product => {
-            let imageUrl;
-            if (product.image && product.image.startsWith('http')) {
-                imageUrl = product.image;
-            } else if (product.image) {
-                imageUrl = `https://jstvadizuzvwhabtfhfs.supabase.co/storage/v1/object/public/Sarees/${product.image}`;
-            } else {
-                imageUrl = `https://via.placeholder.com/300x400/FF6B6B/FFFFFF?text=${encodeURIComponent(product.name || 'Product')}`;
-            }
-            
-            const colorPalette = generateColorPalette(product);
-            
-            return `
-            <div class="featured-card" data-product-id="${product.id}" data-status="${product.status || 'active'}">
-                <div class="featured-image">
-                    <div class="product-image-container">
-                        <img src="${imageUrl}" alt="${product.name}" loading="lazy">
-                        ${product.status === 'out-of-stock' ? '<div class="out-of-stock-overlay">Out of Stock</div>' : ''}
-                    </div>
-                </div>
-                <div class="featured-info">
-                    <h3 class="featured-title">${product.name}</h3>
-                    <div class="featured-price">₹${product.price.toLocaleString()}</div>
-                    ${colorPalette}
-                    <div class="featured-buttons">
-                        ${product.status === 'out-of-stock' ? 
-                            '<div class="out-of-stock-label">Out of Stock</div>' :
-                            `<button class="add-to-cart-btn mobile-touch-btn" data-id="${product.id}" onclick="event.stopPropagation(); addToCart(this)" ontouchstart="this.style.transform='scale(0.95)'" ontouchend="this.style.transform='scale(1)'">
-                                Add to Cart
-                            </button>
-                            <button class="buy-now-btn mobile-touch-btn" onclick="event.stopPropagation(); buyNow('${product.id}')" ontouchstart="this.style.transform='scale(0.95)'" ontouchend="this.style.transform='scale(1)'">
-                                Buy Now
-                            </button>`
-                        }
-                    </div>
-                </div>
-            </div>
-            `;
-        }).join('');
-        
-        // Add click listeners for featured cards
-        document.querySelectorAll('.featured-card').forEach(card => {
-            card.addEventListener('click', (e) => {
-                if (!e.target.closest('.add-to-cart-btn') && !e.target.closest('.buy-now-btn') && !e.target.closest('.color-dot')) {
-                    const productId = card.dataset.productId;
-                    window.location.href = `product.html?id=${productId}`;
-                }
-            });
-            
-            // Add touch event for mobile
-            card.addEventListener('touchend', (e) => {
-                if (!e.target.closest('.add-to-cart-btn') && !e.target.closest('.buy-now-btn') && !e.target.closest('.color-dot')) {
-                    e.preventDefault();
-                    const productId = card.dataset.productId;
-                    window.location.href = `product.html?id=${productId}`;
-                }
-            });
-        });
-        
-        // Add mobile touch event listeners
-        addMobileTouchListeners();
-        
-        // Initialize carousel animation
-        initializeCarousel();
-    }
-}
+
 
 // Initialize carousel with manual navigation
 function initializeCarousel() {
