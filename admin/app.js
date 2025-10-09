@@ -143,6 +143,13 @@ class AdminPanel {
             }
         });
 
+        // Linked variants search
+        document.addEventListener('input', (e) => {
+            if (e.target.id === 'linkedVariantsSearch') {
+                this.filterLinkedVariants(e.target.value);
+            }
+        });
+
         // Search and filter functionality
         const productSearch = document.getElementById('productSearch');
         const categoryFilter = document.getElementById('categoryFilter');
@@ -614,25 +621,7 @@ class AdminPanel {
                 </td>
                 <td>
                     <div class="action-buttons">
-                        <button class="btn-primary btn-small" onclick="
-                            document.getElementById('productName').value='${product.name || ''}';
-                            document.getElementById('productCategory').value='${product.category || ''}';
-                            document.getElementById('productPrice').value='${product.price || ''}';
-                            document.getElementById('productStock').value='${product.stock || 0}';
-                            document.getElementById('productDescription').value='${(product.description || '').replace(/'/g, "\\'")}';
-                            document.getElementById('designDetails').value='${(product.design_details || '').replace(/'/g, "\\'")}';
-                            document.getElementById('blouseInfo').value='${(product.blouse_info || '').replace(/'/g, "\\'")}';
-                            document.getElementById('ornamentation').value='${(product.ornamentation || '').replace(/'/g, "\\'")}';
-                            document.getElementById('border').value='${(product.border || '').replace(/'/g, "\\'")}';
-                            document.getElementById('blouseFabric').value='${(product.blouse_fabric || '').replace(/'/g, "\\'")}';
-                            document.getElementById('blouseType').value='${(product.blouse_type || '').replace(/'/g, "\\'")}';
-                            document.getElementById('sareeFabric').value='${(product.saree_fabric || '').replace(/'/g, "\\'")}';
-                            document.getElementById('washCare').value='${(product.wash_care || '').replace(/'/g, "\\'")}';
-                            document.getElementById('completeLook').value='${(product.complete_look || '').replace(/'/g, "\\'")}';
-                            document.getElementById('productModalTitle').textContent='Edit Product';
-                            document.getElementById('productForm').dataset.productId='${product.id}';
-                            document.getElementById('productModal').style.display='flex';
-                        " title="Edit Product">
+                        <button class="btn-primary btn-small" onclick="window.adminPanel.openProductModal('${product.id}')" title="Edit Product">
                             <i class="fas fa-edit"></i>
                         </button>
                         <button class="btn-danger btn-small" onclick="window.adminPanel.deleteProduct('${product.id}')" title="Delete Product">
@@ -835,7 +824,7 @@ class AdminPanel {
                 fabric: category,
                 colors: [],
                 color_variants: [],
-                linked_variants: null,
+                linked_variants: this.getSelectedLinkedVariants(),
                 design_details: formData.get('designDetails')?.trim() || null,
                 blouse_info: formData.get('blouseInfo')?.trim() || null,
                 ornamentation: formData.get('ornamentation')?.trim() || null,
@@ -1965,6 +1954,48 @@ class AdminPanel {
             console.error('Error updating stock:', error);
             this.showMessage(`Error updating stock: ${error.message}`, 'error');
         }
+    }
+
+    populateLinkedVariantsDropdown(excludeProductId) {
+        const select = document.getElementById('linkedVariants');
+        if (!select) return;
+        
+        this.allLinkedVariants = this.products.filter(p => p.id !== excludeProductId);
+        this.displayLinkedVariants(this.allLinkedVariants);
+    }
+    
+    displayLinkedVariants(products) {
+        const select = document.getElementById('linkedVariants');
+        if (!select) return;
+        
+        select.innerHTML = products
+            .map(p => `<option value="${p.id}">${p.name}</option>`)
+            .join('');
+    }
+    
+    filterLinkedVariants(searchTerm) {
+        if (!this.allLinkedVariants) return;
+        
+        const filtered = this.allLinkedVariants.filter(p => 
+            p.name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        this.displayLinkedVariants(filtered);
+    }
+    
+    getSelectedLinkedVariants() {
+        const select = document.getElementById('linkedVariants');
+        if (!select) return [];
+        
+        return Array.from(select.selectedOptions).map(option => option.value);
+    }
+    
+    setLinkedVariants(variantIds) {
+        const select = document.getElementById('linkedVariants');
+        if (!select || !variantIds) return;
+        
+        Array.from(select.options).forEach(option => {
+            option.selected = variantIds.includes(option.value);
+        });
     }
 
     // Filter products based on search and category

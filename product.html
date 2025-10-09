@@ -102,6 +102,51 @@
                 gap: 8px;
             }
         }
+        .linked-variants-section {
+            background: #fff;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .linked-variants-grid {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            overflow-x: auto;
+        }
+        .variant-item {
+            flex: 0 0 120px;
+        }
+        .variant-item {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .variant-item:hover {
+            border-color: #FF6B6B;
+            transform: translateY(-2px);
+        }
+        .variant-item img {
+            width: 100%;
+            height: 80px;
+            object-fit: contain;
+            border-radius: 4px;
+            background: #f8f9fa;
+        }
+        .variant-item h5 {
+            margin: 8px 0 4px 0;
+            font-size: 12px;
+            color: #333;
+        }
+        .variant-item .price {
+            color: #FF6B6B;
+            font-weight: bold;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -198,6 +243,14 @@
                         </button>
                     </div>
 
+                    <!-- Linked Variants -->
+                    <div class="linked-variants-section" id="linkedVariantsSection" style="display: none;">
+                        <h4>Colours</h4>
+                        <div class="linked-variants-grid" id="linkedVariantsGrid">
+                            <!-- Linked variants will be loaded here -->
+                        </div>
+                    </div>
+
                     <!-- Product Highlights -->
                     <div class="product-highlights">
                         <h4>Product Highlights</h4>
@@ -271,6 +324,8 @@
                             </div>
                         </div>
                     </div>
+
+
 
                     <!-- Why Choose Us -->
                     <div class="why-choose-us-product">
@@ -535,7 +590,8 @@
                     blouse_type: data.blouse_type,
                     saree_fabric: data.saree_fabric,
                     wash_care: data.wash_care,
-                    complete_look: data.complete_look
+                    complete_look: data.complete_look,
+                    linked_variants: data.linked_variants || []
                 };
                 
                 displayProductDetails(product, selectedColor);
@@ -617,6 +673,9 @@
             
             // Display product details in tabs
             displayProductTabs(product);
+            
+            // Display linked variants
+            displayLinkedVariants(product);
         }
         
         function displayImageGallery(images, productName) {
@@ -895,6 +954,59 @@
         window.shareToTelegram = shareToTelegram;
         window.copyProductLink = copyProductLink;
         window.displayProductTabs = displayProductTabs;
+        
+        async function displayLinkedVariants(product) {
+            const section = document.getElementById('linkedVariantsSection');
+            const grid = document.getElementById('linkedVariantsGrid');
+            
+            console.log('Product linked_variants:', product.linked_variants);
+            
+            if (!product.linked_variants || product.linked_variants.length === 0) {
+                console.log('No linked variants found');
+                section.style.display = 'none';
+                return;
+            }
+            
+            // Show section immediately with loading message
+            section.style.display = 'block';
+            grid.innerHTML = '<p>Loading related products...</p>';
+            
+            try {
+                const { data: variants, error } = await supabase
+                    .from('products')
+                    .select('id, name, price, images')
+                    .in('id', product.linked_variants);
+                
+                console.log('Loaded variants:', variants);
+                
+                if (error || !variants || variants.length === 0) {
+                    grid.innerHTML = '<p>No related products found.</p>';
+                    return;
+                }
+                
+                grid.innerHTML = variants.map(variant => {
+                    const imageUrl = variant.images && variant.images.length > 0 
+                        ? (variant.images[0].startsWith('http') 
+                            ? variant.images[0] 
+                            : `https://jstvadizuzvwhabtfhfs.supabase.co/storage/v1/object/public/Sarees/${variant.images[0]}`)
+                        : `https://via.placeholder.com/150x120/FF6B6B/FFFFFF?text=${encodeURIComponent(variant.name)}`;
+                    
+                    return `
+                        <div class="variant-item" onclick="window.location.href='product.html?id=${variant.id}'">
+                            <img src="${imageUrl}" alt="${variant.name}">
+                            <h5>${variant.name}</h5>
+                            <div class="price">₹${variant.price.toLocaleString()}</div>
+                        </div>
+                    `;
+                }).join('');
+                
+            } catch (error) {
+                console.error('Error loading linked variants:', error);
+                grid.innerHTML = '<p>Error loading related products.</p>';
+            }
+        }
+        
+        window.displayLinkedVariants = displayLinkedVariants;
     </script>
 </body>
 </html>

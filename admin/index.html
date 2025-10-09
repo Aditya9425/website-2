@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="../color-variants.css">
     <link rel="stylesheet" href="out-of-stock-badge.css">
     <link rel="stylesheet" href="visibility-fix.css">
+    <link rel="stylesheet" href="stock-layout-fix.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -550,6 +551,22 @@
                     <div class="form-group">
                         <label for="completeLook">Complete The Look</label>
                         <input type="text" id="completeLook" name="completeLook" placeholder="e.g., Party">
+                    </div>
+                </div>
+                
+                <!-- Linked Variants Section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h4><i class="fas fa-link"></i> Linked Variants</h4>
+                        <small>Select related products to show as variants</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="linkedVariants">Select Linked Products</label>
+                        <input type="text" id="linkedVariantsSearch" placeholder="Search products..." style="margin-bottom: 10px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 100%;">
+                        <select id="linkedVariants" name="linkedVariants" multiple size="5">
+                            <!-- Options will be populated dynamically -->
+                        </select>
+                        <small>Hold Ctrl/Cmd to select multiple products</small>
                     </div>
                 </div>
                 
